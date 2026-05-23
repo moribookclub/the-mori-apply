@@ -6,14 +6,14 @@
 <title>THE MORI</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Apple SD Gothic Neo',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
-
 nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
 .logo{font-size:1.35rem;font-weight:700;letter-spacing:.15em}
 .logo span{color:rgba(255,255,255,.35);font-weight:300;font-size:.8rem;margin-left:8px;letter-spacing:.05em}
-.nav-right{display:flex;align-items:center;gap:10px}
+.nav-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .btn-glogin{background:#fff;color:#0d1f3c;border:none;padding:8px 18px;border-radius:6px;font-size:.83rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:opacity .2s}
 .btn-glogin:hover{opacity:.88}
 .btn-glogin svg{width:17px;height:17px;flex-shrink:0}
@@ -22,30 +22,22 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .user-name{font-size:.88rem;color:rgba(255,255,255,.85)}
 .btn-sm{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.55);padding:6px 12px;border-radius:6px;font-size:.76rem;cursor:pointer;transition:all .2s}
 .btn-sm:hover{border-color:rgba(255,255,255,.45);color:#fff}
-
-/* 신청 카운터 뱃지 */
 .apply-counter{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 13px;font-size:.78rem;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:5px}
 .apply-counter strong{color:#fff;font-weight:600}
 .apply-counter.warn{border-color:rgba(255,180,80,.4);color:rgba(255,200,100,.9)}
 .apply-counter.warn strong{color:rgba(255,210,100,1)}
 .apply-counter.full-quota{border-color:rgba(255,100,100,.4);color:rgba(255,130,130,.9)}
 .apply-counter.full-quota strong{color:rgba(255,150,150,1)}
-
 .hero{text-align:center;padding:3rem 1rem 2rem}
 .hero h1{font-size:2.3rem;font-weight:700;letter-spacing:.12em;margin-bottom:.4rem}
 .hero p{color:rgba(255,255,255,.45);font-size:.9rem;letter-spacing:.05em}
-
 .tab-bar{display:flex;justify-content:center;gap:0;margin:0 auto 2rem;max-width:440px;background:rgba(255,255,255,.06);border-radius:8px;padding:4px}
 .tab{flex:1;text-align:center;padding:8px 0;font-size:.82rem;cursor:pointer;border-radius:6px;color:rgba(255,255,255,.4);transition:all .2s;white-space:nowrap}
 .tab.active{background:#fff;color:#0d1f3c;font-weight:600}
-
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.1rem;max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
-
-/* CARD */
 .card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;transition:transform .2s,border-color .2s}
 .card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.2)}
 .card.wishlisted{border-color:rgba(255,180,180,.3)}
-
 .card-header{padding:1.2rem 1.2rem 1rem;border-bottom:1px solid rgba(255,255,255,.07)}
 .card-top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .card-badge{font-size:.7rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
@@ -54,22 +46,15 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .badge-mine{background:rgba(255,255,255,.9);color:#0d1f3c}
 .heart-btn{background:none;border:none;cursor:pointer;font-size:1.1rem;padding:2px 4px;transition:transform .15s;line-height:1}
 .heart-btn:hover{transform:scale(1.25)}
-
-/* 책 정보 */
 .book-info{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
 .book-title{font-size:1.05rem;font-weight:700;line-height:1.35;color:#fff}
 .book-author{font-size:.8rem;color:rgba(255,255,255,.45)}
-
-/* 모임 주제/모임장 */
 .meeting-meta-header{display:flex;gap:6px;flex-wrap:wrap}
 .meta-tag{font-size:.75rem;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.09)}
-.meta-tag.host{background:rgba(255,255,255,.05);color:rgba(255,255,255,.45)}
-
 .card-body{padding:.95rem 1.2rem}
 .info-row{display:flex;align-items:flex-start;gap:8px;font-size:.82rem;color:rgba(255,255,255,.6);margin-bottom:7px;line-height:1.4}
 .info-label{font-size:.72rem;color:rgba(255,255,255,.3);width:28px;flex-shrink:0;padding-top:1px}
 .info-val{color:rgba(255,255,255,.78)}
-
 .card-footer{padding:.9rem 1.2rem;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between}
 .seats{font-size:.8rem;color:rgba(255,255,255,.5)}
 .seats strong{color:#fff}
@@ -83,19 +68,13 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-apply.applied:hover{border-color:rgba(255,100,100,.7)}
 .btn-apply.full{background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.25);cursor:not-allowed}
 .btn-apply.quota-full{background:transparent;border:1px solid rgba(255,180,80,.3);color:rgba(255,200,100,.6);cursor:not-allowed;font-size:.76rem}
-
-/* ADMIN */
-.admin-bar{max-width:980px;margin:0 auto 1.2rem;padding:0 1.25rem;display:flex;justify-content:space-between;align-items:center}
+.admin-bar{max-width:980px;margin:0 auto 1.2rem;padding:0 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .admin-quota-box{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 14px;font-size:.82rem;color:rgba(255,255,255,.6)}
-.admin-quota-box strong{color:#fff}
 .quota-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#fff;width:44px;text-align:center;padding:3px 6px;font-size:.85rem;outline:none}
-.quota-input:focus{border-color:rgba(255,255,255,.35)}
 .btn-admin{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.55);padding:8px 15px;border-radius:6px;font-size:.8rem;cursor:pointer;transition:all .2s}
 .btn-admin:hover{border-color:rgba(255,255,255,.4);color:#fff}
 .btn-quota-save{background:#fff;color:#0d1f3c;border:none;padding:5px 12px;border-radius:5px;font-size:.78rem;font-weight:600;cursor:pointer;transition:opacity .2s}
 .btn-quota-save:hover{opacity:.85}
-
-/* ADMIN TABLE */
 .admin-section{max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
 .section-title{font-size:.88rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
 .meeting-select-bar{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
@@ -110,10 +89,9 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-csv:hover{opacity:.85}
 .empty-state{text-align:center;padding:3rem;color:rgba(255,255,255,.22);font-size:.88rem}
 .my-section{max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
-
+.loading{text-align:center;padding:4rem;color:rgba(255,255,255,.3);font-size:.9rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;color:#0d1f3c;padding:11px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.open{display:flex}
 .modal{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1.8rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
@@ -128,7 +106,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-modal-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.85rem}
 .btn-modal-ok{flex:2;background:#fff;color:#0d1f3c;border:none;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.85rem}
 .btn-modal-ok:hover{opacity:.88}
-
 .divider{height:1px;background:rgba(255,255,255,.07);margin:.6rem 0 1rem}
 .form-section-label{font-size:.72rem;color:rgba(255,255,255,.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.8rem;font-weight:600}
 </style>
@@ -167,7 +144,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     </div>
     <button class="btn-admin" onclick="openAddModal()">+ 모임 추가</button>
   </div>
-  <div class="grid" id="cardGrid"></div>
+  <div id="cardGrid" class="grid"><div class="loading">모임 불러오는 중...</div></div>
 </div>
 
 <div id="tabMy" style="display:none">
@@ -194,7 +171,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 
 <div class="toast" id="toast"></div>
 
-<!-- ADD MODAL -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
     <h2>새 모임 추가</h2>
@@ -224,166 +200,191 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 
 <script>
 /* ── FIREBASE ─────────────────────────────────────────── */
-const FIREBASE_CONFIG = {
+firebase.initializeApp({
   apiKey: "AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",
   authDomain: "the-mori-apply.firebaseapp.com",
   projectId: "the-mori-apply",
   storageBucket: "the-mori-apply.firebasestorage.app",
   messagingSenderId: "306904700616",
   appId: "1:306904700616:web:2217470905df10786837fd"
-};
-const ADMIN_EMAILS = ['admin@themori.com'];
-const IS_DEMO = FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY';
-let auth = null;
-if (!IS_DEMO) {
-  try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    auth = firebase.auth();
-    auth.onAuthStateChanged(fb => {
-      user = fb ? {name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'} : null;
-      updateNav(); renderAll();
-    });
-  } catch(e) {}
-}
+});
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const ADMIN_EMAIL = 'nohjunhyouk@gmail.com';
 
 /* ── STATE ────────────────────────────────────────────── */
 let user = null;
+let meetings = [];
 let applied = new Set();
 let wishlisted = new Set();
-let applicants = {};
+let maxApply = 2;
 let notifSent = {};
-let maxApply = 2; // 관리자가 설정하는 1인 최대 신청 수
-
-let meetings = [
-  {id:1,title:'채식주의자',author:'한강',topic:'폭력과 고통의 서사',host:'김모리',date:'2025-06-14',time:'19:00',place:'대구 수성구 카페 모리',max:8,applied:3},
-  {id:2,title:'82년생 김지영',author:'조남주',topic:'젠더와 사회 구조',host:'이서연',date:'2025-06-21',time:'14:00',place:'대구 중구 카페 세컨',max:6,applied:6},
-  {id:3,title:'파친코',author:'이민진',topic:'디아스포라와 정체성',host:'박준혁',date:'2025-07-05',time:'15:00',place:'대구 수성구 카페 모리',max:10,applied:2},
-  {id:4,title:'아몬드',author:'손원평',topic:'감정과 공감의 경계',host:'최수아',date:'2025-07-12',time:'19:30',place:'대구 달서구 북카페 리드',max:8,applied:7},
-];
-let nextId = 5;
+let adminSelected = null;
+let unsubMeetings = null;
 
 /* ── AUTH ─────────────────────────────────────────────── */
-function googleLogin() {
-  if (!IS_DEMO && auth) {
-    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>showToast('로그인 실패: '+e.message));
-    return;
+auth.onAuthStateChanged(async fb => {
+  if (fb) {
+    user = {name: fb.displayName, email: fb.email, photo: fb.photoURL, initial: fb.displayName?.[0] || '?'};
+    await loadUserData();
+  } else {
+    user = null;
+    applied = new Set();
+    wishlisted = new Set();
   }
-  const demos=[{name:'김지수',email:'jisu@gmail.com'},{name:'이민준',email:'minjun@gmail.com'},{name:'박서연',email:'seoyeon@gmail.com'},{name:'최현우',email:'hyunwoo@gmail.com'}];
-  const d=demos[Math.floor(Math.random()*demos.length)];
-  user={name:d.name,email:d.email,photo:null,initial:d.name[0]};
-  updateNav(); renderAll();
-  showToast(`${user.name}님, 환영해요! 📚`);
+  updateNav();
+  renderAll();
+  if (!unsubMeetings) listenMeetings();
+});
+
+function googleLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(e => showToast('로그인 실패: ' + e.message));
 }
 function logout() {
-  if (!IS_DEMO && auth) { auth.signOut(); return; }
-  user=null; applied=new Set(); wishlisted=new Set();
-  updateNav(); renderAll();
+  auth.signOut();
 }
-function isAdmin(){ return user && ADMIN_EMAILS.includes(user.email); }
-function myApplyCount(){ return applied.size; }
+function isAdmin() { return user && user.email === ADMIN_EMAIL; }
+function myApplyCount() { return applied.size; }
 
-function updateNav() {
-  const nr=document.getElementById('navRight');
-  if (!user) {
-    nr.innerHTML=`<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;
-  } else {
-    const cnt = myApplyCount();
-    const cls = cnt >= maxApply ? 'full-quota' : cnt >= maxApply-1 ? 'warn' : '';
-    const av = user.photo ? `<img src="${user.photo}" alt="">` : user.initial;
-    nr.innerHTML=`<div class="apply-counter ${cls}"><strong>${cnt}</strong> / ${maxApply} 신청</div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
+/* ── FIRESTORE: 모임 실시간 구독 ──────────────────────── */
+function listenMeetings() {
+  unsubMeetings = db.collection('meetings').orderBy('date', 'asc').onSnapshot(snap => {
+    meetings = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    // 관리자 설정 불러오기
+    db.collection('settings').doc('config').get().then(d => {
+      if (d.exists && d.data().maxApply) {
+        maxApply = d.data().maxApply;
+        const qi = document.getElementById('quotaInput');
+        if (qi) qi.value = maxApply;
+      }
+    });
+    renderAll();
+  });
+}
+
+/* ── FIRESTORE: 유저 데이터 ───────────────────────────── */
+async function loadUserData() {
+  if (!user) return;
+  const doc = await db.collection('users').doc(user.email).get();
+  if (doc.exists) {
+    const d = doc.data();
+    applied = new Set(d.applied || []);
+    wishlisted = new Set(d.wishlisted || []);
   }
-  document.getElementById('adminTab').style.display = isAdmin()?'block':'none';
-  document.getElementById('adminAddBar').style.display = isAdmin()?'flex':'none';
+}
+async function saveUserData() {
+  if (!user) return;
+  await db.collection('users').doc(user.email).set({
+    name: user.name,
+    email: user.email,
+    applied: [...applied],
+    wishlisted: [...wishlisted],
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, {merge: true});
 }
 
-/* ── APPLY / WISH ─────────────────────────────────────── */
-function applyMeeting(id) {
+/* ── APPLY ────────────────────────────────────────────── */
+async function applyMeeting(id) {
   if (!user) { showToast('로그인 후 신청할 수 있어요'); return; }
-  const m=meetings.find(x=>x.id===id); if(!m) return;
+  const m = meetings.find(x => x.id === id);
+  if (!m) return;
+  const mRef = db.collection('meetings').doc(id);
+  const aRef = db.collection('meetings').doc(id).collection('applicants').doc(user.email);
+
   if (applied.has(id)) {
-    applied.delete(id); m.applied=Math.max(0,m.applied-1);
-    if (!applicants[id]) applicants[id]=[];
-    applicants[id]=applicants[id].filter(a=>a.email!==user.email);
-    checkWishNotif(id,m);
+    applied.delete(id);
+    await aRef.delete();
+    await mRef.update({applied: firebase.firestore.FieldValue.increment(-1)});
+    checkWishNotif(id, {...m, applied: m.applied - 1});
     showToast('신청이 취소되었어요');
   } else {
-    if (m.applied>=m.max) { showToast('정원이 마감되었어요'); return; }
-    if (myApplyCount()>=maxApply) { showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`); return; }
-    applied.add(id); m.applied++;
-    if (!applicants[id]) applicants[id]=[];
-    applicants[id].push({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR')});
+    if (m.applied >= m.max) { showToast('정원이 마감되었어요'); return; }
+    if (myApplyCount() >= maxApply) { showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`); return; }
+    applied.add(id);
+    await aRef.set({name: user.name, email: user.email, time: new Date().toLocaleString('ko-KR'), photo: user.photo || ''});
+    await mRef.update({applied: firebase.firestore.FieldValue.increment(1)});
     showToast('신청 완료! 모임에서 만나요 📚');
   }
+  await saveUserData();
   renderAll();
 }
 
-function toggleWish(id) {
+/* ── WISH ─────────────────────────────────────────────── */
+async function toggleWish(id) {
   if (!user) { showToast('로그인 후 찜할 수 있어요'); return; }
-  const m=meetings.find(x=>x.id===id);
+  const m = meetings.find(x => x.id === id);
   if (wishlisted.has(id)) {
-    wishlisted.delete(id); notifSent[id]=false;
+    wishlisted.delete(id);
+    notifSent[id] = false;
     showToast('찜 목록에서 제거했어요');
   } else {
     wishlisted.add(id);
     showToast('찜했어요 ❤️  자리 나면 알려드릴게요');
-    if (m && m.applied<m.max) pushNotif(`💺 "${m.title}" 모임에 지금 자리 있어요!`);
+    if (m && m.applied < m.max) pushNotif(`💺 "${m.title}" 모임에 지금 자리 있어요!`);
   }
+  await saveUserData();
   renderAll();
 }
 
-function checkWishNotif(id,m) {
-  if (wishlisted.has(id) && !applied.has(id) && m.applied<m.max && !notifSent[id]) {
-    notifSent[id]=true;
-    setTimeout(()=>{ if(wishlisted.has(id)&&!applied.has(id)) pushNotif(`💺 찜한 "${m.title}"에 자리가 났어요!`); },700);
+function checkWishNotif(id, m) {
+  if (wishlisted.has(id) && !applied.has(id) && m.applied < m.max && !notifSent[id]) {
+    notifSent[id] = true;
+    setTimeout(() => { if (wishlisted.has(id) && !applied.has(id)) pushNotif(`💺 찜한 "${m.title}"에 자리가 났어요!`); }, 700);
   }
 }
-
 function pushNotif(msg) {
-  if ('Notification' in window && Notification.permission==='granted') {
-    new Notification('THE MORI',{body:msg});
-  } else if ('Notification' in window && Notification.permission!=='denied') {
-    Notification.requestPermission().then(p=>{ p==='granted' ? new Notification('THE MORI',{body:msg}) : showToast(msg); });
-  } else { showToast(msg); }
+  if ('Notification' in window && Notification.permission === 'granted') new Notification('THE MORI', {body: msg});
+  else if ('Notification' in window && Notification.permission !== 'denied') Notification.requestPermission().then(p => p === 'granted' ? new Notification('THE MORI', {body: msg}) : showToast(msg));
+  else showToast(msg);
 }
 
 /* ── QUOTA ────────────────────────────────────────────── */
-function saveQuota() {
-  const v=parseInt(document.getElementById('quotaInput').value)||1;
-  maxApply=Math.max(1,v);
-  document.getElementById('quotaInput').value=maxApply;
+async function saveQuota() {
+  const v = parseInt(document.getElementById('quotaInput').value) || 1;
+  maxApply = Math.max(1, v);
+  await db.collection('settings').doc('config').set({maxApply}, {merge: true});
   showToast(`1인 최대 신청 수를 ${maxApply}개로 설정했어요`);
   renderAll();
 }
 
+/* ── NAV ──────────────────────────────────────────────── */
+function updateNav() {
+  const nr = document.getElementById('navRight');
+  if (!user) {
+    nr.innerHTML = `<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;
+  } else {
+    const cnt = myApplyCount();
+    const cls = cnt >= maxApply ? 'full-quota' : cnt >= maxApply - 1 ? 'warn' : '';
+    const av = user.photo ? `<img src="${user.photo}" alt="">` : user.initial;
+    nr.innerHTML = `<div class="apply-counter ${cls}"><strong>${cnt}</strong> / ${maxApply} 신청</div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
+  }
+  document.getElementById('adminTab').style.display = isAdmin() ? 'block' : 'none';
+  document.getElementById('adminAddBar').style.display = isAdmin() ? 'flex' : 'none';
+}
+
 /* ── CARD ─────────────────────────────────────────────── */
 function cardHTML(m) {
-  const isFull=m.applied>=m.max, isApplied=applied.has(m.id), isWish=wishlisted.has(m.id);
-  const isQuotaFull=user && myApplyCount()>=maxApply && !isApplied;
-  const pct=Math.round((m.applied/m.max)*100);
-  const dateStr=new Date(m.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+  const isFull = m.applied >= m.max;
+  const isApplied = applied.has(m.id);
+  const isWish = wishlisted.has(m.id);
+  const isQuotaFull = user && myApplyCount() >= maxApply && !isApplied;
+  const pct = Math.round((m.applied / m.max) * 100);
+  const dateStr = new Date(m.date).toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'short'});
 
   let badge, btnCls, btnTxt;
-  if (isApplied)      { badge=`<span class="card-badge badge-mine">신청완료</span>`; btnCls='applied'; btnTxt='신청취소'; }
-  else if (isFull)    { badge=`<span class="card-badge badge-closed">마감</span>`; btnCls='full'; btnTxt='마감'; }
-  else if (isQuotaFull){ badge=`<span class="card-badge badge-open">신청가능</span>`; btnCls='quota-full'; btnTxt='한도초과'; }
-  else                { badge=`<span class="card-badge badge-open">신청가능</span>`; btnCls='open'; btnTxt='신청하기'; }
+  if (isApplied)       { badge = `<span class="card-badge badge-mine">신청완료</span>`; btnCls = 'applied'; btnTxt = '신청취소'; }
+  else if (isFull)     { badge = `<span class="card-badge badge-closed">마감</span>`; btnCls = 'full'; btnTxt = '마감'; }
+  else if (isQuotaFull){ badge = `<span class="card-badge badge-open">신청가능</span>`; btnCls = 'quota-full'; btnTxt = '한도초과'; }
+  else                 { badge = `<span class="card-badge badge-open">신청가능</span>`; btnCls = 'open'; btnTxt = '신청하기'; }
 
   const clickable = isApplied || (!isFull && !isQuotaFull);
-
-  return `<div class="card${isWish?' wishlisted':''}">
+  return `<div class="card${isWish ? ' wishlisted' : ''}">
     <div class="card-header">
-      <div class="card-top-row">
-        ${badge}
-        <button class="heart-btn" onclick="toggleWish(${m.id})">${isWish?'❤️':'🤍'}</button>
-      </div>
-      <div class="book-info">
-        <div class="book-title">${m.title}</div>
-        <div class="book-author">${m.author}</div>
-      </div>
-      <div class="meeting-meta-header">
-        <span class="meta-tag">🗂 ${m.topic}</span>
-        <span class="meta-tag host">👤 ${m.host}</span>
-      </div>
+      <div class="card-top-row">${badge}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish ? '❤️' : '🤍'}</button></div>
+      <div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div>
+      <div class="meeting-meta-header"><span class="meta-tag">🗂 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div>
     </div>
     <div class="card-body">
       <div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div>
@@ -391,95 +392,105 @@ function cardHTML(m) {
       <div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div>
     </div>
     <div class="card-footer">
-      <div>
-        <div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div>
-        <div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div>
-      </div>
-      <button class="btn-apply ${btnCls}" onclick="${clickable?`applyMeeting(${m.id})`:''}">${btnTxt}</button>
+      <div><div class="seats">잔여 <strong>${m.max - m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull ? ' full' : ''}" style="width:${pct}%"></div></div></div>
+      <button class="btn-apply ${btnCls}" onclick="${clickable ? `applyMeeting('${m.id}')` : ''}">${btnTxt}</button>
     </div>
   </div>`;
 }
 
 /* ── RENDER ───────────────────────────────────────────── */
-function renderAll(){ renderGrid(); renderMy(); renderWish(); if(isAdmin()) renderAdmin(); }
-function renderGrid(){ document.getElementById('cardGrid').innerHTML=meetings.map(cardHTML).join(''); }
-function renderMy(){
-  const g=document.getElementById('myGrid');
-  if(!user){g.innerHTML=`<div class="empty-state">로그인 후 확인할 수 있어요</div>`;return;}
-  const list=meetings.filter(m=>applied.has(m.id));
-  g.innerHTML=list.length?list.map(cardHTML).join(''):`<div class="empty-state">아직 신청한 모임이 없어요</div>`;
+function renderAll() { renderGrid(); renderMy(); renderWish(); if (isAdmin()) renderAdmin(); }
+function renderGrid() {
+  const g = document.getElementById('cardGrid');
+  g.innerHTML = meetings.length ? meetings.map(cardHTML).join('') : `<div class="empty-state">등록된 모임이 없어요</div>`;
 }
-function renderWish(){
-  const g=document.getElementById('wishGrid');
-  if(!user){g.innerHTML=`<div class="empty-state">로그인 후 찜할 수 있어요</div>`;return;}
-  const list=meetings.filter(m=>wishlisted.has(m.id));
-  g.innerHTML=list.length?list.map(cardHTML).join(''):`<div class="empty-state">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;
+function renderMy() {
+  const g = document.getElementById('myGrid');
+  if (!user) { g.innerHTML = `<div class="empty-state">로그인 후 확인할 수 있어요</div>`; return; }
+  const list = meetings.filter(m => applied.has(m.id));
+  g.innerHTML = list.length ? list.map(cardHTML).join('') : `<div class="empty-state">아직 신청한 모임이 없어요</div>`;
+}
+function renderWish() {
+  const g = document.getElementById('wishGrid');
+  if (!user) { g.innerHTML = `<div class="empty-state">로그인 후 찜할 수 있어요</div>`; return; }
+  const list = meetings.filter(m => wishlisted.has(m.id));
+  g.innerHTML = list.length ? list.map(cardHTML).join('') : `<div class="empty-state">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;
 }
 
-/* ── ADMIN TABLE ──────────────────────────────────────── */
-let adminSelected=null;
-function renderAdmin(){
-  document.getElementById('meetingChips').innerHTML=meetings.map(m=>
-    `<div class="meeting-chip${adminSelected===m.id?' active':''}" onclick="selectAdmin(${m.id})">${m.title}</div>`
+/* ── ADMIN ────────────────────────────────────────────── */
+function renderAdmin() {
+  document.getElementById('meetingChips').innerHTML = meetings.map(m =>
+    `<div class="meeting-chip${adminSelected === m.id ? ' active' : ''}" onclick="selectAdmin('${m.id}')">${m.title}</div>`
   ).join('');
   renderApplicantTable();
 }
-function selectAdmin(id){ adminSelected=id; renderAdmin(); }
-function renderApplicantTable(){
-  const wrap=document.getElementById('applicantTableWrap');
-  if(!adminSelected){wrap.innerHTML=`<div class="empty-state">모임을 선택하면 신청자 명단이 표시돼요</div>`;return;}
-  const list=applicants[adminSelected]||[];
-  const m=meetings.find(x=>x.id===adminSelected);
-  if(!list.length){wrap.innerHTML=`<div class="empty-state">"${m?.title}" 신청자가 없어요</div>`;return;}
-  wrap.innerHTML=`<table class="applicant-table"><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>신청시각</th></tr></thead><tbody>${list.map((a,i)=>`<tr><td>${i+1}</td><td>${a.name}</td><td>${a.email}</td><td>${a.time}</td></tr>`).join('')}</tbody></table>`;
+function selectAdmin(id) { adminSelected = id; renderAdmin(); }
+
+async function renderApplicantTable() {
+  const wrap = document.getElementById('applicantTableWrap');
+  if (!adminSelected) { wrap.innerHTML = `<div class="empty-state">모임을 선택하면 신청자 명단이 표시돼요</div>`; return; }
+  wrap.innerHTML = `<div class="empty-state">불러오는 중...</div>`;
+  const snap = await db.collection('meetings').doc(adminSelected).collection('applicants').orderBy('time').get();
+  const m = meetings.find(x => x.id === adminSelected);
+  if (snap.empty) { wrap.innerHTML = `<div class="empty-state">"${m?.title}" 신청자가 없어요</div>`; return; }
+  const rows = snap.docs.map((d, i) => {
+    const a = d.data();
+    return `<tr><td>${i+1}</td><td>${a.name}</td><td>${a.email}</td><td>${a.time}</td></tr>`;
+  });
+  wrap.innerHTML = `<table class="applicant-table"><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>신청시각</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
 }
-function exportCSV(){
-  const rows=[['모임','책제목','저자','이름','이메일','신청시각']];
-  meetings.forEach(m=>(applicants[m.id]||[]).forEach(a=>rows.push([m.title,m.title,m.author,a.name,a.email,a.time])));
-  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download='THE_MORI_신청자명단.csv'; a.click();
+
+async function exportCSV() {
+  const rows = [['모임', '책제목', '저자', '이름', '이메일', '신청시각']];
+  for (const m of meetings) {
+    const snap = await db.collection('meetings').doc(m.id).collection('applicants').get();
+    snap.docs.forEach(d => {
+      const a = d.data();
+      rows.push([m.title, m.title, m.author, a.name, a.email, a.time]);
+    });
+  }
+  const csv = '\uFEFF' + rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8'}));
+  a.download = 'THE_MORI_신청자명단.csv'; a.click();
   showToast('CSV 다운로드 완료 ✅');
 }
 
-/* ── TABS ─────────────────────────────────────────────── */
-function switchTab(t,el){
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  el.classList.add('active');
-  ['tabAll','tabMy','tabWish','tabAdmin'].forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById({all:'tabAll',my:'tabMy',wish:'tabWish',admin:'tabAdmin'}[t]).style.display='block';
-  if(t==='admin') renderAdmin();
-}
+/* ── ADD MEETING ──────────────────────────────────────── */
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
 
-/* ── ADD MODAL ────────────────────────────────────────── */
-function openAddModal(){ document.getElementById('addModal').classList.add('open'); }
-function closeAddModal(){ document.getElementById('addModal').classList.remove('open'); }
-function addMeeting(){
-  const title=document.getElementById('f-title').value.trim();
-  const author=document.getElementById('f-author').value.trim();
-  const topic=document.getElementById('f-topic').value.trim();
-  const host=document.getElementById('f-host').value.trim();
-  const date=document.getElementById('f-date').value;
-  const time=document.getElementById('f-time').value;
-  const place=document.getElementById('f-place').value.trim();
-  const max=parseInt(document.getElementById('f-max').value)||8;
-  if(!title||!author||!topic||!host||!date||!place){showToast('필수 항목을 모두 입력해주세요');return;}
-  meetings.push({id:nextId++,title,author,topic,host,date,time,place,max,applied:0});
+async function addMeeting() {
+  const title = document.getElementById('f-title').value.trim();
+  const author = document.getElementById('f-author').value.trim();
+  const topic = document.getElementById('f-topic').value.trim();
+  const host = document.getElementById('f-host').value.trim();
+  const date = document.getElementById('f-date').value;
+  const time = document.getElementById('f-time').value;
+  const place = document.getElementById('f-place').value.trim();
+  const max = parseInt(document.getElementById('f-max').value) || 8;
+  if (!title || !author || !topic || !host || !date || !place) { showToast('필수 항목을 모두 입력해주세요'); return; }
+  await db.collection('meetings').add({title, author, topic, host, date, time, place, max, applied: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
   closeAddModal();
-  ['f-title','f-author','f-topic','f-host','f-place'].forEach(id=>document.getElementById(id).value='');
-  renderGrid();
+  ['f-title','f-author','f-topic','f-host','f-place'].forEach(id => document.getElementById(id).value = '');
   showToast('모임이 추가되었어요 ✅');
 }
 
-/* ── TOAST ────────────────────────────────────────────── */
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2800);
+/* ── TABS ─────────────────────────────────────────────── */
+function switchTab(t, el) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  ['tabAll','tabMy','tabWish','tabAdmin'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById({all:'tabAll',my:'tabMy',wish:'tabWish',admin:'tabAdmin'}[t]).style.display = 'block';
+  if (t === 'admin') renderAdmin();
 }
 
-updateNav(); renderAll();
+/* ── TOAST ────────────────────────────────────────────── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
 </script>
 </body>
 </html>
