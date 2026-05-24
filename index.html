@@ -196,6 +196,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
       <div class="form-section-title">신규멤버 추가 질문</div>
       <div id="dynamicQuestions"></div>
     </div>
+    <div id="existingQWrap" class="form-section" style="display:none">
+      <div class="form-section-title">기존멤버 추가 질문</div>
+      <div id="existingDynamicQuestions"></div>
+    </div>
     <button class="btn-submit-app" onclick="submitApplication()">신청서 제출하기</button>
   </div>
 </div>
@@ -289,7 +293,9 @@ auth.onAuthStateChanged(async fb=>{
   if(!doc.exists){await loadFormConfig();showScreen('form');updateNav();return;}
   const d=doc.data();userRole=d.role||'pending';
   if(userRole==='pending'){showScreen('waiting');updateNav();return;}
-  await loadUserData();await initMain();updateNav();
+  // 개인 신청 한도 적용
+  const userDoc=await db.collection('users').doc(user.email).get();
+  if(userDoc.exists&&userDoc.data().maxApply) maxApply=userDoc.data().maxApply;
 });
 
 async function initMain(){showScreen('main');listenMeetings();await loadFormConfig();}
@@ -319,7 +325,10 @@ function updateNav(){
 async function loadFormConfig(){
   const doc=await db.collection('settings').doc('formConfig').get();
   if(doc.exists)formConfig={...formConfig,...doc.data()};
-  else formConfig={notice:'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',questions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false}]};
+  else formConfig={notice:'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false}],existingQuestions:[]};
+  // 구버전 호환
+  if(!formConfig.newQuestions&&formConfig.questions) formConfig.newQuestions=formConfig.questions;
+  if(!formConfig.existingQuestions) formConfig.existingQuestions=[];
   const fn=document.getElementById('formNotice'),pt=document.getElementById('privacyText');
   if(fn)fn.textContent=formConfig.notice;if(pt)pt.textContent=formConfig.privacy;
   renderDynamicQuestions();
@@ -327,12 +336,24 @@ async function loadFormConfig(){
 
 function renderDynamicQuestions(){
   const w=document.getElementById('dynamicQuestions');if(!w)return;
-  w.innerHTML=formConfig.questions.map(q=>`<div class="field-group"><label>${q.text}${q.required?' *':''}</label>${q.type==='textarea'?`<textarea id="dq-${q.id}" rows="3"></textarea>`:`<input id="dq-${q.id}" type="text">`}</div>`).join('');
+  const qs=formConfig.newQuestions||formConfig.questions||[];
+  w.innerHTML=qs.map(q=>`<div class="field-group"><label>${q.text}${q.required?' *':''}</label>${q.type==='textarea'?`<textarea id="dq-${q.id}" rows="3"></textarea>`:`<input id="dq-${q.id}" type="text">`}</div>`).join('');
+}
+
+function renderExistingQuestions(){
+  const w=document.getElementById('existingDynamicQuestions');if(!w)return;
+  const qs=formConfig.existingQuestions||[];
+  if(!qs.length){w.innerHTML='';return;}
+  w.innerHTML=qs.map(q=>`<div class="field-group"><label>${q.text}${q.required?' *':''}</label>${q.type==='textarea'?`<textarea id="eq-${q.id}" rows="3"></textarea>`:`<input id="eq-${q.id}" type="text">`}</div>`).join('');
+  document.getElementById('existingQWrap').style.display=qs.length?'block':'none';
 }
 
 function toggleNewMemberFields(){
   const v=document.querySelector('input[name="memberType"]:checked')?.value;
   document.getElementById('newMemberFields').style.display=v==='신규멤버'?'block':'none';
+  renderExistingQuestions();
+  if(document.getElementById('existingQWrap'))
+    document.getElementById('existingQWrap').style.display=v==='기존멤버'&&(formConfig.existingQuestions||[]).length?'block':'none';
 }
 
 async function submitApplication(){
@@ -345,11 +366,11 @@ async function submitApplication(){
   if(!name||!gender||!birth||!phone||!memberType){showToast('기본 정보를 모두 입력해주세요');return;}
   const answers={};
   if(memberType==='신규멤버'){
-    for(const q of formConfig.questions){
-      const el=document.getElementById(`dq-${q.id}`);const val=el?el.value.trim():'';
-      if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}
-      answers[q.id]=val;
-    }
+    const qs=formConfig.newQuestions||formConfig.questions||[];
+    for(const q of qs){const el=document.getElementById(`dq-${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}answers[q.id]=val;}
+  } else {
+    const qs=formConfig.existingQuestions||[];
+    for(const q of qs){const el=document.getElementById(`eq-${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}answers[q.id]=val;}
   }
   await db.collection('users').doc(user.email).set({name,email:user.email,photo:user.photo||'',gender,birth,phone,memberType,answers,role:'pending',appliedAt:firebase.firestore.FieldValue.serverTimestamp()});
   userRole='pending';showScreen('waiting');updateNav();
