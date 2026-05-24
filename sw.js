@@ -1,4 +1,4 @@
-const CACHE = 'mori-apply-v4';
+const CACHE = 'mori-apply-v5';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
