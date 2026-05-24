@@ -129,7 +129,18 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-confirm-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.88rem}
 .btn-confirm-ok{flex:1;background:rgba(255,80,80,.8);border:none;color:#fff;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.88rem}
 .empty{text-align:center;padding:2.5rem;color:rgba(255,255,255,.22);font-size:.88rem}
-/* 모임관리 탭 */
+/* 멤버 선택 추가 모달 CSS */
+.member-select-list{display:flex;flex-direction:column;gap:.4rem;max-height:300px;overflow-y:auto;margin-bottom:.8rem}
+.member-select-row{display:flex;align-items:center;gap:10px;padding:.6rem .8rem;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s}
+.member-select-row:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+.member-select-row.selected{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3)}
+.member-select-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;overflow:hidden;flex-shrink:0}
+.member-select-av img{width:100%;height:100%;object-fit:cover}
+.member-select-info{flex:1;min-width:0}
+.member-select-name{font-size:.86rem;font-weight:600}
+.member-select-email{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:1px}
+.member-search-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:8px 11px;color:#fff;font-size:.84rem;outline:none;margin-bottom:.7rem}
+.member-search-input:focus{border-color:rgba(255,255,255,.3)}
 .manage-section{max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
 .manage-meeting-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:.8rem;overflow:hidden}
 .manage-meeting-header{padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .2s}
@@ -332,19 +343,17 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </div>
 
-<!-- 멤버 추가 모달 -->
+<!-- 멤버 선택 추가 모달 -->
 <div class="modal-overlay" id="addMemberModal">
-  <div class="modal" style="max-width:420px">
+  <div class="modal" style="max-width:480px">
     <h2 id="addMemberModalTitle">멤버 추가</h2>
-    <p style="font-size:.83rem;color:rgba(255,255,255,.45);margin-bottom:1rem">승인된 멤버의 이메일을 입력해 추가할 수 있어요</p>
-    <div class="form-group">
-      <label>이메일</label>
-      <input id="addMemberEmail" type="text" placeholder="example@email.com">
-    </div>
-    <div id="addMemberSearchResult" style="min-height:40px"></div>
+    <p style="font-size:.82rem;color:rgba(255,255,255,.4);margin-bottom:.8rem">참여자 또는 모임장 멤버를 선택해 추가할 수 있어요</p>
+    <input class="member-search-input" id="memberSearchInput" type="text" placeholder="이름 또는 이메일 검색" oninput="filterMemberSelectList()">
+    <div class="member-select-list" id="memberSelectList"></div>
+    <div id="addMemberSelectedInfo" style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:.8rem;min-height:1.2em"></div>
     <div class="modal-btns">
-      <button class="btn-modal-cancel" onclick="closeAddMemberModal()">닫기</button>
-      <button class="btn-modal-ok" onclick="searchMemberToAdd()">검색</button>
+      <button class="btn-modal-cancel" onclick="closeAddMemberModal()">취소</button>
+      <button class="btn-modal-ok" onclick="confirmAddSelectedMembers()">추가하기</button>
     </div>
   </div>
 </div>
@@ -372,6 +381,7 @@ let maxApply = 2, notifSent = {}, editingId = null, editingSmallId = null;
 let formConfig = {notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[]};
 let unsubMeetings = null, unsubSmall = null;
 let addMemberTarget = null; // {col, id, title}
+let selectedMemberEmails = new Set();
 
 function isAdmin()   { return userRole === 'admin'; }
 function isStaff()   { return userRole === 'staff'; }
