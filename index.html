@@ -321,15 +321,16 @@ let unsubMeetings=null;
 /* ══════════════════════════════════════════
    AUTH — 핵심 진입 로직
 ══════════════════════════════════════════ */
+
+// ── auth: 관리자도 Firestore에서 applied/wishlisted 읽기 ──
 auth.onAuthStateChanged(fb=>{
   if(!fb){
     user=null; userRole=null;
     showScreen('login'); updateNav();
     return;
   }
-  user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
+  user={name:fb.displayName, email:fb.email, photo:fb.photoURL, initial:fb.displayName?.[0]||'?'};
 
-  // 관리자도 Firestore에서 applied/wishlisted 읽어오기
   if(user.email===ADMIN_EMAIL){
     userRole='admin';
     db.collection('users').doc(user.email).get().then(doc=>{
@@ -339,10 +340,13 @@ auth.onAuthStateChanged(fb=>{
         wishlisted=new Set(data.wishlisted||[]);
         if(data.maxApply) maxApply=data.maxApply;
       } else {
-        // 관리자 문서 없으면 빈 문서 생성
+        // 관리자 문서 없으면 applied/wishlisted만 초기화 (role 저장 안 함)
         db.collection('users').doc(user.email).set({
-          name:user.name,email:user.email,photo:user.photo||'',
-          role:'admin',applied:[],wishlisted:[]
+          name: user.name,
+          email: user.email,
+          photo: user.photo||'',
+          applied: [],
+          wishlisted: []
         });
       }
       loadFormConfig().then(()=>{ initMain(); updateNav(); });
@@ -350,7 +354,7 @@ auth.onAuthStateChanged(fb=>{
     return;
   }
 
-  // 일반 유저 — Firestore에서 role 읽기
+  // 일반 유저
   db.collection('users').doc(user.email).get().then(doc=>{
     if(!doc.exists){
       loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
@@ -372,7 +376,7 @@ auth.onAuthStateChanged(fb=>{
       loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
     }
   }).catch(err=>{
-    console.error('Firestore 읽기 오류:',err);
+    console.error('Firestore 읽기 오류:', err);
     showToast('데이터 로드 오류. 새로고침해주세요.');
   });
 });
@@ -557,10 +561,18 @@ async function submitApplication(){
   showToast('신청서가 제출되었어요! 승인을 기다려주세요 📬');
 }
 
-/* ── USER DATA ────────────────────────────────────────── */
+
+// ── saveUserData: merge:true 로 applied/wishlisted만 저장 ──
 async function saveUserData(){
-  if(!user)return;
-  await db.collection('users').doc(user.email).set({applied:[...applied],wishlisted:[...wishlisted],updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  if(!user) return;
+  await db.collection('users').doc(user.email).set(
+    {
+      applied: [...applied],
+      wishlisted: [...wishlisted],
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    },
+    {merge: true}  // ← 다른 필드(role, name 등) 건드리지 않음
+  );
 }
 
 /* ── MEETINGS ─────────────────────────────────────────── */
