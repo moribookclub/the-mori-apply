@@ -16,9 +16,11 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Apple SD Gothic Neo',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
+
+/* NAV */
 nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
 .logo{font-size:1.2rem;font-weight:700;letter-spacing:.1em;white-space:nowrap}
-.logo span{color:rgba(255,255,255,.35);font-weight:300;font-size:.78rem;margin-left:6px;letter-spacing:.05em}
+.logo span{color:rgba(255,255,255,.35);font-weight:300;font-size:.78rem;margin-left:6px}
 .nav-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .btn-glogin{background:#fff;color:#0d1f3c;border:none;padding:8px 16px;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:opacity .2s}
 .btn-glogin:hover{opacity:.88}
@@ -31,15 +33,26 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .apply-counter{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:4px 12px;font-size:.78rem;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:4px;white-space:nowrap}
 .apply-counter strong{color:#fff;font-weight:700;font-size:.9rem}
 .apply-counter.warn{border-color:rgba(255,180,80,.4);color:rgba(255,200,100,.9)}
-.apply-counter.warn strong{color:rgba(255,210,100,1)}
 .apply-counter.full-quota{border-color:rgba(255,100,100,.4);color:rgba(255,130,130,.9)}
-.apply-counter.full-quota strong{color:rgba(255,150,150,1)}
+.role-badge{font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600}
+.role-staff{background:rgba(100,180,255,.15);border:1px solid rgba(100,180,255,.3);color:rgba(150,210,255,.9)}
+.role-admin{background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)}
+
+/* SCREENS */
+.screen{display:none}
+.screen.active{display:block}
+
+/* HERO */
 .hero{text-align:center;padding:3rem 1rem 2rem}
 .hero h1{font-size:2.2rem;font-weight:700;letter-spacing:.12em;margin-bottom:.4rem}
 .hero p{color:rgba(255,255,255,.45);font-size:.9rem;letter-spacing:.05em}
-.tab-bar{display:flex;justify-content:center;gap:0;margin:0 auto 2rem;max-width:440px;background:rgba(255,255,255,.06);border-radius:8px;padding:4px}
+
+/* TABS */
+.tab-bar{display:flex;justify-content:center;gap:0;margin:0 auto 2rem;max-width:480px;background:rgba(255,255,255,.06);border-radius:8px;padding:4px}
 .tab{flex:1;text-align:center;padding:8px 0;font-size:.82rem;cursor:pointer;border-radius:6px;color:rgba(255,255,255,.4);transition:all .2s;white-space:nowrap}
 .tab.active{background:#fff;color:#0d1f3c;font-weight:600}
+
+/* GRID / CARD */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.1rem;max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
 .card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;transition:transform .2s,border-color .2s}
 .card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.2)}
@@ -47,11 +60,11 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .card-header{padding:1.2rem 1.2rem 1rem;border-bottom:1px solid rgba(255,255,255,.07)}
 .card-top-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
 .card-top-left{display:flex;align-items:center;gap:7px}
+.card-top-right{display:flex;align-items:center;gap:4px}
 .card-badge{font-size:.7rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
 .badge-open{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
 .badge-closed{background:rgba(255,255,255,.05);color:rgba(255,255,255,.3)}
 .badge-mine{background:rgba(255,255,255,.9);color:#0d1f3c}
-.card-top-right{display:flex;align-items:center;gap:4px}
 .heart-btn{background:none;border:none;cursor:pointer;font-size:1.1rem;padding:2px 4px;transition:transform .15s;line-height:1}
 .heart-btn:hover{transform:scale(1.25)}
 .admin-btns{display:flex;gap:4px}
@@ -79,56 +92,137 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-apply.open{background:#fff;color:#0d1f3c}
 .btn-apply.open:hover{opacity:.88}
 .btn-apply.applied{background:transparent;border:1px solid rgba(255,100,100,.4);color:rgba(255,130,130,.85)}
-.btn-apply.applied:hover{border-color:rgba(255,100,100,.7)}
 .btn-apply.full{background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.25);cursor:not-allowed}
 .btn-apply.quota-full{background:transparent;border:1px solid rgba(255,180,80,.3);color:rgba(255,200,100,.6);cursor:not-allowed;font-size:.76rem}
+
+/* ADMIN BAR */
 .admin-bar{max-width:980px;margin:0 auto 1.2rem;padding:0 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .admin-quota-box{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 14px;font-size:.82rem;color:rgba(255,255,255,.6)}
 .quota-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#fff;width:44px;text-align:center;padding:3px 6px;font-size:.85rem;outline:none}
 .btn-admin{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.55);padding:8px 15px;border-radius:6px;font-size:.8rem;cursor:pointer;transition:all .2s}
 .btn-admin:hover{border-color:rgba(255,255,255,.4);color:#fff}
-.btn-quota-save{background:#fff;color:#0d1f3c;border:none;padding:5px 12px;border-radius:5px;font-size:.78rem;font-weight:600;cursor:pointer;transition:opacity .2s}
-.btn-quota-save:hover{opacity:.85}
+.btn-quota-save{background:#fff;color:#0d1f3c;border:none;padding:5px 12px;border-radius:5px;font-size:.78rem;font-weight:600;cursor:pointer}
+
+/* ADMIN SECTION */
 .admin-section{max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
-.section-title{font-size:.88rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:.88rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .meeting-select-bar{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
 .meeting-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:7px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;transition:all .2s}
 .meeting-chip.active{background:#fff;color:#0d1f3c;border-color:#fff;font-weight:600}
 .applicant-table{width:100%;border-collapse:collapse;font-size:.83rem}
 .applicant-table th{text-align:left;padding:9px 12px;color:rgba(255,255,255,.4);font-weight:500;border-bottom:1px solid rgba(255,255,255,.08);font-size:.75rem;letter-spacing:.05em;text-transform:uppercase}
-.applicant-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.85)}
+.applicant-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.85);vertical-align:middle}
 .applicant-table tr:last-child td{border-bottom:none}
 .applicant-table tr:hover td{background:rgba(255,255,255,.03)}
-.btn-csv{background:#fff;color:#0d1f3c;border:none;padding:7px 15px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;transition:opacity .2s}
-.btn-csv:hover{opacity:.85}
+.btn-csv{background:#fff;color:#0d1f3c;border:none;padding:7px 15px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer}
 .empty-state{text-align:center;padding:3rem;color:rgba(255,255,255,.22);font-size:.88rem}
 .my-section{max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
+
+/* MEMBER CARDS */
+.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:2rem}
+.member-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1.2rem;cursor:pointer;transition:all .2s}
+.member-card:hover{border-color:rgba(255,255,255,.25);transform:translateY(-2px)}
+.member-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.member-avatar{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:600;overflow:hidden;flex-shrink:0}
+.member-avatar img{width:100%;height:100%;object-fit:cover}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.member-email{font-size:.75rem;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.member-status{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.status-badge{font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
+.status-pending{background:rgba(255,180,50,.12);border:1px solid rgba(255,180,50,.3);color:rgba(255,200,80,.9)}
+.status-member{background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);color:rgba(130,230,130,.9)}
+.status-staff{background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9)}
+.status-admin{background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)}
+.member-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn-approve{background:#fff;color:#0d1f3c;border:none;padding:5px 12px;border-radius:5px;font-size:.75rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-approve:hover{opacity:.85}
+.btn-reject{background:transparent;border:1px solid rgba(255,100,100,.35);color:rgba(255,130,130,.8);padding:5px 12px;border-radius:5px;font-size:.75rem;cursor:pointer;transition:all .2s}
+.btn-reject:hover{border-color:rgba(255,100,100,.6);color:rgba(255,150,150,1)}
+.btn-grant-staff{background:rgba(100,180,255,.1);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9);padding:5px 12px;border-radius:5px;font-size:.75rem;cursor:pointer;transition:all .2s}
+.btn-grant-staff:hover{background:rgba(100,180,255,.2)}
+.btn-revoke-staff{background:rgba(255,150,50,.1);border:1px solid rgba(255,150,50,.3);color:rgba(255,180,80,.9);padding:5px 12px;border-radius:5px;font-size:.75rem;cursor:pointer}
+
+/* PENDING / WAITING SCREEN */
+.waiting-screen{max-width:500px;margin:6rem auto;padding:0 1.5rem;text-align:center}
+.waiting-icon{font-size:3.5rem;margin-bottom:1.5rem}
+.waiting-screen h2{font-size:1.4rem;font-weight:700;margin-bottom:.8rem}
+.waiting-screen p{color:rgba(255,255,255,.5);font-size:.9rem;line-height:1.7}
+
+/* APPLICATION FORM */
+.app-form-wrap{max-width:600px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.app-form-wrap h2{font-size:1.3rem;font-weight:700;margin-bottom:.5rem}
+.form-notice{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:1.2rem;font-size:.85rem;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:1.5rem;white-space:pre-wrap}
+.privacy-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:.8rem;color:rgba(255,255,255,.5);line-height:1.6;max-height:120px;overflow-y:auto;white-space:pre-wrap}
+.privacy-agree{display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;cursor:pointer;font-size:.85rem;color:rgba(255,255,255,.7)}
+.privacy-agree input{width:17px;height:17px;cursor:pointer;accent-color:#fff}
+.form-section{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.2rem;margin-bottom:1rem}
+.form-section-title{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.field-group{margin-bottom:1rem}
+.field-group:last-child{margin-bottom:0}
+.field-group label{display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:5px}
+.field-group input,.field-group textarea,.field-group select{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none;font-family:inherit}
+.field-group input:focus,.field-group textarea:focus,.field-group select:focus{border-color:rgba(255,255,255,.3)}
+.field-group textarea{resize:vertical;min-height:80px}
+.field-group select option{background:#0d1f3c}
+.radio-group{display:flex;gap:12px;flex-wrap:wrap}
+.radio-label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.88rem;color:rgba(255,255,255,.7)}
+.radio-label input{accent-color:#fff;width:16px;height:16px}
+.btn-submit-app{width:100%;background:#fff;color:#0d1f3c;border:none;padding:14px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:1.5rem;transition:opacity .2s}
+.btn-submit-app:hover{opacity:.88}
+
+/* TOAST */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;color:#0d1f3c;padding:11px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem}
-.confirm-overlay.open{display:flex}
-.confirm-box{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:1.8rem;width:100%;max-width:340px;text-align:center}
-.confirm-box p{font-size:.95rem;color:rgba(255,255,255,.8);margin-bottom:1.5rem;line-height:1.6}
-.confirm-box strong{color:#fff}
-.confirm-btns{display:flex;gap:10px}
-.btn-confirm-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.88rem}
-.btn-confirm-ok{flex:1;background:rgba(255,80,80,.8);border:none;color:#fff;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.88rem}
-.btn-confirm-ok:hover{background:rgba(255,80,80,1)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.open{display:flex}
-.modal{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1.8rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
+.modal{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1.8rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
 .modal h2{font-size:1.1rem;font-weight:600;margin-bottom:1.4rem}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form-group{margin-bottom:.9rem}
 .form-group label{display:block;font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:5px}
-.form-group input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 11px;color:#fff;font-size:.85rem;outline:none}
-.form-group input:focus{border-color:rgba(255,255,255,.35)}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 11px;color:#fff;font-size:.85rem;outline:none;font-family:inherit}
+.form-group textarea{resize:vertical;min-height:70px}
+.form-group input:focus,.form-group textarea:focus{border-color:rgba(255,255,255,.35)}
 .modal-btns{display:flex;gap:10px;margin-top:1.4rem}
 .btn-modal-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.85rem}
 .btn-modal-ok{flex:2;background:#fff;color:#0d1f3c;border:none;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.85rem}
-.btn-modal-ok:hover{opacity:.88}
 .divider{height:1px;background:rgba(255,255,255,.07);margin:.6rem 0 1rem}
 .form-section-label{font-size:.72rem;color:rgba(255,255,255,.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.8rem;font-weight:600}
+
+/* CONFIRM */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:1.8rem;width:100%;max-width:340px;text-align:center}
+.confirm-box p{font-size:.95rem;color:rgba(255,255,255,.8);margin-bottom:1.5rem;line-height:1.6}
+.confirm-btns{display:flex;gap:10px}
+.btn-confirm-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.88rem}
+.btn-confirm-ok{flex:1;background:rgba(255,80,80,.8);border:none;color:#fff;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.88rem}
+
+/* PROFILE MODAL */
+.profile-section{margin-bottom:1.2rem}
+.profile-section-title{font-size:.75rem;color:rgba(255,255,255,.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.7rem;font-weight:600}
+.profile-row{display:flex;gap:8px;margin-bottom:.5rem;font-size:.85rem}
+.profile-label{color:rgba(255,255,255,.4);min-width:80px;flex-shrink:0}
+.profile-val{color:rgba(255,255,255,.85);flex:1}
+.profile-answer{background:rgba(255,255,255,.05);border-radius:7px;padding:.8rem;font-size:.84rem;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:.6rem;white-space:pre-wrap}
+.profile-q{font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.3rem}
+.applied-meeting-chip{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;font-size:.78rem;color:rgba(255,255,255,.7);margin:3px}
+
+/* FORM EDITOR */
+.question-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem;margin-bottom:.6rem;display:flex;align-items:flex-start;gap:10px}
+.question-item-text{flex:1;font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.4}
+.question-item-type{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:2px}
+.question-item-btns{display:flex;gap:5px;flex-shrink:0}
+.btn-q-edit,.btn-q-del{background:none;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:3px 8px;font-size:.72rem;cursor:pointer;transition:all .15s}
+.btn-q-edit{color:rgba(255,255,255,.45)}
+.btn-q-edit:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.btn-q-del{color:rgba(255,100,100,.5)}
+.btn-q-del:hover{color:rgba(255,130,130,.9);border-color:rgba(255,100,100,.4)}
+.btn-add-q{background:transparent;border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.45);padding:8px;border-radius:8px;width:100%;cursor:pointer;font-size:.83rem;transition:all .2s;margin-top:.3rem}
+.btn-add-q:hover{border-color:rgba(255,255,255,.4);color:#fff}
 </style>
 </head>
 <body>
@@ -143,55 +237,137 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </nav>
 
-<div class="hero">
-  <h1>THE MORI APPLY</h1>
-  <p>독서모임 신청 페이지</p>
+<!-- ① 로그인 전 -->
+<div id="screenLogin" class="screen active">
+  <div class="hero"><h1>THE MORI APPLY</h1><p>독서모임 신청 페이지</p></div>
+  <div style="text-align:center;padding:2rem 1rem">
+    <p style="color:rgba(255,255,255,.45);font-size:.9rem;margin-bottom:1.5rem">Google 계정으로 로그인해 주세요</p>
+    <button class="btn-glogin" style="margin:0 auto" onclick="googleLogin()">
+      <svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+      Google로 로그인
+    </button>
+  </div>
 </div>
 
-<div class="tab-bar">
-  <div class="tab active" onclick="switchTab('all',this)">전체 모임</div>
-  <div class="tab" onclick="switchTab('my',this)">내 신청</div>
-  <div class="tab" onclick="switchTab('wish',this)">찜 목록</div>
-  <div class="tab" id="adminTab" onclick="switchTab('admin',this)" style="display:none">관리자</div>
-</div>
-
-<div id="tabAll">
-  <div id="adminAddBar" class="admin-bar" style="display:none">
-    <div class="admin-quota-box">
-      1인 최대 신청 수:&nbsp;
-      <input class="quota-input" id="quotaInput" type="number" min="1" max="10" value="2">
-      <span style="color:rgba(255,255,255,.35)">개</span>
-      <button class="btn-quota-save" onclick="saveQuota()">저장</button>
+<!-- ② 신청서 작성 -->
+<div id="screenForm" class="screen">
+  <div class="app-form-wrap">
+    <h2>모임 신청서</h2>
+    <p style="color:rgba(255,255,255,.4);font-size:.82rem;margin-bottom:1.2rem">아래 내용을 작성해 주세요</p>
+    <div class="form-notice" id="formNotice"></div>
+    <div class="privacy-box" id="privacyText"></div>
+    <label class="privacy-agree"><input type="checkbox" id="privacyCheck"> 개인정보 수집 및 이용에 동의합니다</label>
+    <div class="form-section">
+      <div class="form-section-title">기본 정보</div>
+      <div class="field-group"><label>성함 *</label><input id="af-name" type="text" placeholder="실명을 입력해주세요"></div>
+      <div class="field-group"><label>성별 *</label>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="gender" value="남성"> 남성</label>
+          <label class="radio-label"><input type="radio" name="gender" value="여성"> 여성</label>
+          <label class="radio-label"><input type="radio" name="gender" value="기타"> 기타</label>
+        </div>
+      </div>
+      <div class="field-group"><label>생년월일 *</label><input id="af-birth" type="date"></div>
+      <div class="field-group"><label>연락처 *</label><input id="af-phone" type="tel" placeholder="010-0000-0000"></div>
+      <div class="field-group"><label>멤버 구분 *</label>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="memberType" value="신규멤버" onchange="toggleNewMemberFields()"> 신규멤버</label>
+          <label class="radio-label"><input type="radio" name="memberType" value="기존멤버" onchange="toggleNewMemberFields()"> 기존멤버</label>
+        </div>
+      </div>
     </div>
-    <button class="btn-admin" onclick="openAddModal()">+ 모임 추가</button>
-  </div>
-  <div id="cardGrid" class="grid"><div class="empty-state">모임 불러오는 중...</div></div>
-</div>
-
-<div id="tabMy" style="display:none">
-  <div class="my-section">
-    <div class="section-title">신청한 모임</div>
-    <div class="grid" id="myGrid"></div>
+    <div id="newMemberFields" class="form-section" style="display:none">
+      <div class="form-section-title">신규멤버 추가 질문</div>
+      <div id="dynamicQuestions"></div>
+    </div>
+    <button class="btn-submit-app" onclick="submitApplication()">신청서 제출하기</button>
   </div>
 </div>
 
-<div id="tabWish" style="display:none">
-  <div class="my-section">
-    <div class="section-title">찜한 모임 <span style="font-size:.75rem;color:rgba(255,255,255,.3);font-weight:400;text-transform:none;letter-spacing:0">자리 나면 알림이 와요</span></div>
-    <div class="grid" id="wishGrid"></div>
+<!-- ③ 대기 화면 -->
+<div id="screenWaiting" class="screen">
+  <div class="waiting-screen">
+    <div class="waiting-icon">⏳</div>
+    <h2>신청서 검토 중이에요</h2>
+    <p style="margin-bottom:1.5rem">관리자가 신청서를 확인한 후 승인해드릴게요.<br>승인되면 모임 신청 페이지로 이동할 수 있어요.</p>
+    <button class="btn-sm" onclick="auth.signOut()">로그아웃</button>
   </div>
 </div>
 
-<div id="tabAdmin" style="display:none">
-  <div class="admin-section">
-    <div class="section-title">신청자 명단 <button class="btn-csv" onclick="exportCSV()">CSV 내보내기</button></div>
-    <div class="meeting-select-bar" id="meetingChips"></div>
-    <div id="applicantTableWrap"></div>
+<!-- ④ 메인 모임 신청 화면 -->
+<div id="screenMain" class="screen">
+  <div class="hero"><h1>THE MORI APPLY</h1><p>독서모임 신청 페이지</p></div>
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('all',this)">전체 모임</div>
+    <div class="tab" onclick="switchTab('my',this)">내 신청</div>
+    <div class="tab" onclick="switchTab('wish',this)">찜 목록</div>
+    <div class="tab" id="adminTab" onclick="switchTab('admin',this)" style="display:none">관리자</div>
+  </div>
+
+  <div id="tabAll">
+    <div id="adminAddBar" class="admin-bar" style="display:none">
+      <div class="admin-quota-box">
+        1인 최대 신청 수:&nbsp;
+        <input class="quota-input" id="quotaInput" type="number" min="1" max="10" value="2">
+        <span style="color:rgba(255,255,255,.35)">개</span>
+        <button class="btn-quota-save" onclick="saveQuota()">저장</button>
+      </div>
+      <button class="btn-admin" onclick="openAddModal()">+ 모임 추가</button>
+    </div>
+    <div id="cardGrid" class="grid"><div class="empty-state">모임 불러오는 중...</div></div>
+  </div>
+
+  <div id="tabMy" style="display:none">
+    <div class="my-section"><div class="section-title">신청한 모임</div><div class="grid" id="myGrid"></div></div>
+  </div>
+  <div id="tabWish" style="display:none">
+    <div class="my-section">
+      <div class="section-title">찜한 모임 <span style="font-size:.75rem;color:rgba(255,255,255,.3);font-weight:400;text-transform:none;letter-spacing:0">자리 나면 알림이 와요</span></div>
+      <div class="grid" id="wishGrid"></div>
+    </div>
+  </div>
+
+  <!-- 관리자 탭 -->
+  <div id="tabAdmin" style="display:none">
+    <div class="admin-section">
+
+      <!-- 신청자 관리 -->
+      <div class="section-title" style="margin-bottom:.5rem">멤버 관리</div>
+      <div style="display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap">
+        <button class="meeting-chip active" onclick="filterMembers('pending',this)">대기중</button>
+        <button class="meeting-chip" onclick="filterMembers('member',this)">참여자</button>
+        <button class="meeting-chip" onclick="filterMembers('staff',this)">운영진</button>
+        <button class="meeting-chip" onclick="filterMembers('all',this)">전체</button>
+      </div>
+      <div class="member-grid" id="memberGrid"></div>
+
+      <!-- 모임 신청자 명단 -->
+      <div class="section-title">모임 신청자 명단 <button class="btn-csv" onclick="exportCSV()">CSV 내보내기</button></div>
+      <div class="meeting-select-bar" id="meetingChips"></div>
+      <div id="applicantTableWrap"></div>
+
+      <!-- 신청서 양식 편집 -->
+      <div class="section-title" style="margin-top:2rem">신청서 양식 편집</div>
+      <div style="margin-bottom:1rem">
+        <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.4rem">안내문</div>
+        <textarea id="editorNotice" rows="4" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px;color:#fff;font-size:.85rem;outline:none;resize:vertical;font-family:inherit"></textarea>
+      </div>
+      <div style="margin-bottom:1rem">
+        <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.4rem">개인정보 동의 문구</div>
+        <textarea id="editorPrivacy" rows="4" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px;color:#fff;font-size:.85rem;outline:none;resize:vertical;font-family:inherit"></textarea>
+      </div>
+      <button class="btn-quota-save" style="margin-bottom:1.5rem" onclick="saveFormTexts()">안내문 / 동의문구 저장</button>
+
+      <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">신규멤버 추가 질문 (순서대로 표시)</div>
+      <div id="questionEditor"></div>
+      <button class="btn-add-q" onclick="openAddQuestionModal()">+ 질문 추가</button>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<!-- 삭제 확인 -->
 <div class="confirm-overlay" id="confirmBox">
   <div class="confirm-box">
     <p id="confirmMsg"></p>
@@ -202,6 +378,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </div>
 
+<!-- 모임 추가/수정 모달 -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
     <h2 id="modalTitle">새 모임 추가</h2>
@@ -229,171 +406,332 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </div>
 
+<!-- 질문 추가/수정 모달 -->
+<div class="modal-overlay" id="questionModal">
+  <div class="modal">
+    <h2 id="qModalTitle">질문 추가</h2>
+    <div class="form-group"><label>질문 내용 *</label><textarea id="q-text" rows="2" placeholder="예) 본인의 삶에 영향을 미친 책은?"></textarea></div>
+    <div class="form-group"><label>답변 형식</label>
+      <select id="q-type">
+        <option value="textarea">장문 텍스트</option>
+        <option value="text">단문 텍스트</option>
+      </select>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="q-required" style="width:17px;height:17px;accent-color:#fff">
+      <label style="font-size:.85rem;color:rgba(255,255,255,.6)">필수 질문</label>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeQuestionModal()">취소</button>
+      <button class="btn-modal-ok" id="qModalOkBtn" onclick="submitQuestion()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 멤버 프로필 모달 -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal" style="max-width:580px">
+    <h2 id="profileModalTitle">멤버 프로필</h2>
+    <div id="profileModalContent"></div>
+    <div class="modal-btns" style="margin-top:1rem">
+      <button class="btn-modal-cancel" onclick="closeProfileModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
 firebase.initializeApp({
-  apiKey: "AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",
-  authDomain: "the-mori-apply.firebaseapp.com",
-  projectId: "the-mori-apply",
-  storageBucket: "the-mori-apply.firebasestorage.app",
-  messagingSenderId: "306904700616",
-  appId: "1:306904700616:web:2217470905df10786837fd"
+  apiKey:"AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",
+  authDomain:"the-mori-apply.firebaseapp.com",
+  projectId:"the-mori-apply",
+  storageBucket:"the-mori-apply.firebasestorage.app",
+  messagingSenderId:"306904700616",
+  appId:"1:306904700616:web:2217470905df10786837fd"
 });
 const auth = firebase.auth();
 const db = firebase.firestore();
 const ADMIN_EMAIL = 'nohjunhyouk@gmail.com';
 
-let user = null;
-let meetings = [];
-let applied = new Set();
-let wishlisted = new Set();
-let maxApply = 2;
-let notifSent = {};
-let adminSelected = null;
-let editingId = null;
+let user = null, userRole = null;
+let meetings = [], applied = new Set(), wishlisted = new Set();
+let maxApply = 2, notifSent = {}, adminSelected = null, editingId = null;
+let memberFilter = 'pending';
+let formConfig = {notice:'', privacy:'', questions:[]};
+let editingQId = null;
 
+/* ── AUTH & ROLE ──────────────────────────────────────── */
 auth.onAuthStateChanged(async fb => {
-  if (fb) {
-    user = {name:fb.displayName, email:fb.email, photo:fb.photoURL, initial:fb.displayName?.[0]||'?'};
-    await loadUserData();
+  if (!fb) { user=null; userRole=null; showScreen('login'); updateNav(); return; }
+  user = {name:fb.displayName, email:fb.email, photo:fb.photoURL, initial:fb.displayName?.[0]||'?'};
+  if (user.email === ADMIN_EMAIL) {
+    userRole = 'admin';
+    await initMain();
   } else {
-    user = null; applied = new Set(); wishlisted = new Set();
+    const doc = await db.collection('users').doc(user.email).get();
+    if (!doc.exists) { showScreen('form'); await loadFormConfig(); updateNav(); return; }
+    const d = doc.data();
+    userRole = d.role || 'pending';
+    if (userRole === 'pending') { showScreen('waiting'); updateNav(); return; }
+    await loadUserData();
+    await initMain();
   }
-  updateNav(); renderAll();
-  listenMeetings();
+  updateNav();
 });
 
+async function initMain() {
+  showScreen('main');
+  listenMeetings();
+  if (isAdmin() || isStaff()) { await loadFormConfig(); renderFormEditor(); }
+}
+
 function googleLogin() {
-  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => showToast('로그인 실패: ' + e.message));
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>showToast('로그인 실패: '+e.message));
 }
 function logout() { auth.signOut(); }
-function isAdmin() { return user && user.email === ADMIN_EMAIL; }
+function isAdmin() { return userRole==='admin'; }
+function isStaff() { return userRole==='staff'; }
+function canManageMeetings() { return isAdmin()||isStaff(); }
 function myApplyCount() { return applied.size; }
 
-let unsubMeetings = null;
-function listenMeetings() {
-  if (unsubMeetings) return;
-  unsubMeetings = db.collection('meetings').orderBy('date','asc').onSnapshot(snap => {
-    meetings = snap.docs.map(d => ({id:d.id, ...d.data()}));
-    db.collection('settings').doc('config').get().then(d => {
-      if (d.exists && d.data().maxApply) {
-        maxApply = d.data().maxApply;
-        const qi = document.getElementById('quotaInput');
-        if (qi) qi.value = maxApply;
-      }
-    });
-    renderAll();
-    updateNav();
-  });
+/* ── SCREEN ───────────────────────────────────────────── */
+function showScreen(s) {
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  const map = {login:'screenLogin',form:'screenForm',waiting:'screenWaiting',main:'screenMain'};
+  document.getElementById(map[s]).classList.add('active');
 }
 
-async function loadUserData() {
-  if (!user) return;
-  const doc = await db.collection('users').doc(user.email).get();
-  if (doc.exists) {
-    const d = doc.data();
-    applied = new Set(d.applied || []);
-    wishlisted = new Set(d.wishlisted || []);
-  }
-}
-async function saveUserData() {
-  if (!user) return;
-  await db.collection('users').doc(user.email).set({
-    name:user.name, email:user.email,
-    applied:[...applied], wishlisted:[...wishlisted],
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  }, {merge:true});
-}
-
-async function applyMeeting(id) {
-  if (!user) { showToast('로그인 후 신청할 수 있어요'); return; }
-  const m = meetings.find(x => x.id === id); if (!m) return;
-  const mRef = db.collection('meetings').doc(id);
-  const aRef = mRef.collection('applicants').doc(user.email);
-  if (applied.has(id)) {
-    applied.delete(id);
-    await aRef.delete();
-    await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
-    checkWishNotif(id, {...m, applied:m.applied-1});
-    showToast('신청이 취소되었어요');
-  } else {
-    if (m.applied >= m.max) { showToast('정원이 마감되었어요'); return; }
-    if (myApplyCount() >= maxApply) { showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`); return; }
-    applied.add(id);
-    await aRef.set({name:user.name, email:user.email, time:new Date().toLocaleString('ko-KR'), photo:user.photo||''});
-    await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
-    showToast('신청 완료! 모임에서 만나요 📚');
-  }
-  await saveUserData();
-  updateNav(); renderAll();
-}
-
-async function toggleWish(id) {
-  if (!user) { showToast('로그인 후 찜할 수 있어요'); return; }
-  const m = meetings.find(x => x.id === id);
-  if (wishlisted.has(id)) {
-    wishlisted.delete(id); notifSent[id] = false;
-    showToast('찜 목록에서 제거했어요');
-  } else {
-    wishlisted.add(id);
-    showToast('찜했어요 ❤️  자리 나면 알려드릴게요');
-    if (m && m.applied < m.max) pushNotif(`💺 "${m.title}" 모임에 지금 자리 있어요!`);
-  }
-  await saveUserData(); renderAll();
-}
-function checkWishNotif(id, m) {
-  if (wishlisted.has(id) && !applied.has(id) && m.applied < m.max && !notifSent[id]) {
-    notifSent[id] = true;
-    setTimeout(() => { if (wishlisted.has(id) && !applied.has(id)) pushNotif(`💺 찜한 "${m.title}"에 자리가 났어요!`); }, 700);
-  }
-}
-function pushNotif(msg) {
-  if ('Notification' in window && Notification.permission === 'granted') new Notification('THE MORI APPLY', {body:msg});
-  else if ('Notification' in window && Notification.permission !== 'denied') Notification.requestPermission().then(p => p==='granted' ? new Notification('THE MORI APPLY', {body:msg}) : showToast(msg));
-  else showToast(msg);
-}
-
-async function saveQuota() {
-  const v = parseInt(document.getElementById('quotaInput').value) || 1;
-  maxApply = Math.max(1, v);
-  await db.collection('settings').doc('config').set({maxApply}, {merge:true});
-  showToast(`1인 최대 신청 수를 ${maxApply}개로 설정했어요`);
-  renderAll(); updateNav();
-}
-
+/* ── NAV ──────────────────────────────────────────────── */
 function updateNav() {
   const nr = document.getElementById('navRight');
   if (!user) {
-    nr.innerHTML = `<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;
-  } else {
-    const cnt = myApplyCount();
-    const cls = cnt >= maxApply ? 'full-quota' : cnt >= maxApply-1 ? 'warn' : '';
-    const av = user.photo ? `<img src="${user.photo}" alt="">` : user.initial;
-    nr.innerHTML = `<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
+    nr.innerHTML=`<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;
+    return;
   }
-  document.getElementById('adminTab').style.display = isAdmin() ? 'block' : 'none';
-  document.getElementById('adminAddBar').style.display = isAdmin() ? 'flex' : 'none';
+  const cnt = myApplyCount();
+  const cls = cnt>=maxApply?'full-quota':cnt>=maxApply-1?'warn':'';
+  const av = user.photo?`<img src="${user.photo}" alt="">`:user.initial;
+  const roleBadge = isAdmin()?`<span class="role-badge role-admin">관리자</span>`:isStaff()?`<span class="role-badge role-staff">운영진</span>`:'';
+  nr.innerHTML=`${roleBadge}${userRole==='member'||isAdmin()||isStaff()?`<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div>`:''}<div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
+  const at=document.getElementById('adminTab'), ab=document.getElementById('adminAddBar');
+  if(at) at.style.display=isAdmin()?'block':'none';
+  if(ab) ab.style.display=canManageMeetings()?'flex':'none';
 }
 
-function cardHTML(m) {
-  const isFull = m.applied >= m.max, isApplied = applied.has(m.id), isWish = wishlisted.has(m.id);
-  const isQuotaFull = user && myApplyCount() >= maxApply && !isApplied;
-  const pct = Math.round((m.applied/m.max)*100);
-  const dateStr = new Date(m.date).toLocaleDateString('ko-KR', {month:'long',day:'numeric',weekday:'short'});
-  let badge, btnCls, btnTxt;
-  if (isApplied)        { badge=`<span class="card-badge badge-mine">신청완료</span>`; btnCls='applied'; btnTxt='신청취소'; }
-  else if (isFull)      { badge=`<span class="card-badge badge-closed">마감</span>`; btnCls='full'; btnTxt='마감'; }
-  else if (isQuotaFull) { badge=`<span class="card-badge badge-open">신청가능</span>`; btnCls='quota-full'; btnTxt='한도초과'; }
-  else                  { badge=`<span class="card-badge badge-open">신청가능</span>`; btnCls='open'; btnTxt='신청하기'; }
-  const clickable = isApplied || (!isFull && !isQuotaFull);
-  const adminBtns = isAdmin() ? `<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}')">삭제</button></div>` : '';
+/* ── FORM CONFIG ──────────────────────────────────────── */
+async function loadFormConfig() {
+  const doc = await db.collection('settings').doc('formConfig').get();
+  if (doc.exists) formConfig = {...formConfig, ...doc.data()};
+  else formConfig = {
+    notice:'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',
+    privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',
+    questions:[
+      {id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true},
+      {id:'q2',text:'모리를 알게 된 경로',type:'text',required:true},
+      {id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true},
+      {id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false},
+    ]
+  };
+  document.getElementById('formNotice').textContent = formConfig.notice;
+  document.getElementById('privacyText').textContent = formConfig.privacy;
+  renderDynamicQuestions();
+}
+
+function renderDynamicQuestions() {
+  const wrap = document.getElementById('dynamicQuestions');
+  if (!wrap) return;
+  wrap.innerHTML = formConfig.questions.map(q=>`
+    <div class="field-group">
+      <label>${q.text}${q.required?' *':''}</label>
+      ${q.type==='textarea'?`<textarea id="dq-${q.id}" rows="3"></textarea>`:`<input id="dq-${q.id}" type="text">`}
+    </div>`).join('');
+}
+
+function renderFormEditor() {
+  const ne=document.getElementById('editorNotice'), pe=document.getElementById('editorPrivacy');
+  if(ne) ne.value=formConfig.notice||'';
+  if(pe) pe.value=formConfig.privacy||'';
+  const qe=document.getElementById('questionEditor');
+  if(!qe) return;
+  qe.innerHTML = formConfig.questions.map(q=>`
+    <div class="question-item">
+      <div style="flex:1">
+        <div class="question-item-text">${q.text}${q.required?' <span style="color:rgba(255,150,150,.8);font-size:.75rem">*필수</span>':''}</div>
+        <div class="question-item-type">${q.type==='textarea'?'장문':'단문'}</div>
+      </div>
+      <div class="question-item-btns">
+        <button class="btn-q-edit" onclick="openEditQuestionModal('${q.id}')">수정</button>
+        <button class="btn-q-del" onclick="deleteQuestion('${q.id}')">삭제</button>
+      </div>
+    </div>`).join('');
+}
+
+async function saveFormTexts() {
+  formConfig.notice = document.getElementById('editorNotice').value;
+  formConfig.privacy = document.getElementById('editorPrivacy').value;
+  await db.collection('settings').doc('formConfig').set(formConfig);
+  showToast('저장되었어요 ✅');
+}
+
+/* ── QUESTION MODAL ───────────────────────────────────── */
+function openAddQuestionModal() {
+  editingQId=null;
+  document.getElementById('qModalTitle').textContent='질문 추가';
+  document.getElementById('qModalOkBtn').textContent='추가';
+  document.getElementById('q-text').value='';
+  document.getElementById('q-type').value='textarea';
+  document.getElementById('q-required').checked=false;
+  document.getElementById('questionModal').classList.add('open');
+}
+function openEditQuestionModal(id) {
+  const q=formConfig.questions.find(x=>x.id===id); if(!q) return;
+  editingQId=id;
+  document.getElementById('qModalTitle').textContent='질문 수정';
+  document.getElementById('qModalOkBtn').textContent='저장';
+  document.getElementById('q-text').value=q.text;
+  document.getElementById('q-type').value=q.type;
+  document.getElementById('q-required').checked=q.required;
+  document.getElementById('questionModal').classList.add('open');
+}
+function closeQuestionModal() { document.getElementById('questionModal').classList.remove('open'); editingQId=null; }
+async function submitQuestion() {
+  const text=document.getElementById('q-text').value.trim();
+  if(!text){showToast('질문 내용을 입력해주세요');return;}
+  const type=document.getElementById('q-type').value;
+  const required=document.getElementById('q-required').checked;
+  if(editingQId) {
+    formConfig.questions=formConfig.questions.map(q=>q.id===editingQId?{...q,text,type,required}:q);
+  } else {
+    formConfig.questions.push({id:'q'+Date.now(),text,type,required});
+  }
+  await db.collection('settings').doc('formConfig').set(formConfig);
+  closeQuestionModal(); renderFormEditor(); renderDynamicQuestions();
+  showToast(editingQId?'질문이 수정되었어요':'질문이 추가되었어요');
+}
+async function deleteQuestion(id) {
+  formConfig.questions=formConfig.questions.filter(q=>q.id!==id);
+  await db.collection('settings').doc('formConfig').set(formConfig);
+  renderFormEditor(); renderDynamicQuestions();
+  showToast('질문이 삭제되었어요');
+}
+
+/* ── APPLICATION SUBMIT ───────────────────────────────── */
+function toggleNewMemberFields() {
+  const val=document.querySelector('input[name="memberType"]:checked')?.value;
+  document.getElementById('newMemberFields').style.display=val==='신규멤버'?'block':'none';
+}
+
+async function submitApplication() {
+  if(!document.getElementById('privacyCheck').checked){showToast('개인정보 수집 동의가 필요해요');return;}
+  const name=document.getElementById('af-name').value.trim();
+  const gender=document.querySelector('input[name="gender"]:checked')?.value;
+  const birth=document.getElementById('af-birth').value;
+  const phone=document.getElementById('af-phone').value.trim();
+  const memberType=document.querySelector('input[name="memberType"]:checked')?.value;
+  if(!name||!gender||!birth||!phone||!memberType){showToast('기본 정보를 모두 입력해주세요');return;}
+  const answers={};
+  if(memberType==='신규멤버') {
+    for(const q of formConfig.questions){
+      const el=document.getElementById(`dq-${q.id}`);
+      const val=el?el.value.trim():'';
+      if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}
+      answers[q.id]=val;
+    }
+  }
+  await db.collection('users').doc(user.email).set({
+    name, email:user.email, photo:user.photo||'', gender, birth, phone, memberType,
+    answers, role:'pending', appliedAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  userRole='pending';
+  showScreen('waiting'); updateNav();
+  showToast('신청서가 제출되었어요! 승인을 기다려주세요 📬');
+}
+
+/* ── USER DATA ────────────────────────────────────────── */
+async function loadUserData() {
+  if(!user) return;
+  const doc=await db.collection('users').doc(user.email).get();
+  if(doc.exists){const d=doc.data();applied=new Set(d.applied||[]);wishlisted=new Set(d.wishlisted||[]);}
+}
+async function saveUserData() {
+  if(!user) return;
+  await db.collection('users').doc(user.email).set({applied:[...applied],wishlisted:[...wishlisted],updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+}
+
+/* ── MEETINGS ─────────────────────────────────────────── */
+let unsubMeetings=null;
+function listenMeetings() {
+  if(unsubMeetings) return;
+  unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
+    meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
+    db.collection('settings').doc('config').get().then(d=>{
+      if(d.exists&&d.data().maxApply){maxApply=d.data().maxApply;const qi=document.getElementById('quotaInput');if(qi)qi.value=maxApply;}
+    });
+    renderAll(); updateNav();
+  });
+}
+
+async function applyMeeting(id) {
+  if(!user){showToast('로그인 후 신청할 수 있어요');return;}
+  const m=meetings.find(x=>x.id===id); if(!m) return;
+  const mRef=db.collection('meetings').doc(id);
+  const aRef=mRef.collection('applicants').doc(user.email);
+  if(applied.has(id)){
+    applied.delete(id);await aRef.delete();await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
+    checkWishNotif(id,{...m,applied:m.applied-1});showToast('신청이 취소되었어요');
+  } else {
+    if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
+    if(myApplyCount()>=maxApply){showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`);return;}
+    applied.add(id);
+    await aRef.set({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});
+    await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
+    showToast('신청 완료! 모임에서 만나요 📚');
+  }
+  await saveUserData(); updateNav(); renderAll();
+}
+
+async function toggleWish(id) {
+  if(!user){showToast('로그인 후 찜할 수 있어요');return;}
+  const m=meetings.find(x=>x.id===id);
+  if(wishlisted.has(id)){wishlisted.delete(id);notifSent[id]=false;showToast('찜 목록에서 제거했어요');}
+  else{wishlisted.add(id);showToast('찜했어요 ❤️');if(m&&m.applied<m.max)pushNotif(`💺 "${m.title}" 모임에 자리 있어요!`);}
+  await saveUserData(); renderAll();
+}
+function checkWishNotif(id,m){
+  if(wishlisted.has(id)&&!applied.has(id)&&m.applied<m.max&&!notifSent[id]){
+    notifSent[id]=true;setTimeout(()=>{if(wishlisted.has(id)&&!applied.has(id))pushNotif(`💺 찜한 "${m.title}"에 자리가 났어요!`);},700);
+  }
+}
+function pushNotif(msg){
+  if('Notification'in window&&Notification.permission==='granted')new Notification('THE MORI APPLY',{body:msg});
+  else if('Notification'in window&&Notification.permission!=='denied')Notification.requestPermission().then(p=>p==='granted'?new Notification('THE MORI APPLY',{body:msg}):showToast(msg));
+  else showToast(msg);
+}
+
+async function saveQuota(){
+  const v=parseInt(document.getElementById('quotaInput').value)||1;
+  maxApply=Math.max(1,v);
+  await db.collection('settings').doc('config').set({maxApply},{merge:true});
+  showToast(`1인 최대 신청 수를 ${maxApply}개로 설정했어요`);renderAll();updateNav();
+}
+
+/* ── CARD ─────────────────────────────────────────────── */
+function cardHTML(m){
+  const isFull=m.applied>=m.max,isApplied=applied.has(m.id),isWish=wishlisted.has(m.id);
+  const isQuotaFull=user&&myApplyCount()>=maxApply&&!isApplied;
+  const pct=Math.round((m.applied/m.max)*100);
+  const dateStr=new Date(m.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+  let badge,btnCls,btnTxt;
+  if(isApplied){badge=`<span class="card-badge badge-mine">신청완료</span>`;btnCls='applied';btnTxt='신청취소';}
+  else if(isFull){badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';}
+  else if(isQuotaFull){badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='quota-full';btnTxt='한도초과';}
+  else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';}
+  const clickable=isApplied||(!isFull&&!isQuotaFull);
+  const adminBtns=canManageMeetings()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}')">삭제</button></div>`:'';
   return `<div class="card${isWish?' wishlisted':''}">
     <div class="card-header">
-      <div class="card-top-row">
-        <div class="card-top-left">${badge}</div>
-        <div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div>
-      </div>
+      <div class="card-top-row"><div class="card-top-left">${badge}</div><div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div>
       <div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div>
       <div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div>
     </div>
@@ -409,127 +747,186 @@ function cardHTML(m) {
   </div>`;
 }
 
-function renderAll() { renderGrid(); renderMy(); renderWish(); if (isAdmin()) renderAdmin(); }
-function renderGrid() {
-  document.getElementById('cardGrid').innerHTML = meetings.length ? meetings.map(cardHTML).join('') : `<div class="empty-state">등록된 모임이 없어요</div>`;
+function renderAll(){renderGrid();renderMy();renderWish();if(isAdmin())renderAdmin();}
+function renderGrid(){document.getElementById('cardGrid').innerHTML=meetings.length?meetings.map(cardHTML).join(''):`<div class="empty-state">등록된 모임이 없어요</div>`;}
+function renderMy(){
+  const g=document.getElementById('myGrid');if(!g)return;
+  if(!user){g.innerHTML=`<div class="empty-state">로그인 후 확인할 수 있어요</div>`;return;}
+  const list=meetings.filter(m=>applied.has(m.id));
+  g.innerHTML=list.length?list.map(cardHTML).join(''):`<div class="empty-state">아직 신청한 모임이 없어요</div>`;
 }
-function renderMy() {
-  const g = document.getElementById('myGrid');
-  if (!user) { g.innerHTML=`<div class="empty-state">로그인 후 확인할 수 있어요</div>`; return; }
-  const list = meetings.filter(m => applied.has(m.id));
-  g.innerHTML = list.length ? list.map(cardHTML).join('') : `<div class="empty-state">아직 신청한 모임이 없어요</div>`;
-}
-function renderWish() {
-  const g = document.getElementById('wishGrid');
-  if (!user) { g.innerHTML=`<div class="empty-state">로그인 후 찜할 수 있어요</div>`; return; }
-  const list = meetings.filter(m => wishlisted.has(m.id));
-  g.innerHTML = list.length ? list.map(cardHTML).join('') : `<div class="empty-state">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;
+function renderWish(){
+  const g=document.getElementById('wishGrid');if(!g)return;
+  if(!user){g.innerHTML=`<div class="empty-state">로그인 후 찜할 수 있어요</div>`;return;}
+  const list=meetings.filter(m=>wishlisted.has(m.id));
+  g.innerHTML=list.length?list.map(cardHTML).join(''):`<div class="empty-state">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;
 }
 
-function renderAdmin() {
-  document.getElementById('meetingChips').innerHTML = meetings.map(m =>
-    `<div class="meeting-chip${adminSelected===m.id?' active':''}" onclick="selectAdmin('${m.id}')">${m.title}</div>`
-  ).join('');
-  renderApplicantTable();
+/* ── ADMIN ────────────────────────────────────────────── */
+function renderAdmin(){renderMemberGrid();renderMeetingChips();renderApplicantTable();renderFormEditor();}
+
+async function renderMemberGrid(){
+  const g=document.getElementById('memberGrid');if(!g)return;
+  g.innerHTML=`<div class="empty-state">불러오는 중...</div>`;
+  let q=db.collection('users');
+  if(memberFilter!=='all')q=q.where('role','==',memberFilter);
+  const snap=await q.get();
+  if(snap.empty){g.innerHTML=`<div class="empty-state">해당하는 멤버가 없어요</div>`;return;}
+  g.innerHTML=snap.docs.map(d=>{
+    const u=d.data();
+    const av=u.photo?`<img src="${u.photo}" alt="">`:u.name?.[0]||'?';
+    const statusMap={pending:'status-pending',member:'status-member',staff:'status-staff',admin:'status-admin'};
+    const statusLabel={pending:'대기중',member:'참여자',staff:'운영진',admin:'관리자'};
+    const actionBtns=u.role==='pending'
+      ?`<button class="btn-approve" onclick="approveMember('${u.email}')">승인</button><button class="btn-reject" onclick="rejectMember('${u.email}','${u.name}')">거절</button>`
+      :u.role==='member'
+      ?`<button class="btn-grant-staff" onclick="setRole('${u.email}','staff')">운영진 부여</button>`
+      :u.role==='staff'
+      ?`<button class="btn-revoke-staff" onclick="setRole('${u.email}','member')">운영진 회수</button>`:'';
+    return `<div class="member-card" onclick="openProfileModal('${u.email}')">
+      <div class="member-card-top">
+        <div class="member-avatar">${av}</div>
+        <div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-email">${u.email}</div></div>
+      </div>
+      <div class="member-status"><span class="status-badge ${statusMap[u.role]||'status-pending'}">${statusLabel[u.role]||'대기중'}</span>${u.memberType?`<span class="status-badge" style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5)">${u.memberType}</span>`:''}</div>
+      <div class="member-actions" onclick="event.stopPropagation()">${actionBtns}</div>
+    </div>`;
+  }).join('');
 }
-function selectAdmin(id) { adminSelected = id; renderAdmin(); }
-async function renderApplicantTable() {
-  const wrap = document.getElementById('applicantTableWrap');
-  if (!adminSelected) { wrap.innerHTML=`<div class="empty-state">모임을 선택하면 신청자 명단이 표시돼요</div>`; return; }
-  wrap.innerHTML = `<div class="empty-state">불러오는 중...</div>`;
-  const snap = await db.collection('meetings').doc(adminSelected).collection('applicants').orderBy('time').get();
-  const m = meetings.find(x => x.id === adminSelected);
-  if (snap.empty) { wrap.innerHTML=`<div class="empty-state">"${m?.title}" 신청자가 없어요</div>`; return; }
-  wrap.innerHTML = `<table class="applicant-table"><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>신청시각</th></tr></thead><tbody>${snap.docs.map((d,i)=>{const a=d.data();return`<tr><td>${i+1}</td><td>${a.name}</td><td>${a.email}</td><td>${a.time}</td></tr>`;}).join('')}</tbody></table>`;
+
+function filterMembers(f,el){
+  memberFilter=f;
+  document.querySelectorAll('#tabAdmin .meeting-chip').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  renderMemberGrid();
 }
-async function exportCSV() {
-  const rows = [['모임','책제목','저자','이름','이메일','신청시각']];
-  for (const m of meetings) {
-    const snap = await db.collection('meetings').doc(m.id).collection('applicants').get();
-    snap.docs.forEach(d => { const a=d.data(); rows.push([m.title,m.title,m.author,a.name,a.email,a.time]); });
+
+async function approveMember(email){
+  await db.collection('users').doc(email).update({role:'member'});
+  showToast('승인되었어요 ✅');renderMemberGrid();
+}
+async function rejectMember(email,name){
+  if(!confirm(`"${name}" 님의 신청을 거절할까요? 데이터가 삭제됩니다.`))return;
+  await db.collection('users').doc(email).delete();
+  showToast('거절되었어요');renderMemberGrid();
+}
+async function setRole(email,role){
+  await db.collection('users').doc(email).update({role});
+  showToast(role==='staff'?'운영진 권한을 부여했어요':'운영진 권한을 회수했어요');renderMemberGrid();
+}
+
+async function openProfileModal(email){
+  const doc=await db.collection('users').doc(email).get();
+  if(!doc.exists)return;
+  const u=doc.data();
+  // 신청한 모임
+  const appliedMeetings=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id);
+  let answersHTML='';
+  if(u.memberType==='신규멤버'&&u.answers){
+    answersHTML=formConfig.questions.map(q=>{
+      const a=u.answers[q.id]||'-';
+      return `<div><div class="profile-q">${q.text}</div><div class="profile-answer">${a}</div></div>`;
+    }).join('');
   }
-  const csv = '\uFEFF' + rows.map(r => r.map(c=>`"${c}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download = 'THE_MORI_신청자명단.csv'; a.click();
+  document.getElementById('profileModalTitle').textContent=u.name||email;
+  document.getElementById('profileModalContent').innerHTML=`
+    <div class="profile-section">
+      <div class="profile-section-title">기본 정보</div>
+      <div class="profile-row"><span class="profile-label">이메일</span><span class="profile-val">${u.email}</span></div>
+      <div class="profile-row"><span class="profile-label">성별</span><span class="profile-val">${u.gender||'-'}</span></div>
+      <div class="profile-row"><span class="profile-label">생년월일</span><span class="profile-val">${u.birth||'-'}</span></div>
+      <div class="profile-row"><span class="profile-label">연락처</span><span class="profile-val">${u.phone||'-'}</span></div>
+      <div class="profile-row"><span class="profile-label">멤버구분</span><span class="profile-val">${u.memberType||'-'}</span></div>
+    </div>
+    ${answersHTML?`<div class="profile-section"><div class="profile-section-title">신청서 답변</div>${answersHTML}</div>`:''}
+    <div class="profile-section">
+      <div class="profile-section-title">신청한 모임</div>
+      ${appliedMeetings.length?appliedMeetings.map(t=>`<span class="applied-meeting-chip">${t}</span>`).join(''):'<span style="color:rgba(255,255,255,.3);font-size:.83rem">신청한 모임 없음</span>'}
+    </div>`;
+  document.getElementById('profileModal').classList.add('open');
+}
+function closeProfileModal(){document.getElementById('profileModal').classList.remove('open');}
+
+function renderMeetingChips(){
+  const el=document.getElementById('meetingChips');if(!el)return;
+  el.innerHTML=meetings.map(m=>`<div class="meeting-chip${adminSelected===m.id?' active':''}" onclick="selectAdmin('${m.id}')">${m.title}</div>`).join('');
+}
+function selectAdmin(id){adminSelected=id;renderMeetingChips();renderApplicantTable();}
+async function renderApplicantTable(){
+  const wrap=document.getElementById('applicantTableWrap');if(!wrap)return;
+  if(!adminSelected){wrap.innerHTML=`<div class="empty-state">모임을 선택하면 신청자 명단이 표시돼요</div>`;return;}
+  wrap.innerHTML=`<div class="empty-state">불러오는 중...</div>`;
+  const snap=await db.collection('meetings').doc(adminSelected).collection('applicants').orderBy('time').get();
+  const m=meetings.find(x=>x.id===adminSelected);
+  if(snap.empty){wrap.innerHTML=`<div class="empty-state">"${m?.title}" 신청자가 없어요</div>`;return;}
+  wrap.innerHTML=`<table class="applicant-table"><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>신청시각</th></tr></thead><tbody>${snap.docs.map((d,i)=>{const a=d.data();return`<tr><td>${i+1}</td><td>${a.name}</td><td>${a.email}</td><td>${a.time}</td></tr>`;}).join('')}</tbody></table>`;
+}
+async function exportCSV(){
+  const rows=[['모임','책제목','저자','이름','이메일','신청시각']];
+  for(const m of meetings){const snap=await db.collection('meetings').doc(m.id).collection('applicants').get();snap.docs.forEach(d=>{const a=d.data();rows.push([m.title,m.title,m.author,a.name,a.email,a.time]);});}
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_신청자명단.csv';a.click();
   showToast('CSV 다운로드 완료 ✅');
 }
 
-function openAddModal() {
-  editingId = null;
-  document.getElementById('modalTitle').textContent = '새 모임 추가';
-  document.getElementById('modalOkBtn').textContent = '추가하기';
-  ['f-title','f-author','f-topic','f-host','f-place'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-max').value = 7;
-  document.getElementById('f-time').value = '19:00';
-  document.getElementById('f-date').value = '';
+/* ── MEETING MODAL ────────────────────────────────────── */
+function openAddModal(){
+  editingId=null;
+  document.getElementById('modalTitle').textContent='새 모임 추가';
+  document.getElementById('modalOkBtn').textContent='추가하기';
+  ['f-title','f-author','f-topic','f-host','f-place'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-max').value=7;document.getElementById('f-time').value='19:00';document.getElementById('f-date').value='';
   document.getElementById('addModal').classList.add('open');
 }
-function openEditModal(id) {
-  const m = meetings.find(x => x.id === id); if (!m) return;
-  editingId = id;
-  document.getElementById('modalTitle').textContent = '모임 수정';
-  document.getElementById('modalOkBtn').textContent = '저장하기';
-  document.getElementById('f-title').value = m.title;
-  document.getElementById('f-author').value = m.author;
-  document.getElementById('f-topic').value = m.topic;
-  document.getElementById('f-host').value = m.host;
-  document.getElementById('f-date').value = m.date;
-  document.getElementById('f-time').value = m.time;
-  document.getElementById('f-place').value = m.place;
-  document.getElementById('f-max').value = m.max;
+function openEditModal(id){
+  const m=meetings.find(x=>x.id===id);if(!m)return;
+  editingId=id;
+  document.getElementById('modalTitle').textContent='모임 수정';document.getElementById('modalOkBtn').textContent='저장하기';
+  document.getElementById('f-title').value=m.title;document.getElementById('f-author').value=m.author;
+  document.getElementById('f-topic').value=m.topic;document.getElementById('f-host').value=m.host;
+  document.getElementById('f-date').value=m.date;document.getElementById('f-time').value=m.time;
+  document.getElementById('f-place').value=m.place;document.getElementById('f-max').value=m.max;
   document.getElementById('addModal').classList.add('open');
 }
-function closeAddModal() { document.getElementById('addModal').classList.remove('open'); editingId = null; }
-
-async function submitMeeting() {
-  const title = document.getElementById('f-title').value.trim();
-  const author = document.getElementById('f-author').value.trim();
-  const topic = document.getElementById('f-topic').value.trim();
-  const host = document.getElementById('f-host').value.trim();
-  const date = document.getElementById('f-date').value;
-  const time = document.getElementById('f-time').value;
-  const place = document.getElementById('f-place').value.trim();
-  const max = parseInt(document.getElementById('f-max').value) || 7;
-  if (!title||!author||!topic||!host||!date||!place) { showToast('필수 항목을 모두 입력해주세요'); return; }
-  if (editingId) {
-    await db.collection('meetings').doc(editingId).update({title,author,topic,host,date,time,place,max});
-    showToast('모임이 수정되었어요 ✅');
-  } else {
-    await db.collection('meetings').add({title,author,topic,host,date,time,place,max,applied:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    showToast('모임이 추가되었어요 ✅');
-  }
+function closeAddModal(){document.getElementById('addModal').classList.remove('open');editingId=null;}
+async function submitMeeting(){
+  const title=document.getElementById('f-title').value.trim(),author=document.getElementById('f-author').value.trim();
+  const topic=document.getElementById('f-topic').value.trim(),host=document.getElementById('f-host').value.trim();
+  const date=document.getElementById('f-date').value,time=document.getElementById('f-time').value;
+  const place=document.getElementById('f-place').value.trim(),max=parseInt(document.getElementById('f-max').value)||7;
+  if(!title||!author||!topic||!host||!date||!place){showToast('필수 항목을 모두 입력해주세요');return;}
+  if(editingId){await db.collection('meetings').doc(editingId).update({title,author,topic,host,date,time,place,max});showToast('모임이 수정되었어요 ✅');}
+  else{await db.collection('meetings').add({title,author,topic,host,date,time,place,max,applied:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});showToast('모임이 추가되었어요 ✅');}
   closeAddModal();
 }
 
-function confirmDelete(id, title) {
-  document.getElementById('confirmMsg').innerHTML = `<strong>"${title}"</strong> 모임을 삭제할까요?<br><span style="font-size:.82rem;color:rgba(255,255,255,.4)">신청자 데이터도 함께 삭제돼요</span>`;
-  document.getElementById('confirmOkBtn').onclick = () => deleteMeeting(id);
+function confirmDelete(id,title){
+  document.getElementById('confirmMsg').innerHTML=`<strong>"${title}"</strong> 모임을 삭제할까요?<br><span style="font-size:.82rem;color:rgba(255,255,255,.4)">신청자 데이터도 함께 삭제돼요</span>`;
+  document.getElementById('confirmOkBtn').onclick=()=>deleteMeeting(id);
   document.getElementById('confirmBox').classList.add('open');
 }
-function closeConfirm() { document.getElementById('confirmBox').classList.remove('open'); }
-async function deleteMeeting(id) {
+function closeConfirm(){document.getElementById('confirmBox').classList.remove('open');}
+async function deleteMeeting(id){
   closeConfirm();
-  const aSnap = await db.collection('meetings').doc(id).collection('applicants').get();
-  const batch = db.batch();
-  aSnap.docs.forEach(d => batch.delete(d.ref));
-  batch.delete(db.collection('meetings').doc(id));
-  await batch.commit();
+  const aSnap=await db.collection('meetings').doc(id).collection('applicants').get();
+  const batch=db.batch();aSnap.docs.forEach(d=>batch.delete(d.ref));
+  batch.delete(db.collection('meetings').doc(id));await batch.commit();
   showToast('모임이 삭제되었어요');
 }
 
-function switchTab(t, el) {
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  el.classList.add('active');
-  ['tabAll','tabMy','tabWish','tabAdmin'].forEach(id => document.getElementById(id).style.display = 'none');
-  document.getElementById({all:'tabAll',my:'tabMy',wish:'tabWish',admin:'tabAdmin'}[t]).style.display = 'block';
-  if (t === 'admin') renderAdmin();
+/* ── TABS ─────────────────────────────────────────────── */
+function switchTab(t,el){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
+  ['tabAll','tabMy','tabWish','tabAdmin'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+  const map={all:'tabAll',my:'tabMy',wish:'tabWish',admin:'tabAdmin'};
+  document.getElementById(map[t]).style.display='block';
+  if(t==='admin')renderAdmin();
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
+/* ── TOAST ────────────────────────────────────────────── */
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 }
 </script>
 </body>
