@@ -32,18 +32,13 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .apply-counter strong{color:#fff;font-weight:700;font-size:.9rem}
 .apply-counter.warn{border-color:rgba(255,180,80,.4);color:rgba(255,200,100,.9)}
 .apply-counter.full-quota{border-color:rgba(255,100,100,.4);color:rgba(255,130,130,.9)}
-/* SCREENS */
-.screen{display:none}
-.screen.active{display:block}
-/* HERO */
+.screen{display:none}.screen.active{display:block}
 .hero{text-align:center;padding:3rem 1rem 2rem}
 .hero h1{font-size:2.2rem;font-weight:700;letter-spacing:.12em;margin-bottom:.4rem}
 .hero p{color:rgba(255,255,255,.45);font-size:.9rem;letter-spacing:.05em}
-/* TABS */
 .tab-bar{display:flex;justify-content:center;gap:0;margin:0 auto 2rem;max-width:360px;background:rgba(255,255,255,.06);border-radius:8px;padding:4px}
 .tab{flex:1;text-align:center;padding:8px 0;font-size:.82rem;cursor:pointer;border-radius:6px;color:rgba(255,255,255,.4);transition:all .2s;white-space:nowrap}
 .tab.active{background:#fff;color:#0d1f3c;font-weight:600}
-/* GRID/CARD */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.1rem;max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
 .card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;transition:transform .2s,border-color .2s}
 .card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.2)}
@@ -60,10 +55,8 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .heart-btn:hover{transform:scale(1.25)}
 .admin-btns{display:flex;gap:4px}
 .btn-edit,.btn-del{background:none;border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;transition:all .18s}
-.btn-edit{color:rgba(255,255,255,.45)}
-.btn-edit:hover{border-color:rgba(255,255,255,.35);color:#fff}
-.btn-del{color:rgba(255,100,100,.5)}
-.btn-del:hover{border-color:rgba(255,100,100,.5);color:rgba(255,130,130,.9)}
+.btn-edit{color:rgba(255,255,255,.45)}.btn-edit:hover{border-color:rgba(255,255,255,.35);color:#fff}
+.btn-del{color:rgba(255,100,100,.5)}.btn-del:hover{border-color:rgba(255,100,100,.5);color:rgba(255,130,130,.9)}
 .book-info{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
 .book-title{font-size:1.05rem;font-weight:700;line-height:1.35;color:#fff}
 .book-author{font-size:.8rem;color:rgba(255,255,255,.45)}
@@ -74,27 +67,22 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .info-label{font-size:.72rem;color:rgba(255,255,255,.3);width:28px;flex-shrink:0;padding-top:1px}
 .info-val{color:rgba(255,255,255,.78)}
 .card-footer{padding:.9rem 1.2rem;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between}
-.seats{font-size:.8rem;color:rgba(255,255,255,.5)}
-.seats strong{color:#fff}
+.seats{font-size:.8rem;color:rgba(255,255,255,.5)}.seats strong{color:#fff}
 .seat-bar{height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px;width:76px}
 .seat-fill{height:100%;border-radius:2px;background:#fff;transition:width .4s}
 .seat-fill.full{background:rgba(255,255,255,.2)}
 .btn-apply{border:none;padding:8px 18px;border-radius:7px;font-size:.83rem;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap}
-.btn-apply.open{background:#fff;color:#0d1f3c}
-.btn-apply.open:hover{opacity:.88}
+.btn-apply.open{background:#fff;color:#0d1f3c}.btn-apply.open:hover{opacity:.88}
 .btn-apply.applied{background:transparent;border:1px solid rgba(255,100,100,.4);color:rgba(255,130,130,.85)}
 .btn-apply.full{background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.25);cursor:not-allowed}
 .btn-apply.quota-full{background:transparent;border:1px solid rgba(255,180,80,.3);color:rgba(255,200,100,.6);cursor:not-allowed;font-size:.76rem}
-/* STAFF BAR */
 .staff-bar{max-width:980px;margin:0 auto 1.2rem;padding:0 1.25rem;display:flex;justify-content:flex-end}
 .btn-admin{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.55);padding:8px 15px;border-radius:6px;font-size:.8rem;cursor:pointer;transition:all .2s}
 .btn-admin:hover{border-color:rgba(255,255,255,.4);color:#fff}
-/* WAITING */
 .waiting-screen{max-width:500px;margin:6rem auto;padding:0 1.5rem;text-align:center}
 .waiting-icon{font-size:3.5rem;margin-bottom:1.5rem}
 .waiting-screen h2{font-size:1.4rem;font-weight:700;margin-bottom:.8rem}
 .waiting-screen p{color:rgba(255,255,255,.5);font-size:.9rem;line-height:1.7}
-/* APP FORM */
 .app-form-wrap{max-width:600px;margin:0 auto;padding:2rem 1.5rem 4rem}
 .app-form-wrap h2{font-size:1.3rem;font-weight:700;margin-bottom:.5rem}
 .form-notice{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:1.2rem;font-size:.85rem;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:1.5rem;white-space:pre-wrap}
@@ -103,8 +91,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .privacy-agree input{width:17px;height:17px;cursor:pointer;accent-color:#fff}
 .form-section{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.2rem;margin-bottom:1rem}
 .form-section-title{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
-.field-group{margin-bottom:1rem}
-.field-group:last-child{margin-bottom:0}
+.field-group{margin-bottom:1rem}.field-group:last-child{margin-bottom:0}
 .field-group label{display:block;font-size:.8rem;color:rgba(255,255,255,.5);margin-bottom:5px}
 .field-group input[type=text],.field-group input[type=tel],.field-group input[type=date],.field-group textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none;font-family:inherit}
 .field-group input:focus,.field-group textarea:focus{border-color:rgba(255,255,255,.3)}
@@ -114,13 +101,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .radio-label input{accent-color:#fff;width:16px;height:16px}
 .btn-submit-app{width:100%;background:#fff;color:#0d1f3c;border:none;padding:14px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:1.5rem;transition:opacity .2s}
 .btn-submit-app:hover{opacity:.88}
-/* MY/WISH SECTION */
 .my-section{max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
 .section-title{font-size:.88rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1rem}
-/* TOAST */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;color:#0d1f3c;padding:11px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.open{display:flex}
 .modal{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1.8rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
@@ -156,7 +140,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </nav>
 
-<!-- 로그인 전 -->
 <div id="screenLogin" class="screen active">
   <div class="hero"><h1>THE MORI APPLY</h1><p>독서모임 신청 페이지</p></div>
   <div style="text-align:center;padding:2rem 1rem">
@@ -168,7 +151,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </div>
 
-<!-- 신청서 -->
 <div id="screenForm" class="screen">
   <div class="app-form-wrap">
     <h2>모임 신청서</h2>
@@ -211,7 +193,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </div>
 
-<!-- 대기 -->
 <div id="screenWaiting" class="screen">
   <div class="waiting-screen">
     <div class="waiting-icon">⏳</div>
@@ -221,27 +202,22 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </div>
 
-<!-- 메인 -->
 <div id="screenMain" class="screen">
   <div class="hero"><h1>THE MORI APPLY</h1><p>독서모임 신청 페이지</p></div>
-  <!-- 공지사항 배너 -->
   <div id="noticeBanner" style="display:none;max-width:980px;margin:0 auto 1.5rem;padding:0 1.25rem">
     <div id="noticeBannerContent" style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.22);border-radius:12px;padding:1rem 1.25rem;font-size:.88rem;color:rgba(255,220,100,.9);line-height:1.7"></div>
   </div>
-
   <div class="tab-bar">
     <div class="tab active" onclick="switchTab('all',this)">전체 모임</div>
     <div class="tab" onclick="switchTab('myandwish',this)">신청 &amp; 찜</div>
     <div class="tab" onclick="switchTab('notice',this)">공지사항</div>
   </div>
-
   <div id="tabAll">
     <div id="staffBar" class="staff-bar" style="display:none">
       <button class="btn-admin" onclick="openAddModal()">+ 모임 추가</button>
     </div>
     <div id="cardGrid" class="grid"><div style="text-align:center;padding:3rem;color:rgba(255,255,255,.3)">모임 불러오는 중...</div></div>
   </div>
-
   <div id="tabMyandwish" style="display:none">
     <div class="my-section">
       <div class="section-title">신청한 모임</div>
@@ -250,7 +226,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
       <div class="grid" id="wishGrid"></div>
     </div>
   </div>
-
   <div id="tabNotice" style="display:none">
     <div class="my-section">
       <div id="noticePageContent" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.5rem;font-size:.9rem;color:rgba(255,255,255,.8);line-height:1.8;min-height:200px"></div>
@@ -319,64 +294,60 @@ let formConfig={notice:'',privacy:'',commonQuestions:[],newQuestions:[],existing
 let unsubMeetings=null;
 
 /* ══════════════════════════════════════════
-   AUTH — 핵심 진입 로직
+   AUTH
 ══════════════════════════════════════════ */
-
-// ── auth: 관리자도 Firestore에서 applied/wishlisted 읽기 ──
 auth.onAuthStateChanged(fb=>{
+  // 로그아웃 시 구독 해제
+  if(unsubMeetings){ unsubMeetings(); unsubMeetings=null; }
+
   if(!fb){
-    user=null; userRole=null;
+    user=null; userRole=null; applied=new Set(); wishlisted=new Set();
     showScreen('login'); updateNav();
     return;
   }
-  user={name:fb.displayName, email:fb.email, photo:fb.photoURL, initial:fb.displayName?.[0]||'?'};
+  user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
 
-  if(user.email===ADMIN_EMAIL){
-    userRole='admin';
-    db.collection('users').doc(user.email).get().then(doc=>{
+  // 관리자 + 일반유저 모두 동일하게 Firestore에서 데이터 읽기
+  db.collection('users').doc(user.email).get().then(doc=>{
+    if(user.email===ADMIN_EMAIL){
+      userRole='admin';
       if(doc.exists){
-        const data=doc.data();
-        applied=new Set(data.applied||[]);
-        wishlisted=new Set(data.wishlisted||[]);
-        if(data.maxApply) maxApply=data.maxApply;
+        const d=doc.data();
+        applied=new Set(d.applied||[]);
+        wishlisted=new Set(d.wishlisted||[]);
+        if(d.maxApply) maxApply=d.maxApply;
       } else {
-        // 관리자 문서 없으면 applied/wishlisted만 초기화 (role 저장 안 함)
+        // 관리자 문서 없으면 applied/wishlisted만 생성 (role 필드 없음)
         db.collection('users').doc(user.email).set({
-          name: user.name,
-          email: user.email,
-          photo: user.photo||'',
-          applied: [],
-          wishlisted: []
+          name:user.name, email:user.email, photo:user.photo||'',
+          applied:[], wishlisted:[]
         });
       }
       loadFormConfig().then(()=>{ initMain(); updateNav(); });
-    });
-    return;
-  }
+      return;
+    }
 
-  // 일반 유저
-  db.collection('users').doc(user.email).get().then(doc=>{
+    // 일반 유저
     if(!doc.exists){
       loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
       return;
     }
-    const data=doc.data();
-    const role=data.role||'';
-    userRole=role;
-    if(data.maxApply) maxApply=data.maxApply;
+    const d=doc.data();
+    userRole=d.role||'';
+    if(d.maxApply) maxApply=d.maxApply;
 
-    if(role==='member'||role==='staff'){
-      applied=new Set(data.applied||[]);
-      wishlisted=new Set(data.wishlisted||[]);
+    if(userRole==='member'||userRole==='staff'){
+      applied=new Set(d.applied||[]);
+      wishlisted=new Set(d.wishlisted||[]);
       loadFormConfig().then(()=>{ initMain(); updateNav(); });
-    } else if(role==='pending'){
+    } else if(userRole==='pending'){
       showScreen('waiting'); updateNav();
       loadWaitingNotice();
     } else {
       loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
     }
   }).catch(err=>{
-    console.error('Firestore 읽기 오류:', err);
+    console.error('Firestore 읽기 오류:',err);
     showToast('데이터 로드 오류. 새로고침해주세요.');
   });
 });
@@ -458,25 +429,9 @@ async function loadFormConfig(){
     const doc=await db.collection('settings').doc('formConfig').get();
     if(doc.exists){
       const d=doc.data();
-      formConfig={
-        notice:d.notice||'',privacy:d.privacy||'',
-        commonQuestions:d.commonQuestions||[],
-        newQuestions:d.newQuestions||d.questions||[],
-        existingQuestions:d.existingQuestions||[]
-      };
+      formConfig={notice:d.notice||'',privacy:d.privacy||'',commonQuestions:d.commonQuestions||[],newQuestions:d.newQuestions||d.questions||[],existingQuestions:d.existingQuestions||[]};
     } else {
-      formConfig={
-        notice:'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',
-        privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',
-        commonQuestions:[],
-        newQuestions:[
-          {id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},
-          {id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},
-          {id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},
-          {id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}
-        ],
-        existingQuestions:[]
-      };
+      formConfig={notice:'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',commonQuestions:[],newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],existingQuestions:[]};
     }
   }catch(e){ console.error('formConfig 로드 실패',e); }
   const fn=document.getElementById('formNotice'), pt=document.getElementById('privacyText');
@@ -486,30 +441,23 @@ async function loadFormConfig(){
 }
 
 /* ── QUESTION RENDER ──────────────────────────────────── */
-function renderQBlock(qs, prefix){
+function renderQBlock(qs,prefix){
   return qs.map(q=>{
     const labelStyle=`font-size:${q.fontSize||'0.9rem'};color:${q.color||'#fff'};white-space:pre-wrap;display:block;margin-bottom:8px;line-height:1.5`;
     const imgHTML=q.imageData?`<img src="${q.imageData}" style="max-width:100%;max-height:220px;border-radius:8px;margin-bottom:10px;display:block;object-fit:contain">`:'';
     let input='';
     if(q.type==='textarea') input=`<textarea id="${prefix}${q.id}" rows="3" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none;resize:vertical;min-height:80px;font-family:inherit"></textarea>`;
     else if(q.type==='text') input=`<input id="${prefix}${q.id}" type="text" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none">`;
-    else if(q.type==='single'||q.type==='multi'){
-      const t=q.type==='single'?'radio':'checkbox';
-      input=`<div style="display:flex;flex-direction:column;gap:8px">${(q.options||[]).map(opt=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem;color:rgba(255,255,255,.75);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:9px 12px"><input type="${t}" name="${prefix}${q.id}" value="${opt}" style="accent-color:#fff;width:16px;height:16px;flex-shrink:0"> ${opt}</label>`).join('')}</div>`;
-    }
+    else if(q.type==='single'||q.type==='multi'){const t=q.type==='single'?'radio':'checkbox';input=`<div style="display:flex;flex-direction:column;gap:8px">${(q.options||[]).map(opt=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem;color:rgba(255,255,255,.75);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:9px 12px"><input type="${t}" name="${prefix}${q.id}" value="${opt}" style="accent-color:#fff;width:16px;height:16px;flex-shrink:0"> ${opt}</label>`).join('')}</div>`;}
     return `<div class="field-group">${imgHTML}<label style="${labelStyle}">${q.text}${q.required?' *':''}</label>${input}</div>`;
   }).join('');
 }
-
 function renderAllQuestions(){
-  const nEl=document.getElementById('dynamicQuestions');
-  const eEl=document.getElementById('existingDynamicQuestions');
-  const cEl=document.getElementById('commonDynamicQuestions');
+  const nEl=document.getElementById('dynamicQuestions'),eEl=document.getElementById('existingDynamicQuestions'),cEl=document.getElementById('commonDynamicQuestions');
   if(nEl) nEl.innerHTML=renderQBlock(formConfig.newQuestions||[],'dq-');
   if(eEl) eEl.innerHTML=renderQBlock(formConfig.existingQuestions||[],'eq-');
   if(cEl) cEl.innerHTML=renderQBlock(formConfig.commonQuestions||[],'cq-');
 }
-
 function toggleMemberFields(){
   const v=document.querySelector('input[name="memberType"]:checked')?.value;
   document.getElementById('newMemberFields').style.display=v==='신규멤버'?'block':'none';
@@ -531,20 +479,9 @@ async function submitApplication(){
   const answers={};
   function collectQ(qs,prefix){
     for(const q of qs){
-      if(q.type==='multi'){
-        const checked=[...document.querySelectorAll(`input[name="${prefix}${q.id}"]:checked`)].map(i=>i.value);
-        if(q.required&&!checked.length){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}
-        answers[q.id]=checked;
-      } else if(q.type==='single'){
-        const el=document.querySelector(`input[name="${prefix}${q.id}"]:checked`);
-        if(q.required&&!el){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}
-        answers[q.id]=el?.value||'';
-      } else {
-        const el=document.getElementById(`${prefix}${q.id}`);
-        const val=el?el.value.trim():'';
-        if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return false;}
-        answers[q.id]=val;
-      }
+      if(q.type==='multi'){const checked=[...document.querySelectorAll(`input[name="${prefix}${q.id}"]:checked`)].map(i=>i.value);if(q.required&&!checked.length){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}answers[q.id]=checked;}
+      else if(q.type==='single'){const el=document.querySelector(`input[name="${prefix}${q.id}"]:checked`);if(q.required&&!el){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}answers[q.id]=el?.value||'';}
+      else{const el=document.getElementById(`${prefix}${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return false;}answers[q.id]=val;}
     }
     return true;
   }
@@ -552,52 +489,55 @@ async function submitApplication(){
   const prefix=memberType==='신규멤버'?'dq-':'eq-';
   if(!collectQ(typeQs,prefix))return;
   if(!collectQ(formConfig.commonQuestions||[],'cq-'))return;
-  await db.collection('users').doc(user.email).set({
-    name,email:user.email,photo:user.photo||'',gender,birth,phone,memberType,
-    answers,role:'pending',appliedAt:firebase.firestore.FieldValue.serverTimestamp()
-  });
+  await db.collection('users').doc(user.email).set({name,email:user.email,photo:user.photo||'',gender,birth,phone,memberType,answers,role:'pending',appliedAt:firebase.firestore.FieldValue.serverTimestamp()});
   userRole='pending';
   showScreen('waiting');updateNav();
   showToast('신청서가 제출되었어요! 승인을 기다려주세요 📬');
 }
 
-
-// ── saveUserData: merge:true 로 applied/wishlisted만 저장 ──
+/* ── SAVE USER DATA ───────────────────────────────────── */
 async function saveUserData(){
   if(!user) return;
+  // merge:true — role, name 등 기존 필드 절대 덮어쓰지 않음
   await db.collection('users').doc(user.email).set(
-    {
-      applied: [...applied],
-      wishlisted: [...wishlisted],
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    },
-    {merge: true}  // ← 다른 필드(role, name 등) 건드리지 않음
+    {applied:[...applied], wishlisted:[...wishlisted], updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+    {merge:true}
   );
 }
 
 /* ── MEETINGS ─────────────────────────────────────────── */
 function listenMeetings(){
+  // 기존 구독이 있으면 반드시 먼저 해제
+  if(unsubMeetings){ unsubMeetings(); unsubMeetings=null; }
   unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
     meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderAll();updateNav();
+    renderAll(); updateNav();
   });
 }
 
 async function applyMeeting(id){
   if(!user){showToast('로그인 후 신청할 수 있어요');return;}
-  const m=meetings.find(x=>x.id===id);if(!m)return;
-  const mRef=db.collection('meetings').doc(id),aRef=mRef.collection('applicants').doc(user.email);
+  const m=meetings.find(x=>x.id===id); if(!m) return;
+  const mRef=db.collection('meetings').doc(id), aRef=mRef.collection('applicants').doc(user.email);
   if(applied.has(id)){
-    applied.delete(id);await aRef.delete();await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
-    checkWishNotif(id,{...m,applied:m.applied-1});showToast('신청이 취소되었어요');
+    // 신청 취소
+    applied.delete(id);
+    await aRef.delete();
+    await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
+    checkWishNotif(id,{...m,applied:m.applied-1});
+    showToast('신청이 취소되었어요');
   } else {
+    // 신청
     if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
     if(myApplyCount()>=maxApply){showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`);return;}
     applied.add(id);
     await aRef.set({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});
-    await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});showToast('신청 완료! 모임에서 만나요 📚');
+    await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
+    showToast('신청 완료! 모임에서 만나요 📚');
   }
-  await saveUserData();updateNav();renderAll();
+  await saveUserData();
+  updateNav();
+  renderAll();
 }
 
 async function toggleWish(id){
@@ -605,7 +545,7 @@ async function toggleWish(id){
   const m=meetings.find(x=>x.id===id);
   if(wishlisted.has(id)){wishlisted.delete(id);notifSent[id]=false;showToast('찜 목록에서 제거했어요');}
   else{wishlisted.add(id);showToast('찜했어요 ❤️');if(m&&m.applied<m.max)pushNotif(`💺 "${m.title}" 모임에 자리 있어요!`);}
-  await saveUserData();renderAll();
+  await saveUserData(); renderAll();
 }
 function checkWishNotif(id,m){if(wishlisted.has(id)&&!applied.has(id)&&m.applied<m.max&&!notifSent[id]){notifSent[id]=true;setTimeout(()=>{if(wishlisted.has(id)&&!applied.has(id))pushNotif(`💺 찜한 "${m.title}"에 자리가 났어요!`);},700);}}
 function pushNotif(msg){if('Notification'in window&&Notification.permission==='granted')new Notification('THE MORI APPLY',{body:msg});else if('Notification'in window&&Notification.permission!=='denied')Notification.requestPermission().then(p=>p==='granted'?new Notification('THE MORI APPLY',{body:msg}):showToast(msg));else showToast(msg);}
