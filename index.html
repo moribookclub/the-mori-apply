@@ -192,6 +192,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
         </div>
       </div>
     </div>
+    <div id="commonQWrap" class="form-section" style="display:none">
+      <div class="form-section-title">공통 질문</div>
+      <div id="commonDynamicQuestions"></div>
+    </div>
     <div id="newMemberFields" class="form-section" style="display:none">
       <div class="form-section-title">신규멤버 추가 질문</div>
       <div id="dynamicQuestions"></div>
@@ -224,7 +228,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
   <div id="tabAll">
     <div id="staffBar" class="admin-bar" style="display:none">
-      <div class="admin-quota-box">1인 최대 신청 수:&nbsp;<input class="quota-input" id="quotaInput" type="number" min="1" max="10" value="2"><span style="color:rgba(255,255,255,.35)">개</span><button class="btn-quota-save" onclick="saveQuota()">저장</button></div>
       <button class="btn-admin" onclick="openAddModal()">+ 모임 추가</button>
     </div>
     <div id="cardGrid" class="grid"><div style="text-align:center;padding:3rem;color:rgba(255,255,255,.3)">모임 불러오는 중...</div></div>
@@ -334,17 +337,41 @@ async function loadFormConfig(){
   renderDynamicQuestions();
 }
 
+function renderQBlock(qs, prefix){
+  return qs.map(q=>{
+    const labelStyle=`font-size:${q.fontSize||'0.9rem'};color:${q.color||'#fff'}`;
+    let input='';
+    if(q.type==='textarea') input=`<textarea id="${prefix}${q.id}" rows="3" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none;resize:vertical;min-height:80px;font-family:inherit"></textarea>`;
+    else if(q.type==='text') input=`<input id="${prefix}${q.id}" type="text" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none">`;
+    else if(q.type==='single'||q.type==='multi'){
+      const inputType=q.type==='single'?'radio':'checkbox';
+      input=`<div style="display:flex;flex-direction:column;gap:8px">${(q.options||[]).map((opt,i)=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem;color:rgba(255,255,255,.75)"><input type="${inputType}" name="${prefix}${q.id}" value="${opt}" style="accent-color:#fff;width:16px;height:16px"> ${opt}</label>`).join('')}</div>`;
+    }
+    return `<div class="field-group">
+      ${q.imageData?`<img src="${q.imageData}" style="max-width:100%;max-height:200px;border-radius:8px;margin-bottom:8px;display:block">`:''}
+      <label style="${labelStyle}">${q.text}${q.required?' *':''}</label>
+      ${input}
+    </div>`;
+  }).join('');
+}
+
 function renderDynamicQuestions(){
-  const w=document.getElementById('dynamicQuestions');if(!w)return;
-  const qs=formConfig.newQuestions||formConfig.questions||[];
-  w.innerHTML=qs.map(q=>`<div class="field-group"><label>${q.text}${q.required?' *':''}</label>${q.type==='textarea'?`<textarea id="dq-${q.id}" rows="3"></textarea>`:`<input id="dq-${q.id}" type="text">`}</div>`).join('');
+  const common=document.getElementById('commonDynamicQuestions');
+  const newQ=document.getElementById('dynamicQuestions');
+  const cqs=formConfig.commonQuestions||[];
+  const nqs=formConfig.newQuestions||formConfig.questions||[];
+  if(common) common.innerHTML=renderQBlock(cqs,'cq-');
+  if(newQ) newQ.innerHTML=renderQBlock(nqs,'dq-');
+  const commonWrap=document.getElementById('commonQWrap');
+  if(commonWrap) commonWrap.style.display=cqs.length?'block':'none';
 }
 
 function renderExistingQuestions(){
   const w=document.getElementById('existingDynamicQuestions');if(!w)return;
   const qs=formConfig.existingQuestions||[];
-  if(!qs.length){w.innerHTML='';return;}
-  w.innerHTML=qs.map(q=>`<div class="field-group"><label>${q.text}${q.required?' *':''}</label>${q.type==='textarea'?`<textarea id="eq-${q.id}" rows="3"></textarea>`:`<input id="eq-${q.id}" type="text">`}</div>`).join('');
+  w.innerHTML=renderQBlock(qs,'eq-');
+  const commonWrap=document.getElementById('commonQWrap');
+  if(commonWrap){const cqs=formConfig.commonQuestions||[];commonWrap.style.display=cqs.length?'block':'none';}
   document.getElementById('existingQWrap').style.display=qs.length?'block':'none';
 }
 
@@ -365,12 +392,26 @@ async function submitApplication(){
   const memberType=document.querySelector('input[name="memberType"]:checked')?.value;
   if(!name||!gender||!birth||!phone||!memberType){showToast('기본 정보를 모두 입력해주세요');return;}
   const answers={};
+  // 공통 질문 수집
+  for(const q of formConfig.commonQuestions||[]){
+    if(q.type==='multi'){const checked=[...document.querySelectorAll(`input[name="cq-${q.id}"]:checked`)].map(i=>i.value);if(q.required&&!checked.length){showToast(`"${q.text}"을(를) 선택해주세요`);return;}answers[q.id]=checked;}
+    else if(q.type==='single'){const el=document.querySelector(`input[name="cq-${q.id}"]:checked`);if(q.required&&!el){showToast(`"${q.text}"을(를) 선택해주세요`);return;}answers[q.id]=el?.value||'';}
+    else{const el=document.getElementById(`cq-${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}answers[q.id]=val;}
+  }
   if(memberType==='신규멤버'){
     const qs=formConfig.newQuestions||formConfig.questions||[];
-    for(const q of qs){const el=document.getElementById(`dq-${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}answers[q.id]=val;}
+    for(const q of qs){
+      if(q.type==='multi'){const checked=[...document.querySelectorAll(`input[name="dq-${q.id}"]:checked`)].map(i=>i.value);if(q.required&&!checked.length){showToast(`"${q.text}"을(를) 선택해주세요`);return;}answers[q.id]=checked;}
+      else if(q.type==='single'){const el=document.querySelector(`input[name="dq-${q.id}"]:checked`);if(q.required&&!el){showToast(`"${q.text}"을(를) 선택해주세요`);return;}answers[q.id]=el?.value||'';}
+      else{const el=document.getElementById(`dq-${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}answers[q.id]=val;}
+    }
   } else {
     const qs=formConfig.existingQuestions||[];
-    for(const q of qs){const el=document.getElementById(`eq-${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}answers[q.id]=val;}
+    for(const q of qs){
+      if(q.type==='multi'){const checked=[...document.querySelectorAll(`input[name="eq-${q.id}"]:checked`)].map(i=>i.value);if(q.required&&!checked.length){showToast(`"${q.text}"을(를) 선택해주세요`);return;}answers[q.id]=checked;}
+      else if(q.type==='single'){const el=document.querySelector(`input[name="eq-${q.id}"]:checked`);if(q.required&&!el){showToast(`"${q.text}"을(를) 선택해주세요`);return;}answers[q.id]=el?.value||'';}
+      else{const el=document.getElementById(`eq-${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return;}answers[q.id]=val;}
+    }
   }
   await db.collection('users').doc(user.email).set({name,email:user.email,photo:user.photo||'',gender,birth,phone,memberType,answers,role:'pending',appliedAt:firebase.firestore.FieldValue.serverTimestamp()});
   userRole='pending';showScreen('waiting');updateNav();
