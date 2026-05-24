@@ -418,7 +418,8 @@ function updateNav(){
   const cnt=myApplyCount(), cls=cnt>=maxApply?'full-quota':cnt>=maxApply-1?'warn':'';
   const av=user.photo?`<img src="${user.photo}" alt="">`:user.initial;
   const rb=isAdmin()?`<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)">관리자</span>`:isStaff()?`<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(100,180,255,.15);border:1px solid rgba(100,180,255,.3);color:rgba(150,210,255,.9)">운영진</span>`:'';
-  nr.innerHTML=`${rb}<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
+  const adminLink=isAdmin()?`<a href="admin.html" style="background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9);padding:5px 11px;border-radius:6px;font-size:.75rem;text-decoration:none;white-space:nowrap">관리자 페이지</a>`:'';
+  nr.innerHTML=`${rb}${adminLink}<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
   const sb=document.getElementById('staffBar');
   if(sb) sb.style.display=canManage()?'flex':'none';
 }
@@ -597,7 +598,21 @@ async function submitMeeting(){
 }
 function confirmDelete(id,title){document.getElementById('confirmMsg').innerHTML=`<strong>"${title}"</strong> 모임을 삭제할까요?<br><span style="font-size:.82rem;color:rgba(255,255,255,.4)">신청자 데이터도 함께 삭제돼요</span>`;document.getElementById('confirmOkBtn').onclick=()=>deleteMeeting(id);document.getElementById('confirmBox').classList.add('open');}
 function closeConfirm(){document.getElementById('confirmBox').classList.remove('open');}
-async function deleteMeeting(id){closeConfirm();const aSnap=await db.collection('meetings').doc(id).collection('applicants').get();const batch=db.batch();aSnap.docs.forEach(d=>batch.delete(d.ref));batch.delete(db.collection('meetings').doc(id));await batch.commit();showToast('모임이 삭제되었어요');}
+async function deleteMeeting(id){
+  closeConfirm();
+  const aSnap=await db.collection('meetings').doc(id).collection('applicants').get();
+  const batch=db.batch();
+  aSnap.docs.forEach(d=>batch.delete(d.ref));
+  batch.delete(db.collection('meetings').doc(id));
+  await batch.commit();
+  // 삭제된 모임이 내 신청 목록에 있으면 카운트에서 제거
+  if(applied.has(id)){
+    applied.delete(id);
+    await saveUserData();
+    updateNav();
+  }
+  showToast('모임이 삭제되었어요');
+}
 
 /* ── TOAST ────────────────────────────────────────────── */
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
