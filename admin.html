@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE MORI APPLY — 관리자</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Apple SD Gothic Neo',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
+nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
+.logo{font-size:1.2rem;font-weight:700;letter-spacing:.1em}
+.logo span{color:rgba(255,200,80,.7);font-size:.78rem;margin-left:6px;font-weight:400}
+.nav-right{display:flex;align-items:center;gap:8px}
+.btn-sm{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.55);padding:5px 11px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:all .2s}
+.btn-sm:hover{border-color:rgba(255,255,255,.45);color:#fff}
+.btn-home{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:6px;font-size:.78rem;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px}
+.btn-home:hover{background:rgba(255,255,255,.15)}
+.avatar-circle{width:32px;height:32px;border-radius:50%;background:rgba(255,200,80,.2);border:2px solid rgba(255,200,80,.4);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:600;overflow:hidden}
+.avatar-circle img{width:100%;height:100%;object-fit:cover}
+
+/* LAYOUT */
+.page-wrap{max-width:1000px;margin:0 auto;padding:2rem 1.25rem 4rem}
+.page-title{font-size:1.4rem;font-weight:700;margin-bottom:.3rem}
+.page-sub{font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:2rem}
+
+/* TABS */
+.admin-tab-bar{display:flex;gap:0;background:rgba(255,255,255,.06);border-radius:8px;padding:4px;margin-bottom:2rem;max-width:500px}
+.admin-tab{flex:1;text-align:center;padding:9px 0;font-size:.83rem;cursor:pointer;border-radius:6px;color:rgba(255,255,255,.4);transition:all .2s;white-space:nowrap}
+.admin-tab.active{background:#fff;color:#0d1f3c;font-weight:600}
+
+/* SECTION */
+.section-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:8px}
+.section-head h2{font-size:1rem;font-weight:600}
+.section-head p{font-size:.8rem;color:rgba(255,255,255,.4);margin-top:2px}
+
+/* FILTER CHIPS */
+.filter-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1.2rem}
+.chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);padding:6px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;transition:all .2s}
+.chip.active{background:#fff;color:#0d1f3c;border-color:#fff;font-weight:600}
+
+/* MEMBER LIST */
+.member-list{display:flex;flex-direction:column;gap:.6rem}
+.member-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.member-row:hover{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.07)}
+.member-av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:600;overflow:hidden;flex-shrink:0}
+.member-av img{width:100%;height:100%;object-fit:cover}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:.92rem;font-weight:600}
+.member-meta{font-size:.76rem;color:rgba(255,255,255,.4);margin-top:2px}
+.member-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.badge{font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
+.badge-pending{background:rgba(255,180,50,.12);border:1px solid rgba(255,180,50,.3);color:rgba(255,200,80,.9)}
+.badge-member{background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);color:rgba(130,230,130,.9)}
+.badge-staff{background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9)}
+.member-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.btn-approve{background:#fff;color:#0d1f3c;border:none;padding:6px 13px;border-radius:5px;font-size:.76rem;font-weight:600;cursor:pointer;transition:opacity .2s;white-space:nowrap}
+.btn-approve:hover{opacity:.85}
+.btn-reject{background:transparent;border:1px solid rgba(255,100,100,.35);color:rgba(255,130,130,.8);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
+.btn-reject:hover{border-color:rgba(255,100,100,.6);color:rgba(255,150,150,1)}
+.btn-staff{background:rgba(100,180,255,.1);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
+.btn-revoke{background:rgba(255,150,50,.1);border:1px solid rgba(255,150,50,.3);color:rgba(255,180,80,.9);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
+
+/* APPLICANT TABLE */
+.applicant-table{width:100%;border-collapse:collapse;font-size:.83rem}
+.applicant-table th{text-align:left;padding:9px 12px;color:rgba(255,255,255,.4);font-weight:500;border-bottom:1px solid rgba(255,255,255,.08);font-size:.75rem;letter-spacing:.05em;text-transform:uppercase}
+.applicant-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.85);vertical-align:middle}
+.applicant-table tr:last-child td{border-bottom:none}
+.applicant-table tr:hover td{background:rgba(255,255,255,.03)}
+.btn-csv{background:#fff;color:#0d1f3c;border:none;padding:7px 15px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer}
+
+/* FORM EDITOR */
+.form-editor-section{margin-bottom:1.2rem}
+.form-editor-label{font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.5rem}
+.form-editor-section textarea,.form-editor-section input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.85rem;outline:none;resize:vertical;font-family:inherit}
+.form-editor-section textarea:focus,.form-editor-section input:focus{border-color:rgba(255,255,255,.3)}
+.btn-save{background:#fff;color:#0d1f3c;border:none;padding:8px 18px;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+.btn-save:hover{opacity:.85}
+.question-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:.9rem;margin-bottom:.5rem;display:flex;align-items:flex-start;gap:10px}
+.q-text{flex:1;font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.4}
+.q-type{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:3px}
+.q-btns{display:flex;gap:5px;flex-shrink:0}
+.btn-q-edit,.btn-q-del{background:none;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:3px 8px;font-size:.72rem;cursor:pointer;transition:all .15s}
+.btn-q-edit{color:rgba(255,255,255,.45)}
+.btn-q-edit:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.btn-q-del{color:rgba(255,100,100,.5)}
+.btn-q-del:hover{color:rgba(255,130,130,.9);border-color:rgba(255,100,100,.4)}
+.btn-add-q{background:transparent;border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.45);padding:9px;border-radius:8px;width:100%;cursor:pointer;font-size:.83rem;transition:all .2s;margin-top:.3rem}
+.btn-add-q:hover{border-color:rgba(255,255,255,.4);color:#fff}
+
+/* MEETING CHIPS */
+.meeting-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1rem}
+
+/* EMPTY / TOAST */
+.empty{text-align:center;padding:2.5rem;color:rgba(255,255,255,.22);font-size:.88rem}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;color:#0d1f3c;padding:11px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1.8rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1.1rem;font-weight:600;margin-bottom:1.2rem}
+.form-group{margin-bottom:.9rem}
+.form-group label{display:block;font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:5px}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 11px;color:#fff;font-size:.85rem;outline:none;font-family:inherit}
+.form-group textarea{resize:vertical;min-height:60px}
+.form-group input:focus,.form-group textarea:focus{border-color:rgba(255,255,255,.35)}
+.form-group select option{background:#0d1f3c}
+.modal-btns{display:flex;gap:10px;margin-top:1.2rem}
+.btn-modal-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.85rem}
+.btn-modal-ok{flex:2;background:#fff;color:#0d1f3c;border:none;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.85rem}
+
+/* PROFILE */
+.profile-section{margin-bottom:1.2rem}
+.profile-section-title{font-size:.75rem;color:rgba(255,255,255,.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem;font-weight:600}
+.profile-row{display:flex;gap:8px;margin-bottom:.4rem;font-size:.85rem}
+.profile-label{color:rgba(255,255,255,.4);min-width:80px;flex-shrink:0}
+.profile-val{color:rgba(255,255,255,.85)}
+.profile-answer{background:rgba(255,255,255,.05);border-radius:7px;padding:.8rem;font-size:.84rem;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:.6rem;white-space:pre-wrap}
+.profile-q{font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.3rem}
+.applied-chip{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;font-size:.78rem;color:rgba(255,255,255,.7);margin:3px}
+
+/* ACCESS DENIED */
+.access-denied{max-width:400px;margin:8rem auto;text-align:center;padding:0 1.5rem}
+.access-denied .icon{font-size:3rem;margin-bottom:1rem}
+.access-denied h2{font-size:1.3rem;font-weight:700;margin-bottom:.6rem}
+.access-denied p{color:rgba(255,255,255,.45);font-size:.88rem;line-height:1.7}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">THE MORI APPLY <span>관리자</span></div>
+  <div class="nav-right" id="navRight">
+    <a class="btn-home" href="index.html">← 메인으로</a>
+  </div>
+</nav>
+
+<!-- 접근 거부 -->
+<div id="screenDenied" style="display:none">
+  <div class="access-denied">
+    <div class="icon">🔒</div>
+    <h2>접근 권한이 없어요</h2>
+    <p>관리자 계정으로 로그인해야 접근할 수 있어요.</p>
+    <br>
+    <a class="btn-home" href="index.html" style="justify-content:center;margin-top:.5rem">메인으로 돌아가기</a>
+  </div>
+</div>
+
+<!-- 메인 관리자 페이지 -->
+<div id="adminMain" style="display:none">
+  <div class="page-wrap">
+    <div class="page-title">관리자 페이지</div>
+    <div class="page-sub" id="adminSubtitle"></div>
+
+    <div class="admin-tab-bar">
+      <div class="admin-tab active" onclick="switchAdminTab('members',this)">멤버 관리</div>
+      <div class="admin-tab" onclick="switchAdminTab('meetings',this)">모임 신청자</div>
+      <div class="admin-tab" onclick="switchAdminTab('form',this)">신청서 편집</div>
+    </div>
+
+    <!-- 멤버 관리 탭 -->
+    <div id="tabMembers">
+      <div class="section-card">
+        <div class="section-head">
+          <div><h2>멤버 관리</h2><p>신청서를 제출한 멤버를 승인하고 권한을 관리해요</p></div>
+        </div>
+        <div class="filter-chips">
+          <div class="chip active" onclick="filterMembers('pending',this)">⏳ 대기중</div>
+          <div class="chip" onclick="filterMembers('member',this)">✅ 참여자</div>
+          <div class="chip" onclick="filterMembers('staff',this)">⭐ 운영진</div>
+          <div class="chip" onclick="filterMembers('all',this)">전체</div>
+        </div>
+        <div class="member-list" id="memberList"><div class="empty">불러오는 중...</div></div>
+      </div>
+    </div>
+
+    <!-- 모임 신청자 탭 -->
+    <div id="tabMeetings" style="display:none">
+      <div class="section-card">
+        <div class="section-head">
+          <div><h2>모임 신청자 명단</h2><p>모임별 신청자를 확인하고 CSV로 내보낼 수 있어요</p></div>
+          <button class="btn-csv" onclick="exportCSV()">CSV 내보내기</button>
+        </div>
+        <div class="meeting-chips" id="meetingChips"></div>
+        <div id="applicantTableWrap"><div class="empty">모임을 선택하면 신청자 명단이 표시돼요</div></div>
+      </div>
+    </div>
+
+    <!-- 신청서 편집 탭 -->
+    <div id="tabForm" style="display:none">
+      <div class="section-card">
+        <div class="section-head"><div><h2>신청서 안내문</h2><p>신청서 상단에 표시되는 안내 문구예요</p></div></div>
+        <div class="form-editor-section">
+          <textarea id="editorNotice" rows="4" placeholder="안내문을 입력해주세요"></textarea>
+        </div>
+        <button class="btn-save" onclick="saveNotice()">저장</button>
+      </div>
+
+      <div class="section-card">
+        <div class="section-head"><div><h2>개인정보 동의 문구</h2><p>개인정보 수집 동의 내용을 수정해요</p></div></div>
+        <div class="form-editor-section">
+          <textarea id="editorPrivacy" rows="5" placeholder="개인정보 수집 동의 문구를 입력해주세요"></textarea>
+        </div>
+        <button class="btn-save" onclick="savePrivacy()">저장</button>
+      </div>
+
+      <div class="section-card">
+        <div class="section-head"><div><h2>신규멤버 추가 질문</h2><p>신규멤버에게만 보이는 질문이에요. 순서대로 표시돼요</p></div></div>
+        <div id="questionEditor"></div>
+        <button class="btn-add-q" onclick="openAddQuestionModal()">+ 질문 추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 질문 모달 -->
+<div class="modal-overlay" id="questionModal">
+  <div class="modal">
+    <h2 id="qModalTitle">질문 추가</h2>
+    <div class="form-group"><label>질문 내용 *</label><textarea id="q-text" rows="2" placeholder="예) 본인의 삶에 영향을 미친 책은?"></textarea></div>
+    <div class="form-group"><label>답변 형식</label>
+      <select id="q-type"><option value="textarea">장문 텍스트</option><option value="text">단문 텍스트</option></select>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="q-required" style="width:17px;height:17px;accent-color:#fff">
+      <label style="font-size:.85rem;color:rgba(255,255,255,.6)">필수 질문</label>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeQuestionModal()">취소</button>
+      <button class="btn-modal-ok" id="qModalOkBtn" onclick="submitQuestion()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 멤버 프로필 모달 -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal" style="max-width:580px">
+    <h2 id="profileModalTitle">멤버 프로필</h2>
+    <div id="profileModalContent"></div>
+    <div class="modal-btns" style="margin-top:1rem">
+      <button class="btn-modal-cancel" onclick="closeProfileModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({apiKey:"AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",authDomain:"the-mori-apply.firebaseapp.com",projectId:"the-mori-apply",storageBucket:"the-mori-apply.firebasestorage.app",messagingSenderId:"306904700616",appId:"1:306904700616:web:2217470905df10786837fd"});
+const auth=firebase.auth(),db=firebase.firestore();
+const ADMIN_EMAIL='nohjunhyouk@gmail.com';
+let user=null,meetings=[],formConfig={notice:'',privacy:'',questions:[]},memberFilter='pending',adminSelected=null,editingQId=null;
+
+auth.onAuthStateChanged(async fb=>{
+  if(!fb||fb.email!==ADMIN_EMAIL){document.getElementById('screenDenied').style.display='block';document.getElementById('adminMain').style.display='none';return;}
+  user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
+  document.getElementById('screenDenied').style.display='none';
+  document.getElementById('adminMain').style.display='block';
+  document.getElementById('adminSubtitle').textContent=`${user.name} 님으로 로그인됨`;
+  const nr=document.getElementById('navRight');
+  const av=user.photo?`<img src="${user.photo}" alt="">`:user.initial;
+  nr.innerHTML=`<a class="btn-home" href="index.html">← 메인으로</a><div class="avatar-circle">${av}</div><button class="btn-sm" onclick="auth.signOut().then(()=>location.href='index.html')">로그아웃</button>`;
+  await loadFormConfig();
+  listenMeetings();
+  renderMemberList();
+});
+
+/* ── FORM CONFIG ──────────────────────────────────────── */
+async function loadFormConfig(){
+  const doc=await db.collection('settings').doc('formConfig').get();
+  if(doc.exists)formConfig={...formConfig,...doc.data()};
+  else formConfig={notice:'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',questions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false}]};
+  document.getElementById('editorNotice').value=formConfig.notice||'';
+  document.getElementById('editorPrivacy').value=formConfig.privacy||'';
+  renderQuestionEditor();
+}
+
+async function saveNotice(){formConfig.notice=document.getElementById('editorNotice').value;await db.collection('settings').doc('formConfig').set(formConfig);showToast('안내문이 저장되었어요 ✅');}
+async function savePrivacy(){formConfig.privacy=document.getElementById('editorPrivacy').value;await db.collection('settings').doc('formConfig').set(formConfig);showToast('개인정보 동의 문구가 저장되었어요 ✅');}
+
+function renderQuestionEditor(){
+  document.getElementById('questionEditor').innerHTML=formConfig.questions.map(q=>`
+    <div class="question-item">
+      <div style="flex:1"><div class="q-text">${q.text}${q.required?' <span style="color:rgba(255,150,150,.8);font-size:.75rem">*필수</span>':''}</div><div class="q-type">${q.type==='textarea'?'장문':'단문'}</div></div>
+      <div class="q-btns"><button class="btn-q-edit" onclick="openEditQuestionModal('${q.id}')">수정</button><button class="btn-q-del" onclick="deleteQuestion('${q.id}')">삭제</button></div>
+    </div>`).join('');
+}
+
+function openAddQuestionModal(){editingQId=null;document.getElementById('qModalTitle').textContent='질문 추가';document.getElementById('qModalOkBtn').textContent='추가';document.getElementById('q-text').value='';document.getElementById('q-type').value='textarea';document.getElementById('q-required').checked=false;document.getElementById('questionModal').classList.add('open');}
+function openEditQuestionModal(id){const q=formConfig.questions.find(x=>x.id===id);if(!q)return;editingQId=id;document.getElementById('qModalTitle').textContent='질문 수정';document.getElementById('qModalOkBtn').textContent='저장';document.getElementById('q-text').value=q.text;document.getElementById('q-type').value=q.type;document.getElementById('q-required').checked=q.required;document.getElementById('questionModal').classList.add('open');}
+function closeQuestionModal(){document.getElementById('questionModal').classList.remove('open');editingQId=null;}
+async function submitQuestion(){
+  const text=document.getElementById('q-text').value.trim();if(!text){showToast('질문 내용을 입력해주세요');return;}
+  const type=document.getElementById('q-type').value,required=document.getElementById('q-required').checked;
+  if(editingQId)formConfig.questions=formConfig.questions.map(q=>q.id===editingQId?{...q,text,type,required}:q);
+  else formConfig.questions.push({id:'q'+Date.now(),text,type,required});
+  await db.collection('settings').doc('formConfig').set(formConfig);
+  closeQuestionModal();renderQuestionEditor();showToast(editingQId?'질문이 수정되었어요':'질문이 추가되었어요');
+}
+async function deleteQuestion(id){if(!confirm('이 질문을 삭제할까요?'))return;formConfig.questions=formConfig.questions.filter(q=>q.id!==id);await db.collection('settings').doc('formConfig').set(formConfig);renderQuestionEditor();showToast('질문이 삭제되었어요');}
+
+/* ── MEMBERS ──────────────────────────────────────────── */
+async function renderMemberList(){
+  const g=document.getElementById('memberList');g.innerHTML=`<div class="empty">불러오는 중...</div>`;
+  let q=db.collection('users');if(memberFilter!=='all')q=q.where('role','==',memberFilter);
+  const snap=await q.get();
+  if(snap.empty){g.innerHTML=`<div class="empty">해당하는 멤버가 없어요</div>`;return;}
+  const statusMap={pending:'badge-pending',member:'badge-member',staff:'badge-staff'};
+  const statusLabel={pending:'대기중',member:'참여자',staff:'운영진'};
+  g.innerHTML=snap.docs.map(d=>{
+    const u=d.data();
+    const av=u.photo?`<img src="${u.photo}" alt="">`:u.name?.[0]||'?';
+    let actions='';
+    if(u.role==='pending')actions=`<button class="btn-approve" onclick="event.stopPropagation();approveMember('${u.email}')">승인</button><button class="btn-reject" onclick="event.stopPropagation();rejectMember('${u.email}','${u.name}')">거절</button>`;
+    else if(u.role==='member')actions=`<button class="btn-staff" onclick="event.stopPropagation();setRole('${u.email}','staff')">운영진 부여</button>`;
+    else if(u.role==='staff')actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">운영진 회수</button>`;
+    return `<div class="member-row" onclick="openProfileModal('${u.email}')">
+      <div class="member-av">${av}</div>
+      <div class="member-info">
+        <div class="member-name">${u.name||'이름 없음'}</div>
+        <div class="member-meta">${u.email} · ${u.memberType||'-'}</div>
+        <div class="member-badges"><span class="badge ${statusMap[u.role]||'badge-pending'}">${statusLabel[u.role]||'대기중'}</span></div>
+      </div>
+      <div class="member-actions">${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterMembers(f,el){memberFilter=f;document.querySelectorAll('.filter-chips .chip').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderMemberList();}
+async function approveMember(email){await db.collection('users').doc(email).update({role:'member'});showToast('승인되었어요 ✅');renderMemberList();}
+async function rejectMember(email,name){if(!confirm(`"${name}" 님의 신청을 거절하고 데이터를 삭제할까요?`))return;await db.collection('users').doc(email).delete();showToast('거절되었어요');renderMemberList();}
+async function setRole(email,role){await db.collection('users').doc(email).update({role});showToast(role==='staff'?'운영진 권한을 부여했어요':'운영진 권한을 회수했어요');renderMemberList();}
+
+async function openProfileModal(email){
+  const doc=await db.collection('users').doc(email).get();if(!doc.exists)return;
+  const u=doc.data();
+  const appliedMeetings=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id);
+  let answersHTML='';
+  if(u.memberType==='신규멤버'&&u.answers){answersHTML=formConfig.questions.map(q=>{const a=u.answers[q.id]||'-';return`<div><div class="profile-q">${q.text}</div><div class="profile-answer">${a}</div></div>`;}).join('');}
+  document.getElementById('profileModalTitle').textContent=u.name||email;
+  document.getElementById('profileModalContent').innerHTML=`
+    <div class="profile-section">
+      <div class="profile-section-title">기본 정보</div>
+      <div class="profile-row"><span class="profile-label">이메일</span><span class="profile-val">${u.email}</span></div>
+      <div class="profile-row"><span class="profile-label">성별</span><span class="profile-val">${u.gender||'-'}</span></div>
+      <div class="profile-row"><span class="profile-label">생년월일</span><span class="profile-val">${u.birth||'-'}</span></div>
+      <div class="profile-row"><span class="profile-label">연락처</span><span class="profile-val">${u.phone||'-'}</span></div>
+      <div class="profile-row"><span class="profile-label">멤버구분</span><span class="profile-val">${u.memberType||'-'}</span></div>
+    </div>
+    ${answersHTML?`<div class="profile-section"><div class="profile-section-title">신청서 답변</div>${answersHTML}</div>`:''}
+    <div class="profile-section">
+      <div class="profile-section-title">신청한 모임</div>
+      ${appliedMeetings.length?appliedMeetings.map(t=>`<span class="applied-chip">${t}</span>`).join(''):'<span style="color:rgba(255,255,255,.3);font-size:.83rem">신청한 모임 없음</span>'}
+    </div>`;
+  document.getElementById('profileModal').classList.add('open');
+}
+function closeProfileModal(){document.getElementById('profileModal').classList.remove('open');}
+
+/* ── MEETINGS ─────────────────────────────────────────── */
+function listenMeetings(){
+  db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
+    meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderMeetingChips();
+  });
+}
+function renderMeetingChips(){
+  document.getElementById('meetingChips').innerHTML=meetings.map(m=>`<div class="chip${adminSelected===m.id?' active':''}" onclick="selectMeeting('${m.id}')">${m.title}</div>`).join('');
+}
+function selectMeeting(id){adminSelected=id;renderMeetingChips();renderApplicantTable();}
+async function renderApplicantTable(){
+  const wrap=document.getElementById('applicantTableWrap');
+  if(!adminSelected){wrap.innerHTML=`<div class="empty">모임을 선택하면 신청자 명단이 표시돼요</div>`;return;}
+  wrap.innerHTML=`<div class="empty">불러오는 중...</div>`;
+  const snap=await db.collection('meetings').doc(adminSelected).collection('applicants').orderBy('time').get();
+  const m=meetings.find(x=>x.id===adminSelected);
+  if(snap.empty){wrap.innerHTML=`<div class="empty">"${m?.title}" 신청자가 없어요</div>`;return;}
+  wrap.innerHTML=`<table class="applicant-table"><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>신청시각</th></tr></thead><tbody>${snap.docs.map((d,i)=>{const a=d.data();return`<tr><td>${i+1}</td><td>${a.name}</td><td>${a.email}</td><td>${a.time}</td></tr>`;}).join('')}</tbody></table>`;
+}
+async function exportCSV(){
+  const rows=[['모임','책제목','저자','이름','이메일','신청시각']];
+  for(const m of meetings){const snap=await db.collection('meetings').doc(m.id).collection('applicants').get();snap.docs.forEach(d=>{const a=d.data();rows.push([m.title,m.title,m.author,a.name,a.email,a.time]);});}
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_신청자명단.csv';a.click();
+  showToast('CSV 다운로드 완료 ✅');
+}
+
+/* ── TABS ─────────────────────────────────────────────── */
+function switchAdminTab(t,el){
+  document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
+  ['tabMembers','tabMeetings','tabForm'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById({members:'tabMembers',meetings:'tabMeetings',form:'tabForm'}[t]).style.display='block';
+  if(t==='meetings')renderMeetingChips();
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
