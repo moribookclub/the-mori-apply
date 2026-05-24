@@ -105,7 +105,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .my-section{max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;color:#0d1f3c;padding:11px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-/* CONFIRM */
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem}
 .confirm-overlay.open{display:flex}
 .confirm-box{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:1.8rem;width:100%;max-width:340px;text-align:center}
@@ -115,7 +114,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-confirm-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.88rem}
 .btn-confirm-ok{flex:1;background:rgba(255,80,80,.8);border:none;color:#fff;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.88rem}
 .btn-confirm-ok:hover{background:rgba(255,80,80,1)}
-/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
 .modal-overlay.open{display:flex}
 .modal{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1.8rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
@@ -194,7 +192,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 
 <div class="toast" id="toast"></div>
 
-<!-- 삭제 확인 -->
 <div class="confirm-overlay" id="confirmBox">
   <div class="confirm-box">
     <p id="confirmMsg"></p>
@@ -205,7 +202,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 </div>
 
-<!-- 추가/수정 모달 -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
     <h2 id="modalTitle">새 모임 추가</h2>
@@ -255,12 +251,11 @@ let wishlisted = new Set();
 let maxApply = 2;
 let notifSent = {};
 let adminSelected = null;
-let editingId = null; // 수정 중인 모임 id
+let editingId = null;
 
-/* ── AUTH ─────────────────────────────────────────────── */
 auth.onAuthStateChanged(async fb => {
   if (fb) {
-    user = {name: fb.displayName, email: fb.email, photo: fb.photoURL, initial: fb.displayName?.[0] || '?'};
+    user = {name:fb.displayName, email:fb.email, photo:fb.photoURL, initial:fb.displayName?.[0]||'?'};
     await loadUserData();
   } else {
     user = null; applied = new Set(); wishlisted = new Set();
@@ -276,12 +271,11 @@ function logout() { auth.signOut(); }
 function isAdmin() { return user && user.email === ADMIN_EMAIL; }
 function myApplyCount() { return applied.size; }
 
-/* ── FIRESTORE 실시간 구독 ────────────────────────────── */
 let unsubMeetings = null;
 function listenMeetings() {
   if (unsubMeetings) return;
   unsubMeetings = db.collection('meetings').orderBy('date','asc').onSnapshot(snap => {
-    meetings = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    meetings = snap.docs.map(d => ({id:d.id, ...d.data()}));
     db.collection('settings').doc('config').get().then(d => {
       if (d.exists && d.data().maxApply) {
         maxApply = d.data().maxApply;
@@ -290,11 +284,10 @@ function listenMeetings() {
       }
     });
     renderAll();
-    updateNav(); // 신청 카운터 실시간 반영
+    updateNav();
   });
 }
 
-/* ── 유저 데이터 ──────────────────────────────────────── */
 async function loadUserData() {
   if (!user) return;
   const doc = await db.collection('users').doc(user.email).get();
@@ -307,13 +300,12 @@ async function loadUserData() {
 async function saveUserData() {
   if (!user) return;
   await db.collection('users').doc(user.email).set({
-    name: user.name, email: user.email,
-    applied: [...applied], wishlisted: [...wishlisted],
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, {merge: true});
+    name:user.name, email:user.email,
+    applied:[...applied], wishlisted:[...wishlisted],
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  }, {merge:true});
 }
 
-/* ── APPLY ────────────────────────────────────────────── */
 async function applyMeeting(id) {
   if (!user) { showToast('로그인 후 신청할 수 있어요'); return; }
   const m = meetings.find(x => x.id === id); if (!m) return;
@@ -322,22 +314,21 @@ async function applyMeeting(id) {
   if (applied.has(id)) {
     applied.delete(id);
     await aRef.delete();
-    await mRef.update({applied: firebase.firestore.FieldValue.increment(-1)});
-    checkWishNotif(id, {...m, applied: m.applied - 1});
+    await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
+    checkWishNotif(id, {...m, applied:m.applied-1});
     showToast('신청이 취소되었어요');
   } else {
     if (m.applied >= m.max) { showToast('정원이 마감되었어요'); return; }
     if (myApplyCount() >= maxApply) { showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`); return; }
     applied.add(id);
-    await aRef.set({name: user.name, email: user.email, time: new Date().toLocaleString('ko-KR'), photo: user.photo || ''});
-    await mRef.update({applied: firebase.firestore.FieldValue.increment(1)});
+    await aRef.set({name:user.name, email:user.email, time:new Date().toLocaleString('ko-KR'), photo:user.photo||''});
+    await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
     showToast('신청 완료! 모임에서 만나요 📚');
   }
   await saveUserData();
   updateNav(); renderAll();
 }
 
-/* ── WISH ─────────────────────────────────────────────── */
 async function toggleWish(id) {
   if (!user) { showToast('로그인 후 찜할 수 있어요'); return; }
   const m = meetings.find(x => x.id === id);
@@ -358,28 +349,26 @@ function checkWishNotif(id, m) {
   }
 }
 function pushNotif(msg) {
-  if ('Notification' in window && Notification.permission === 'granted') new Notification('THE MORI APPLY', {body: msg});
-  else if ('Notification' in window && Notification.permission !== 'denied') Notification.requestPermission().then(p => p === 'granted' ? new Notification('THE MORI APPLY', {body: msg}) : showToast(msg));
+  if ('Notification' in window && Notification.permission === 'granted') new Notification('THE MORI APPLY', {body:msg});
+  else if ('Notification' in window && Notification.permission !== 'denied') Notification.requestPermission().then(p => p==='granted' ? new Notification('THE MORI APPLY', {body:msg}) : showToast(msg));
   else showToast(msg);
 }
 
-/* ── QUOTA ────────────────────────────────────────────── */
 async function saveQuota() {
   const v = parseInt(document.getElementById('quotaInput').value) || 1;
   maxApply = Math.max(1, v);
-  await db.collection('settings').doc('config').set({maxApply}, {merge: true});
+  await db.collection('settings').doc('config').set({maxApply}, {merge:true});
   showToast(`1인 최대 신청 수를 ${maxApply}개로 설정했어요`);
   renderAll(); updateNav();
 }
 
-/* ── NAV ──────────────────────────────────────────────── */
 function updateNav() {
   const nr = document.getElementById('navRight');
   if (!user) {
     nr.innerHTML = `<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;
   } else {
     const cnt = myApplyCount();
-    const cls = cnt >= maxApply ? 'full-quota' : cnt >= maxApply - 1 ? 'warn' : '';
+    const cls = cnt >= maxApply ? 'full-quota' : cnt >= maxApply-1 ? 'warn' : '';
     const av = user.photo ? `<img src="${user.photo}" alt="">` : user.initial;
     nr.innerHTML = `<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
   }
@@ -387,12 +376,11 @@ function updateNav() {
   document.getElementById('adminAddBar').style.display = isAdmin() ? 'flex' : 'none';
 }
 
-/* ── CARD ─────────────────────────────────────────────── */
 function cardHTML(m) {
   const isFull = m.applied >= m.max, isApplied = applied.has(m.id), isWish = wishlisted.has(m.id);
   const isQuotaFull = user && myApplyCount() >= maxApply && !isApplied;
-  const pct = Math.round((m.applied / m.max) * 100);
-  const dateStr = new Date(m.date).toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'short'});
+  const pct = Math.round((m.applied/m.max)*100);
+  const dateStr = new Date(m.date).toLocaleDateString('ko-KR', {month:'long',day:'numeric',weekday:'short'});
   let badge, btnCls, btnTxt;
   if (isApplied)        { badge=`<span class="card-badge badge-mine">신청완료</span>`; btnCls='applied'; btnTxt='신청취소'; }
   else if (isFull)      { badge=`<span class="card-badge badge-closed">마감</span>`; btnCls='full'; btnTxt='마감'; }
@@ -407,7 +395,7 @@ function cardHTML(m) {
         <div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div>
       </div>
       <div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div>
-      <div class="meeting-meta-header"><span class="meta-tag">🗂 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div>
+      <div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div>
     </div>
     <div class="card-body">
       <div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div>
@@ -421,7 +409,6 @@ function cardHTML(m) {
   </div>`;
 }
 
-/* ── RENDER ───────────────────────────────────────────── */
 function renderAll() { renderGrid(); renderMy(); renderWish(); if (isAdmin()) renderAdmin(); }
 function renderGrid() {
   document.getElementById('cardGrid').innerHTML = meetings.length ? meetings.map(cardHTML).join('') : `<div class="empty-state">등록된 모임이 없어요</div>`;
@@ -439,7 +426,6 @@ function renderWish() {
   g.innerHTML = list.length ? list.map(cardHTML).join('') : `<div class="empty-state">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;
 }
 
-/* ── ADMIN TABLE ──────────────────────────────────────── */
 function renderAdmin() {
   document.getElementById('meetingChips').innerHTML = meetings.map(m =>
     `<div class="meeting-chip${adminSelected===m.id?' active':''}" onclick="selectAdmin('${m.id}')">${m.title}</div>`
@@ -469,13 +455,12 @@ async function exportCSV() {
   showToast('CSV 다운로드 완료 ✅');
 }
 
-/* ── 모임 추가/수정 모달 ──────────────────────────────── */
 function openAddModal() {
   editingId = null;
   document.getElementById('modalTitle').textContent = '새 모임 추가';
   document.getElementById('modalOkBtn').textContent = '추가하기';
   ['f-title','f-author','f-topic','f-host','f-place'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-max').value = 8;
+  document.getElementById('f-max').value = 7;
   document.getElementById('f-time').value = '19:00';
   document.getElementById('f-date').value = '';
   document.getElementById('addModal').classList.add('open');
@@ -505,7 +490,7 @@ async function submitMeeting() {
   const date = document.getElementById('f-date').value;
   const time = document.getElementById('f-time').value;
   const place = document.getElementById('f-place').value.trim();
-  const max = parseInt(document.getElementById('f-max').value) || 8;
+  const max = parseInt(document.getElementById('f-max').value) || 7;
   if (!title||!author||!topic||!host||!date||!place) { showToast('필수 항목을 모두 입력해주세요'); return; }
   if (editingId) {
     await db.collection('meetings').doc(editingId).update({title,author,topic,host,date,time,place,max});
@@ -517,7 +502,6 @@ async function submitMeeting() {
   closeAddModal();
 }
 
-/* ── 삭제 확인 ────────────────────────────────────────── */
 function confirmDelete(id, title) {
   document.getElementById('confirmMsg').innerHTML = `<strong>"${title}"</strong> 모임을 삭제할까요?<br><span style="font-size:.82rem;color:rgba(255,255,255,.4)">신청자 데이터도 함께 삭제돼요</span>`;
   document.getElementById('confirmOkBtn').onclick = () => deleteMeeting(id);
@@ -534,7 +518,6 @@ async function deleteMeeting(id) {
   showToast('모임이 삭제되었어요');
 }
 
-/* ── TABS ─────────────────────────────────────────────── */
 function switchTab(t, el) {
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
   el.classList.add('active');
@@ -543,7 +526,6 @@ function switchTab(t, el) {
   if (t === 'admin') renderAdmin();
 }
 
-/* ── TOAST ────────────────────────────────────────────── */
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
