@@ -273,7 +273,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 </div>
 
 <script>
-if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
 firebase.initializeApp({
   apiKey:"AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",
@@ -283,332 +283,475 @@ firebase.initializeApp({
   messagingSenderId:"306904700616",
   appId:"1:306904700616:web:2217470905df10786837fd"
 });
-const auth=firebase.auth();
-const db=firebase.firestore();
-const ADMIN_EMAIL='nohjunhyouk@gmail.com';
+const auth = firebase.auth();
+const db   = firebase.firestore();
+const ADMIN_EMAIL = 'nohjunhyouk@gmail.com';
 
-let user=null, userRole=null;
-let meetings=[], applied=new Set(), wishlisted=new Set();
-let maxApply=2, notifSent={}, editingId=null;
-let formConfig={notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[]};
-let unsubMeetings=null;
+let user = null;
+let userRole = null;   // 'admin' | 'staff' | 'member' | 'pending' | ''
+let meetings = [], applied = new Set(), wishlisted = new Set();
+let maxApply = 2, notifSent = {}, editingId = null;
+let formConfig = {notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[]};
+let unsubMeetings = null;
+
+/* ── 헬퍼 ─────────────────────────────────────────────── */
+function isAdmin()   { return userRole === 'admin'; }
+function isStaff()   { return userRole === 'staff'; }
+function canManage() { return userRole === 'admin' || userRole === 'staff'; }
+function myApplyCount() { return applied.size; }
 
 /* ══════════════════════════════════════════
    AUTH
 ══════════════════════════════════════════ */
-auth.onAuthStateChanged(fb=>{
-  if(unsubMeetings){ unsubMeetings(); unsubMeetings=null; }
-  if(!fb){
-    user=null; userRole=null; applied=new Set(); wishlisted=new Set();
+auth.onAuthStateChanged(fb => {
+  if (unsubMeetings) { unsubMeetings(); unsubMeetings = null; }
+
+  if (!fb) {
+    user = null; userRole = null;
+    applied = new Set(); wishlisted = new Set();
     showScreen('login'); updateNav();
     return;
   }
 
-  user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
+  user = {
+    name:  fb.displayName,
+    email: fb.email,
+    photo: fb.photoURL,
+    initial: (fb.displayName || '?')[0]
+  };
 
-  if(fb.email===ADMIN_EMAIL){
-    // userRole을 Firestore 호출 전에 먼저 세팅
-    userRole='admin';
-    db.collection('users').doc(fb.email).get().then(doc=>{
-      if(doc.exists){
-        const d=doc.data();
-        applied=new Set(d.applied||[]);
-        wishlisted=new Set(d.wishlisted||[]);
-      } else {
-        db.collection('users').doc(fb.email).set(
-          {name:fb.displayName,email:fb.email,photo:fb.photoURL||'',applied:[],wishlisted:[]},
-          {merge:true}
-        );
-      }
-      loadFormConfig().then(()=>{ initMain(); updateNav(); });
-    }).catch(err=>{ console.error(err); showToast('데이터 로드 오류'); });
+  if (fb.email === ADMIN_EMAIL) {
+    userRole = 'admin';                          // ← 비동기 전에 먼저 확정
+    db.collection('users').doc(fb.email).get()
+      .then(doc => {
+        if (doc.exists) {
+          const d = doc.data();
+          applied    = new Set(d.applied    || []);
+          wishlisted = new Set(d.wishlisted || []);
+        } else {
+          db.collection('users').doc(fb.email).set(
+            { name: fb.displayName, email: fb.email, photo: fb.photoURL || '', applied: [], wishlisted: [] },
+            { merge: true }
+          );
+        }
+        loadFormConfig().then(() => { initMain(); updateNav(); });
+      })
+      .catch(err => { console.error(err); showToast('데이터 로드 오류'); });
     return;
   }
 
-  db.collection('users').doc(fb.email).get().then(doc=>{
-    if(!doc.exists){
-      userRole='';
-      loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
-      return;
-    }
-    const d=doc.data();
-    userRole=d.role||'';
-    if(d.maxApply) maxApply=d.maxApply;
-    if(userRole==='member'||userRole==='staff'){
-      applied=new Set(d.applied||[]);
-      wishlisted=new Set(d.wishlisted||[]);
-      loadFormConfig().then(()=>{ initMain(); updateNav(); });
-    } else if(userRole==='pending'){
-      showScreen('waiting'); updateNav(); loadWaitingNotice();
-    } else {
-      loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
-    }
-  }).catch(err=>{ console.error('Firestore 읽기 오류:',err); showToast('데이터 로드 오류. 새로고침해주세요.'); });
+  /* 일반 유저 */
+  db.collection('users').doc(fb.email).get()
+    .then(doc => {
+      if (!doc.exists) {
+        userRole = '';
+        loadFormConfig().then(() => { showScreen('form'); updateNav(); });
+        return;
+      }
+      const d  = doc.data();
+      userRole = d.role || '';
+      if (d.maxApply) maxApply = d.maxApply;
+
+      if (userRole === 'member' || userRole === 'staff') {
+        applied    = new Set(d.applied    || []);
+        wishlisted = new Set(d.wishlisted || []);
+        loadFormConfig().then(() => { initMain(); updateNav(); });
+      } else if (userRole === 'pending') {
+        showScreen('waiting'); updateNav(); loadWaitingNotice();
+      } else {
+        loadFormConfig().then(() => { showScreen('form'); updateNav(); });
+      }
+    })
+    .catch(err => { console.error(err); showToast('데이터 로드 오류. 새로고침해주세요.'); });
 });
 
-function googleLogin(){
+function googleLogin() {
   auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
-    .catch(e=>showToast('로그인 실패: '+e.message));
+      .catch(e => showToast('로그인 실패: ' + e.message));
 }
-function logout(){ auth.signOut(); }
-function isAdmin(){ return userRole==='admin'; }
-function isStaff(){ return userRole==='staff'; }
-function canManage(){ return isAdmin()||isStaff(); }
-function myApplyCount(){ return applied.size; }
+function logout() { auth.signOut(); }
 
 /* ── SCREEN ───────────────────────────────────────────── */
-function showScreen(s){
-  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
-  const map={login:'screenLogin',form:'screenForm',waiting:'screenWaiting',main:'screenMain'};
-  const el=document.getElementById(map[s]);
-  if(el) el.classList.add('active');
+function showScreen(s) {
+  document.querySelectorAll('.screen').forEach(x => x.classList.remove('active'));
+  const map = { login:'screenLogin', form:'screenForm', waiting:'screenWaiting', main:'screenMain' };
+  const el = document.getElementById(map[s]);
+  if (el) el.classList.add('active');
+}
+
+/* ── NAV ──────────────────────────────────────────────── */
+function updateNav() {
+  const nr = document.getElementById('navRight');
+  if (!user) {
+    nr.innerHTML = `<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;
+    return;
+  }
+
+  const admin = (userRole === 'admin');
+  const cnt   = myApplyCount();
+  const cls   = admin ? '' : (cnt >= maxApply ? 'full-quota' : cnt >= maxApply - 1 ? 'warn' : '');
+  const av    = user.photo ? `<img src="${user.photo}" alt="">` : user.initial;
+
+  const roleBadge = admin
+    ? `<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)">관리자</span>`
+    : (userRole === 'staff')
+    ? `<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(100,180,255,.15);border:1px solid rgba(100,180,255,.3);color:rgba(150,210,255,.9)">운영진</span>`
+    : '';
+
+  const adminBtn = admin
+    ? `<a href="admin.html" style="display:inline-block;background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9);padding:5px 12px;border-radius:6px;font-size:.75rem;font-weight:600;text-decoration:none;white-space:nowrap">관리자 페이지</a>`
+    : '';
+
+  nr.innerHTML = `${roleBadge}${adminBtn}<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
+
+  const sb = document.getElementById('staffBar');
+  if (sb) sb.style.display = canManage() ? 'flex' : 'none';
 }
 
 /* ── INIT MAIN ────────────────────────────────────────── */
-function initMain(){
+function initMain() {
   showScreen('main');
   listenMeetings();
   loadNotices();
 }
 
-function loadNotices(){
-  db.collection('settings').doc('config').get().then(d=>{
-    if(!d.exists) return;
-    const data=d.data();
-    if(data.maxApply) maxApply=data.maxApply;
-    const nb=document.getElementById('noticeBanner');
-    const nc=document.getElementById('noticeBannerContent');
-    const np=document.getElementById('noticePageContent');
-    if(nb&&nc){
-      if(data.noticeBoard){nb.style.display='block';nc.innerHTML=data.noticeBoard;}
-      else nb.style.display='none';
+function loadNotices() {
+  db.collection('settings').doc('config').get().then(d => {
+    if (!d.exists) return;
+    const data = d.data();
+    // 관리자는 개인 한도 유지, 일반 유저만 전역 값 적용
+    if (data.maxApply && !isAdmin()) maxApply = data.maxApply;
+    const nb = document.getElementById('noticeBanner');
+    const nc = document.getElementById('noticeBannerContent');
+    const np = document.getElementById('noticePageContent');
+    if (nb && nc) {
+      if (data.noticeBoard) { nb.style.display = 'block'; nc.innerHTML = data.noticeBoard; }
+      else nb.style.display = 'none';
     }
-    if(np) np.innerHTML=data.noticeBoard||'<span style="color:rgba(255,255,255,.25)">등록된 공지사항이 없어요</span>';
+    if (np) np.innerHTML = data.noticeBoard || '<span style="color:rgba(255,255,255,.25)">등록된 공지사항이 없어요</span>';
   });
 }
 
 /* ── WAITING NOTICE ───────────────────────────────────── */
-function loadWaitingNotice(){
-  db.collection('settings').doc('config').get().then(d=>{
-    if(d.exists&&d.data().waitingNotice){
-      const existing=document.getElementById('waitingNoticeBox');
-      if(existing) return;
-      const wrap=document.createElement('div');
-      wrap.id='waitingNoticeBox';
-      wrap.style.cssText='max-width:500px;margin:1rem auto 0;padding:0 1.5rem';
-      wrap.innerHTML=`<div style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.2);border-radius:10px;padding:1rem 1.2rem;font-size:.85rem;color:rgba(255,220,100,.85);line-height:1.7">${d.data().waitingNotice}</div>`;
+function loadWaitingNotice() {
+  db.collection('settings').doc('config').get().then(d => {
+    if (d.exists && d.data().waitingNotice) {
+      if (document.getElementById('waitingNoticeBox')) return;
+      const wrap = document.createElement('div');
+      wrap.id = 'waitingNoticeBox';
+      wrap.style.cssText = 'max-width:500px;margin:1rem auto 0;padding:0 1.5rem';
+      wrap.innerHTML = `<div style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.2);border-radius:10px;padding:1rem 1.2rem;font-size:.85rem;color:rgba(255,220,100,.85);line-height:1.7">${d.data().waitingNotice}</div>`;
       document.querySelector('.waiting-screen').appendChild(wrap);
     }
   });
 }
 
-/* ── NAV ──────────────────────────────────────────────── */
-function updateNav(){
-  const nr=document.getElementById('navRight');
-  if(!user){
-    nr.innerHTML=`<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;
-    return;
-  }
-  const admin = (userRole==='admin');
-  const cnt = myApplyCount();
-  const cls = admin ? '' : (cnt>=maxApply ? 'full-quota' : cnt>=maxApply-1 ? 'warn' : '');
-  const av = user.photo ? `<img src="${user.photo}" alt="">` : user.initial;
-  const rb = admin
-    ? `<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)">관리자</span>`
-    : (userRole==='staff')
-    ? `<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(100,180,255,.15);border:1px solid rgba(100,180,255,.3);color:rgba(150,210,255,.9)">운영진</span>`
-    : '';
-  const adminLink = admin
-    ? `<a href="admin.html" style="display:inline-block;background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9);padding:5px 11px;border-radius:6px;font-size:.75rem;text-decoration:none;white-space:nowrap">관리자 페이지</a>`
-    : '';
-  nr.innerHTML = `${rb}${adminLink}<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
-  const sb = document.getElementById('staffBar');
-  if(sb) sb.style.display = canManage() ? 'flex' : 'none';
-}
-
 /* ── FORM CONFIG ──────────────────────────────────────── */
-async function loadFormConfig(){
-  try{
-    const doc=await db.collection('settings').doc('formConfig').get();
-    if(doc.exists){
-      const d=doc.data();
-      formConfig={notice:d.notice||'',privacy:d.privacy||'',commonQuestions:d.commonQuestions||[],newQuestions:d.newQuestions||d.questions||[],existingQuestions:d.existingQuestions||[]};
+async function loadFormConfig() {
+  try {
+    const doc = await db.collection('settings').doc('formConfig').get();
+    if (doc.exists) {
+      const d = doc.data();
+      formConfig = {
+        notice: d.notice || '', privacy: d.privacy || '',
+        commonQuestions:   d.commonQuestions   || [],
+        newQuestions:      d.newQuestions      || d.questions || [],
+        existingQuestions: d.existingQuestions || []
+      };
     } else {
-      formConfig={notice:'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',commonQuestions:[],newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],existingQuestions:[]};
+      formConfig = {
+        notice:  'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',
+        privacy: '수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',
+        commonQuestions: [],
+        newQuestions: [
+          {id:'q1',text:'자기소개를 해주세요',       type:'textarea',required:true, fontSize:'0.9rem',color:'#ffffff'},
+          {id:'q2',text:'모리를 알게 된 경로',       type:'text',    required:true, fontSize:'0.9rem',color:'#ffffff'},
+          {id:'q3',text:'모리를 신청한 이유',        type:'textarea',required:true, fontSize:'0.9rem',color:'#ffffff'},
+          {id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}
+        ],
+        existingQuestions: []
+      };
     }
-  }catch(e){ console.error('formConfig 로드 실패',e); }
-  const fn=document.getElementById('formNotice'), pt=document.getElementById('privacyText');
-  if(fn) fn.textContent=formConfig.notice;
-  if(pt) pt.textContent=formConfig.privacy;
+  } catch(e) { console.error('formConfig 로드 실패', e); }
+  const fn = document.getElementById('formNotice');
+  const pt = document.getElementById('privacyText');
+  if (fn) fn.textContent = formConfig.notice;
+  if (pt) pt.textContent = formConfig.privacy;
   renderAllQuestions();
 }
 
 /* ── QUESTION RENDER ──────────────────────────────────── */
-function renderQBlock(qs,prefix){
-  return qs.map(q=>{
-    const labelStyle=`font-size:${q.fontSize||'0.9rem'};color:${q.color||'#fff'};white-space:pre-wrap;display:block;margin-bottom:8px;line-height:1.5`;
-    const imgHTML=q.imageData?`<img src="${q.imageData}" style="max-width:100%;max-height:220px;border-radius:8px;margin-bottom:10px;display:block;object-fit:contain">`:'';
-    let input='';
-    if(q.type==='textarea') input=`<textarea id="${prefix}${q.id}" rows="3" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none;resize:vertical;min-height:80px;font-family:inherit"></textarea>`;
-    else if(q.type==='text') input=`<input id="${prefix}${q.id}" type="text" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none">`;
-    else if(q.type==='single'||q.type==='multi'){const t=q.type==='single'?'radio':'checkbox';input=`<div style="display:flex;flex-direction:column;gap:8px">${(q.options||[]).map(opt=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem;color:rgba(255,255,255,.75);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:9px 12px"><input type="${t}" name="${prefix}${q.id}" value="${opt}" style="accent-color:#fff;width:16px;height:16px;flex-shrink:0"> ${opt}</label>`).join('')}</div>`;}
-    return `<div class="field-group">${imgHTML}<label style="${labelStyle}">${q.text}${q.required?' *':''}</label>${input}</div>`;
+function renderQBlock(qs, prefix) {
+  return qs.map(q => {
+    const ls = `font-size:${q.fontSize||'0.9rem'};color:${q.color||'#fff'};white-space:pre-wrap;display:block;margin-bottom:8px;line-height:1.5`;
+    const img = q.imageData ? `<img src="${q.imageData}" style="max-width:100%;max-height:220px;border-radius:8px;margin-bottom:10px;display:block;object-fit:contain">` : '';
+    let input = '';
+    if (q.type === 'textarea')
+      input = `<textarea id="${prefix}${q.id}" rows="3" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none;resize:vertical;min-height:80px;font-family:inherit"></textarea>`;
+    else if (q.type === 'text')
+      input = `<input id="${prefix}${q.id}" type="text" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.88rem;outline:none">`;
+    else if (q.type === 'single' || q.type === 'multi') {
+      const t = q.type === 'single' ? 'radio' : 'checkbox';
+      input = `<div style="display:flex;flex-direction:column;gap:8px">${(q.options||[]).map(opt =>
+        `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem;color:rgba(255,255,255,.75);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:9px 12px"><input type="${t}" name="${prefix}${q.id}" value="${opt}" style="accent-color:#fff;width:16px;height:16px;flex-shrink:0"> ${opt}</label>`
+      ).join('')}</div>`;
+    }
+    return `<div class="field-group">${img}<label style="${ls}">${q.text}${q.required?' *':''}</label>${input}</div>`;
   }).join('');
 }
-function renderAllQuestions(){
-  const nEl=document.getElementById('dynamicQuestions'),eEl=document.getElementById('existingDynamicQuestions'),cEl=document.getElementById('commonDynamicQuestions');
-  if(nEl) nEl.innerHTML=renderQBlock(formConfig.newQuestions||[],'dq-');
-  if(eEl) eEl.innerHTML=renderQBlock(formConfig.existingQuestions||[],'eq-');
-  if(cEl) cEl.innerHTML=renderQBlock(formConfig.commonQuestions||[],'cq-');
+
+function renderAllQuestions() {
+  const nEl = document.getElementById('dynamicQuestions');
+  const eEl = document.getElementById('existingDynamicQuestions');
+  const cEl = document.getElementById('commonDynamicQuestions');
+  if (nEl) nEl.innerHTML = renderQBlock(formConfig.newQuestions      || [], 'dq-');
+  if (eEl) eEl.innerHTML = renderQBlock(formConfig.existingQuestions || [], 'eq-');
+  if (cEl) cEl.innerHTML = renderQBlock(formConfig.commonQuestions   || [], 'cq-');
 }
-function toggleMemberFields(){
-  const v=document.querySelector('input[name="memberType"]:checked')?.value;
-  document.getElementById('newMemberFields').style.display=v==='신규멤버'?'block':'none';
-  const ew=document.getElementById('existingQWrap');
-  if(ew) ew.style.display=(v==='기존멤버'&&(formConfig.existingQuestions||[]).length)?'block':'none';
-  const cw=document.getElementById('commonQWrap');
-  if(cw) cw.style.display=v&&(formConfig.commonQuestions||[]).length?'block':'none';
+
+function toggleMemberFields() {
+  const v = document.querySelector('input[name="memberType"]:checked')?.value;
+  document.getElementById('newMemberFields').style.display = v === '신규멤버' ? 'block' : 'none';
+  const ew = document.getElementById('existingQWrap');
+  if (ew) ew.style.display = (v === '기존멤버' && (formConfig.existingQuestions||[]).length) ? 'block' : 'none';
+  const cw = document.getElementById('commonQWrap');
+  if (cw) cw.style.display = v && (formConfig.commonQuestions||[]).length ? 'block' : 'none';
 }
 
 /* ── SUBMIT APPLICATION ───────────────────────────────── */
-async function submitApplication(){
-  if(!document.getElementById('privacyCheck').checked){showToast('개인정보 수집 동의가 필요해요');return;}
-  const name=document.getElementById('af-name').value.trim();
-  const gender=document.querySelector('input[name="gender"]:checked')?.value;
-  const birth=document.getElementById('af-birth').value;
-  const phone=document.getElementById('af-phone').value.trim();
-  const memberType=document.querySelector('input[name="memberType"]:checked')?.value;
-  if(!name||!gender||!birth||!phone||!memberType){showToast('기본 정보를 모두 입력해주세요');return;}
-  const answers={};
-  function collectQ(qs,prefix){
-    for(const q of qs){
-      if(q.type==='multi'){const checked=[...document.querySelectorAll(`input[name="${prefix}${q.id}"]:checked`)].map(i=>i.value);if(q.required&&!checked.length){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}answers[q.id]=checked;}
-      else if(q.type==='single'){const el=document.querySelector(`input[name="${prefix}${q.id}"]:checked`);if(q.required&&!el){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}answers[q.id]=el?.value||'';}
-      else{const el=document.getElementById(`${prefix}${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return false;}answers[q.id]=val;}
+async function submitApplication() {
+  if (!document.getElementById('privacyCheck').checked) { showToast('개인정보 수집 동의가 필요해요'); return; }
+  const name       = document.getElementById('af-name').value.trim();
+  const gender     = document.querySelector('input[name="gender"]:checked')?.value;
+  const birth      = document.getElementById('af-birth').value;
+  const phone      = document.getElementById('af-phone').value.trim();
+  const memberType = document.querySelector('input[name="memberType"]:checked')?.value;
+  if (!name||!gender||!birth||!phone||!memberType) { showToast('기본 정보를 모두 입력해주세요'); return; }
+  const answers = {};
+  function collectQ(qs, prefix) {
+    for (const q of qs) {
+      if (q.type === 'multi') {
+        const checked = [...document.querySelectorAll(`input[name="${prefix}${q.id}"]:checked`)].map(i => i.value);
+        if (q.required && !checked.length) { showToast(`"${q.text}"을(를) 선택해주세요`); return false; }
+        answers[q.id] = checked;
+      } else if (q.type === 'single') {
+        const el = document.querySelector(`input[name="${prefix}${q.id}"]:checked`);
+        if (q.required && !el) { showToast(`"${q.text}"을(를) 선택해주세요`); return false; }
+        answers[q.id] = el?.value || '';
+      } else {
+        const el  = document.getElementById(`${prefix}${q.id}`);
+        const val = el ? el.value.trim() : '';
+        if (q.required && !val) { showToast(`"${q.text}"을(를) 입력해주세요`); return false; }
+        answers[q.id] = val;
+      }
     }
     return true;
   }
-  const typeQs=memberType==='신규멤버'?formConfig.newQuestions||[]:formConfig.existingQuestions||[];
-  const prefix=memberType==='신규멤버'?'dq-':'eq-';
-  if(!collectQ(typeQs,prefix))return;
-  if(!collectQ(formConfig.commonQuestions||[],'cq-'))return;
-  await db.collection('users').doc(user.email).set({name,email:user.email,photo:user.photo||'',gender,birth,phone,memberType,answers,role:'pending',appliedAt:firebase.firestore.FieldValue.serverTimestamp()});
-  userRole='pending';
-  showScreen('waiting');updateNav();
+  const typeQs = memberType === '신규멤버' ? formConfig.newQuestions||[] : formConfig.existingQuestions||[];
+  const prefix = memberType === '신규멤버' ? 'dq-' : 'eq-';
+  if (!collectQ(typeQs, prefix)) return;
+  if (!collectQ(formConfig.commonQuestions||[], 'cq-')) return;
+  await db.collection('users').doc(user.email).set({
+    name, email:user.email, photo:user.photo||'', gender, birth, phone, memberType,
+    answers, role:'pending', appliedAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  userRole = 'pending';
+  showScreen('waiting'); updateNav();
   showToast('신청서가 제출되었어요! 승인을 기다려주세요 📬');
 }
 
 /* ── SAVE USER DATA ───────────────────────────────────── */
-async function saveUserData(){
-  if(!user) return;
-  // merge:true — role, name 등 기존 필드 절대 덮어쓰지 않음
+async function saveUserData() {
+  if (!user) return;
   await db.collection('users').doc(user.email).set(
-    {applied:[...applied], wishlisted:[...wishlisted], updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
-    {merge:true}
+    { applied:[...applied], wishlisted:[...wishlisted], updatedAt:firebase.firestore.FieldValue.serverTimestamp() },
+    { merge: true }
   );
 }
 
 /* ── MEETINGS ─────────────────────────────────────────── */
-function listenMeetings(){
-  // 기존 구독이 있으면 반드시 먼저 해제
-  if(unsubMeetings){ unsubMeetings(); unsubMeetings=null; }
-  unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
-    meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
+function listenMeetings() {
+  if (unsubMeetings) { unsubMeetings(); unsubMeetings = null; }
+  unsubMeetings = db.collection('meetings').orderBy('date','asc').onSnapshot(snap => {
+    meetings = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     renderAll(); updateNav();
   });
 }
 
-async function applyMeeting(id){
-  if(!user){showToast('로그인 후 신청할 수 있어요');return;}
-  const m=meetings.find(x=>x.id===id); if(!m) return;
-  const mRef=db.collection('meetings').doc(id), aRef=mRef.collection('applicants').doc(user.email);
-  if(applied.has(id)){
-    // 신청 취소
+async function applyMeeting(id) {
+  if (!user) { showToast('로그인 후 신청할 수 있어요'); return; }
+  const m    = meetings.find(x => x.id === id); if (!m) return;
+  const mRef = db.collection('meetings').doc(id);
+  const aRef = mRef.collection('applicants').doc(user.email);
+
+  if (applied.has(id)) {
     applied.delete(id);
     await aRef.delete();
-    await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
-    checkWishNotif(id,{...m,applied:m.applied-1});
+    await mRef.update({ applied: firebase.firestore.FieldValue.increment(-1) });
+    checkWishNotif(id, {...m, applied: m.applied - 1});
     showToast('신청이 취소되었어요');
   } else {
-    // 신청
-    if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
-    if(userRole!=='admin' && myApplyCount()>=maxApply){showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`);return;}
+    if (m.applied >= m.max) { showToast('정원이 마감되었어요'); return; }
+    // 관리자는 한도 체크 없음
+    if (userRole !== 'admin' && myApplyCount() >= maxApply) {
+      showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`); return;
+    }
     applied.add(id);
-    await aRef.set({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});
-    await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
+    await aRef.set({ name:user.name, email:user.email, time:new Date().toLocaleString('ko-KR'), photo:user.photo||'' });
+    await mRef.update({ applied: firebase.firestore.FieldValue.increment(1) });
     showToast('신청 완료! 모임에서 만나요 📚');
   }
-  await saveUserData();
-  updateNav();
-  renderAll();
+  await saveUserData(); updateNav(); renderAll();
 }
 
-async function toggleWish(id){
-  if(!user){showToast('로그인 후 찜할 수 있어요');return;}
-  const m=meetings.find(x=>x.id===id);
-  if(wishlisted.has(id)){wishlisted.delete(id);notifSent[id]=false;showToast('찜 목록에서 제거했어요');}
-  else{wishlisted.add(id);showToast('찜했어요 ❤️');if(m&&m.applied<m.max)pushNotif(`💺 "${m.title}" 모임에 자리 있어요!`);}
+async function toggleWish(id) {
+  if (!user) { showToast('로그인 후 찜할 수 있어요'); return; }
+  const m = meetings.find(x => x.id === id);
+  if (wishlisted.has(id)) { wishlisted.delete(id); notifSent[id] = false; showToast('찜 목록에서 제거했어요'); }
+  else { wishlisted.add(id); showToast('찜했어요 ❤️'); if (m && m.applied < m.max) pushNotif(`💺 "${m.title}" 모임에 자리 있어요!`); }
   await saveUserData(); renderAll();
 }
-function checkWishNotif(id,m){if(wishlisted.has(id)&&!applied.has(id)&&m.applied<m.max&&!notifSent[id]){notifSent[id]=true;setTimeout(()=>{if(wishlisted.has(id)&&!applied.has(id))pushNotif(`💺 찜한 "${m.title}"에 자리가 났어요!`);},700);}}
-function pushNotif(msg){if('Notification'in window&&Notification.permission==='granted')new Notification('THE MORI APPLY',{body:msg});else if('Notification'in window&&Notification.permission!=='denied')Notification.requestPermission().then(p=>p==='granted'?new Notification('THE MORI APPLY',{body:msg}):showToast(msg));else showToast(msg);}
 
-/* ── CARD ─────────────────────────────────────────────── */
-function cardHTML(m){
-  const isFull=m.applied>=m.max,isApplied=applied.has(m.id),isWish=wishlisted.has(m.id);
-  const isQuotaFull = userRole!=='admin' && user && myApplyCount()>=maxApply && !isApplied;
-  const pct=Math.round((m.applied/m.max)*100);
-  const dateStr=new Date(m.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-  let badge,btnCls,btnTxt;
-  if(isApplied){badge=`<span class="card-badge badge-mine">신청완료</span>`;btnCls='applied';btnTxt='신청취소';}
-  else if(isFull){badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';}
-  else if(isQuotaFull){badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='quota-full';btnTxt='한도초과';}
-  else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';}
-  const clickable=isApplied||(!isFull&&!isQuotaFull);
-  const adminBtns=canManage()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}')">삭제</button></div>`:'';
-  return `<div class="card${isWish?' wishlisted':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}</div><div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div></div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" onclick="${clickable?`applyMeeting('${m.id}')`:''}">${btnTxt}</button></div></div>`;
+function checkWishNotif(id, m) {
+  if (wishlisted.has(id) && !applied.has(id) && m.applied < m.max && !notifSent[id]) {
+    notifSent[id] = true;
+    setTimeout(() => { if (wishlisted.has(id) && !applied.has(id)) pushNotif(`💺 찜한 "${m.title}"에 자리가 났어요!`); }, 700);
+  }
+}
+function pushNotif(msg) {
+  if ('Notification' in window && Notification.permission === 'granted') new Notification('THE MORI APPLY', {body:msg});
+  else if ('Notification' in window && Notification.permission !== 'denied')
+    Notification.requestPermission().then(p => p === 'granted' ? new Notification('THE MORI APPLY', {body:msg}) : showToast(msg));
+  else showToast(msg);
 }
 
-function renderAll(){renderGrid();renderMyAndWish();}
-function renderGrid(){const g=document.getElementById('cardGrid');if(g)g.innerHTML=meetings.length?meetings.map(cardHTML).join(''):`<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.22)">등록된 모임이 없어요</div>`;}
-function renderMyAndWish(){
-  const mg=document.getElementById('myGrid'),wg=document.getElementById('wishGrid');
-  if(!mg||!wg)return;
-  const myList=meetings.filter(m=>applied.has(m.id));
-  const wishList=meetings.filter(m=>wishlisted.has(m.id));
-  mg.innerHTML=myList.length?myList.map(cardHTML).join(''):`<div style="text-align:center;padding:2rem;color:rgba(255,255,255,.22)">아직 신청한 모임이 없어요</div>`;
-  wg.innerHTML=wishList.length?wishList.map(cardHTML).join(''):`<div style="text-align:center;padding:2rem;color:rgba(255,255,255,.22)">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;
+/* ── CARD ─────────────────────────────────────────────── */
+function cardHTML(m) {
+  const isFull     = m.applied >= m.max;
+  const isApplied  = applied.has(m.id);
+  const isWish     = wishlisted.has(m.id);
+  // 관리자는 한도초과 배지 없음
+  const isQuotaFull = userRole !== 'admin' && user && myApplyCount() >= maxApply && !isApplied;
+  const pct     = Math.round((m.applied / m.max) * 100);
+  const dateStr = new Date(m.date).toLocaleDateString('ko-KR', {month:'long',day:'numeric',weekday:'short'});
+
+  let badge, btnCls, btnTxt;
+  if      (isApplied)   { badge=`<span class="card-badge badge-mine">신청완료</span>`;  btnCls='applied';    btnTxt='신청취소'; }
+  else if (isFull)      { badge=`<span class="card-badge badge-closed">마감</span>`;    btnCls='full';       btnTxt='마감'; }
+  else if (isQuotaFull) { badge=`<span class="card-badge badge-open">신청가능</span>`;  btnCls='quota-full'; btnTxt='한도초과'; }
+  else                  { badge=`<span class="card-badge badge-open">신청가능</span>`;  btnCls='open';       btnTxt='신청하기'; }
+
+  const clickable  = isApplied || (!isFull && !isQuotaFull);
+  const adminBtns  = canManage()
+    ? `<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}')">삭제</button></div>`
+    : '';
+
+  return `<div class="card${isWish?' wishlisted':''}">
+    <div class="card-header">
+      <div class="card-top-row">
+        <div class="card-top-left">${badge}</div>
+        <div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div>
+      </div>
+      <div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div>
+      <div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div>
+    </div>
+    <div class="card-body">
+      <div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div>
+      <div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div>
+      <div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div>
+    </div>
+    <div class="card-footer">
+      <div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div>
+      <button class="btn-apply ${btnCls}" onclick="${clickable?`applyMeeting('${m.id}')`:''}">${btnTxt}</button>
+    </div>
+  </div>`;
+}
+
+function renderAll()     { renderGrid(); renderMyAndWish(); }
+function renderGrid()    {
+  const g = document.getElementById('cardGrid');
+  if (g) g.innerHTML = meetings.length ? meetings.map(cardHTML).join('') : `<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.22)">등록된 모임이 없어요</div>`;
+}
+function renderMyAndWish() {
+  const mg = document.getElementById('myGrid'), wg = document.getElementById('wishGrid');
+  if (!mg || !wg) return;
+  const myList   = meetings.filter(m => applied.has(m.id));
+  const wishList = meetings.filter(m => wishlisted.has(m.id));
+  mg.innerHTML = myList.length   ? myList.map(cardHTML).join('')   : `<div style="text-align:center;padding:2rem;color:rgba(255,255,255,.22)">아직 신청한 모임이 없어요</div>`;
+  wg.innerHTML = wishList.length ? wishList.map(cardHTML).join('') : `<div style="text-align:center;padding:2rem;color:rgba(255,255,255,.22)">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;
 }
 
 /* ── TABS ─────────────────────────────────────────────── */
-function switchTab(t,el){
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
-  ['tabAll','tabMyandwish','tabNotice'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
-  document.getElementById({all:'tabAll',myandwish:'tabMyandwish',notice:'tabNotice'}[t]).style.display='block';
+function switchTab(t, el) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active')); el.classList.add('active');
+  ['tabAll','tabMyandwish','tabNotice'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+  document.getElementById({all:'tabAll',myandwish:'tabMyandwish',notice:'tabNotice'}[t]).style.display = 'block';
 }
 
 /* ── MEETING MODAL ────────────────────────────────────── */
-function openAddModal(){editingId=null;document.getElementById('modalTitle').textContent='새 모임 추가';document.getElementById('modalOkBtn').textContent='추가하기';['f-title','f-author','f-topic','f-host','f-place'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-max').value=7;document.getElementById('f-time').value='19:00';document.getElementById('f-date').value='';document.getElementById('addModal').classList.add('open');}
-function openEditModal(id){const m=meetings.find(x=>x.id===id);if(!m)return;editingId=id;document.getElementById('modalTitle').textContent='모임 수정';document.getElementById('modalOkBtn').textContent='저장하기';document.getElementById('f-title').value=m.title;document.getElementById('f-author').value=m.author;document.getElementById('f-topic').value=m.topic;document.getElementById('f-host').value=m.host;document.getElementById('f-date').value=m.date;document.getElementById('f-time').value=m.time;document.getElementById('f-place').value=m.place;document.getElementById('f-max').value=m.max;document.getElementById('addModal').classList.add('open');}
-function closeAddModal(){document.getElementById('addModal').classList.remove('open');editingId=null;}
-async function submitMeeting(){
-  const title=document.getElementById('f-title').value.trim(),author=document.getElementById('f-author').value.trim(),topic=document.getElementById('f-topic').value.trim(),host=document.getElementById('f-host').value.trim(),date=document.getElementById('f-date').value,time=document.getElementById('f-time').value,place=document.getElementById('f-place').value.trim(),max=parseInt(document.getElementById('f-max').value)||7;
-  if(!title||!author||!topic||!host||!date||!place){showToast('필수 항목을 모두 입력해주세요');return;}
-  if(editingId){await db.collection('meetings').doc(editingId).update({title,author,topic,host,date,time,place,max});showToast('모임이 수정되었어요 ✅');}
-  else{await db.collection('meetings').add({title,author,topic,host,date,time,place,max,applied:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});showToast('모임이 추가되었어요 ✅');}
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = '새 모임 추가';
+  document.getElementById('modalOkBtn').textContent = '추가하기';
+  ['f-title','f-author','f-topic','f-host','f-place'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-max').value = 7;
+  document.getElementById('f-time').value = '19:00';
+  document.getElementById('f-date').value = '';
+  document.getElementById('addModal').classList.add('open');
+}
+function openEditModal(id) {
+  const m = meetings.find(x => x.id === id); if (!m) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = '모임 수정';
+  document.getElementById('modalOkBtn').textContent = '저장하기';
+  document.getElementById('f-title').value  = m.title;
+  document.getElementById('f-author').value = m.author;
+  document.getElementById('f-topic').value  = m.topic;
+  document.getElementById('f-host').value   = m.host;
+  document.getElementById('f-date').value   = m.date;
+  document.getElementById('f-time').value   = m.time;
+  document.getElementById('f-place').value  = m.place;
+  document.getElementById('f-max').value    = m.max;
+  document.getElementById('addModal').classList.add('open');
+}
+function closeAddModal() { document.getElementById('addModal').classList.remove('open'); editingId = null; }
+
+async function submitMeeting() {
+  const title  = document.getElementById('f-title').value.trim();
+  const author = document.getElementById('f-author').value.trim();
+  const topic  = document.getElementById('f-topic').value.trim();
+  const host   = document.getElementById('f-host').value.trim();
+  const date   = document.getElementById('f-date').value;
+  const time   = document.getElementById('f-time').value;
+  const place  = document.getElementById('f-place').value.trim();
+  const max    = parseInt(document.getElementById('f-max').value) || 7;
+  if (!title||!author||!topic||!host||!date||!place) { showToast('필수 항목을 모두 입력해주세요'); return; }
+  if (editingId) {
+    await db.collection('meetings').doc(editingId).update({title,author,topic,host,date,time,place,max});
+    showToast('모임이 수정되었어요 ✅');
+  } else {
+    await db.collection('meetings').add({title,author,topic,host,date,time,place,max,applied:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    showToast('모임이 추가되었어요 ✅');
+  }
   closeAddModal();
 }
-function confirmDelete(id,title){document.getElementById('confirmMsg').innerHTML=`<strong>"${title}"</strong> 모임을 삭제할까요?<br><span style="font-size:.82rem;color:rgba(255,255,255,.4)">신청자 데이터도 함께 삭제돼요</span>`;document.getElementById('confirmOkBtn').onclick=()=>deleteMeeting(id);document.getElementById('confirmBox').classList.add('open');}
-function closeConfirm(){document.getElementById('confirmBox').classList.remove('open');}
-async function deleteMeeting(id){
+
+function confirmDelete(id, title) {
+  document.getElementById('confirmMsg').innerHTML = `<strong>"${title}"</strong> 모임을 삭제할까요?<br><span style="font-size:.82rem;color:rgba(255,255,255,.4)">신청자 데이터도 함께 삭제돼요</span>`;
+  document.getElementById('confirmOkBtn').onclick = () => deleteMeeting(id);
+  document.getElementById('confirmBox').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirmBox').classList.remove('open'); }
+
+async function deleteMeeting(id) {
   closeConfirm();
-  const aSnap=await db.collection('meetings').doc(id).collection('applicants').get();
-  const batch=db.batch();
-  aSnap.docs.forEach(d=>batch.delete(d.ref));
+  const aSnap = await db.collection('meetings').doc(id).collection('applicants').get();
+  const batch = db.batch();
+  aSnap.docs.forEach(d => batch.delete(d.ref));
   batch.delete(db.collection('meetings').doc(id));
   await batch.commit();
-  // 삭제된 모임이 내 신청 목록에 있으면 카운트에서 제거
-  if(applied.has(id)){
+  // 삭제된 모임이 내 신청 목록에 있으면 카운트 제거
+  if (applied.has(id)) {
     applied.delete(id);
     await saveUserData();
     updateNav();
@@ -617,7 +760,11 @@ async function deleteMeeting(id){
 }
 
 /* ── TOAST ────────────────────────────────────────────── */
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
 </script>
 </body>
 </html>
