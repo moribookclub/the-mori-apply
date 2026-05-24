@@ -328,16 +328,31 @@ auth.onAuthStateChanged(fb=>{
     return;
   }
   user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
-  // 관리자
+
+  // 관리자도 Firestore에서 applied/wishlisted 읽어오기
   if(user.email===ADMIN_EMAIL){
     userRole='admin';
-    loadFormConfig().then(()=>{ initMain(); updateNav(); });
+    db.collection('users').doc(user.email).get().then(doc=>{
+      if(doc.exists){
+        const data=doc.data();
+        applied=new Set(data.applied||[]);
+        wishlisted=new Set(data.wishlisted||[]);
+        if(data.maxApply) maxApply=data.maxApply;
+      } else {
+        // 관리자 문서 없으면 빈 문서 생성
+        db.collection('users').doc(user.email).set({
+          name:user.name,email:user.email,photo:user.photo||'',
+          role:'admin',applied:[],wishlisted:[]
+        });
+      }
+      loadFormConfig().then(()=>{ initMain(); updateNav(); });
+    });
     return;
   }
+
   // 일반 유저 — Firestore에서 role 읽기
   db.collection('users').doc(user.email).get().then(doc=>{
     if(!doc.exists){
-      // 신청서 미작성
       loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
       return;
     }
@@ -347,7 +362,6 @@ auth.onAuthStateChanged(fb=>{
     if(data.maxApply) maxApply=data.maxApply;
 
     if(role==='member'||role==='staff'){
-      // 승인된 멤버 → 메인
       applied=new Set(data.applied||[]);
       wishlisted=new Set(data.wishlisted||[]);
       loadFormConfig().then(()=>{ initMain(); updateNav(); });
@@ -355,7 +369,6 @@ auth.onAuthStateChanged(fb=>{
       showScreen('waiting'); updateNav();
       loadWaitingNotice();
     } else {
-      // 미분류·cancelled 등 — 신청서로
       loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
     }
   }).catch(err=>{
