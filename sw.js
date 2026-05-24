@@ -31,7 +31,8 @@ self.addEventListener('fetch', e => {
 
   const url = new URL(e.request.url);
 
-  // Firebase / Google 외부 API — 네트워크만 사용, 캐시 저장 안 함
+  // chrome-extension, 외부 API 등 캐시 불가 요청 제외
+  if (url.protocol === 'chrome-extension:' || url.protocol === 'chrome:') return;
   const isExternal =
     url.hostname.includes('firebaseio.com') ||
     url.hostname.includes('firestore.googleapis.com') ||
