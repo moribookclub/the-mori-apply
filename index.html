@@ -224,36 +224,22 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 <!-- 메인 -->
 <div id="screenMain" class="screen">
   <div class="hero"><h1>THE MORI APPLY</h1><p>독서모임 신청 페이지</p></div>
-  <!-- 공지사항 배너 -->
-  <div id="noticeBanner" style="display:none;max-width:980px;margin:0 auto 1.5rem;padding:0 1.25rem">
-    <div id="noticeBannerContent" style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.22);border-radius:12px;padding:1rem 1.25rem;font-size:.88rem;color:rgba(255,220,100,.9);line-height:1.7"></div>
-  </div>
-
   <div class="tab-bar">
     <div class="tab active" onclick="switchTab('all',this)">전체 모임</div>
-    <div class="tab" onclick="switchTab('myandwish',this)">신청 &amp; 찜</div>
-    <div class="tab" onclick="switchTab('notice',this)">공지사항</div>
+    <div class="tab" onclick="switchTab('my',this)">내 신청</div>
+    <div class="tab" onclick="switchTab('wish',this)">찜 목록</div>
   </div>
-
   <div id="tabAll">
     <div id="staffBar" class="staff-bar" style="display:none">
       <button class="btn-admin" onclick="openAddModal()">+ 모임 추가</button>
     </div>
     <div id="cardGrid" class="grid"><div style="text-align:center;padding:3rem;color:rgba(255,255,255,.3)">모임 불러오는 중...</div></div>
   </div>
-
-  <div id="tabMyandwish" style="display:none">
+  <div id="tabMy" style="display:none"><div class="my-section"><div class="section-title">신청한 모임</div><div class="grid" id="myGrid"></div></div></div>
+  <div id="tabWish" style="display:none">
     <div class="my-section">
-      <div class="section-title">신청한 모임</div>
-      <div class="grid" id="myGrid"></div>
-      <div class="section-title" style="margin-top:2rem">찜한 모임 <span style="font-size:.75rem;color:rgba(255,255,255,.3);font-weight:400;text-transform:none;letter-spacing:0">자리 나면 알림이 와요</span></div>
+      <div class="section-title">찜한 모임 <span style="font-size:.75rem;color:rgba(255,255,255,.3);font-weight:400;text-transform:none;letter-spacing:0">자리 나면 알림이 와요</span></div>
       <div class="grid" id="wishGrid"></div>
-    </div>
-  </div>
-
-  <div id="tabNotice" style="display:none">
-    <div class="my-section">
-      <div id="noticePageContent" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.5rem;font-size:.9rem;color:rgba(255,255,255,.8);line-height:1.8;min-height:200px"></div>
     </div>
   </div>
 </div>
@@ -385,15 +371,7 @@ function showScreen(s){
 /* ── INIT MAIN ────────────────────────────────────────── */
 function initMain(){
   showScreen('main');
-  // 대기화면 공지사항 표시
-  db.collection('settings').doc('config').get().then(d=>{
-    if(d.exists&&d.data().waitingNotice){
-      const wrap=document.createElement('div');
-      wrap.style.cssText='max-width:500px;margin:1rem auto 0;padding:0 1.5rem';
-      wrap.innerHTML=`<div style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.2);border-radius:10px;padding:1rem 1.2rem;font-size:.85rem;color:rgba(255,220,100,.85);line-height:1.7">${d.data().waitingNotice}</div>`;
-      document.querySelector('.waiting-screen').appendChild(wrap);
-    }
-  });
+  if(!unsubMeetings) listenMeetings();
 }
 
 /* ── NAV ──────────────────────────────────────────────── */
@@ -530,19 +508,8 @@ async function saveUserData(){
 function listenMeetings(){
   unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
     meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
-    db.collection('settings').doc('config').get().then(d=>{
-      if(d.exists){
-        if(d.data().maxApply) maxApply=d.data().maxApply;
-        // 공지사항 배너
-        const nb=document.getElementById('noticeBanner');
-        const nc=document.getElementById('noticeBannerContent');
-        const np=document.getElementById('noticePageContent');
-        if(nb&&nc&&d.data().noticeBoard){nb.style.display='block';nc.innerHTML=d.data().noticeBoard;}
-        else if(nb){nb.style.display='none';}
-        if(np) np.innerHTML=d.data().noticeBoard||'<span style="color:rgba(255,255,255,.25)">등록된 공지사항이 없어요</span>';
-      }
-    });
-    renderAll();updateNav();
+    db.collection('settings').doc('config').get().then(d=>{if(d.exists&&d.data().maxApply)maxApply=d.data().maxApply;});
+    renderAll(); updateNav();
   });
 }
 
@@ -589,22 +556,16 @@ function cardHTML(m){
   return `<div class="card${isWish?' wishlisted':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}</div><div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div></div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" onclick="${clickable?`applyMeeting('${m.id}')`:''}">${btnTxt}</button></div></div>`;
 }
 
-function renderAll(){renderGrid();renderMyAndWish();}
+function renderAll(){renderGrid();renderMy();renderWish();}
 function renderGrid(){const g=document.getElementById('cardGrid');if(g)g.innerHTML=meetings.length?meetings.map(cardHTML).join(''):`<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.22)">등록된 모임이 없어요</div>`;}
-function renderMyAndWish(){
-  const mg=document.getElementById('myGrid'),wg=document.getElementById('wishGrid');
-  if(!mg||!wg)return;
-  const myList=meetings.filter(m=>applied.has(m.id));
-  const wishList=meetings.filter(m=>wishlisted.has(m.id));
-  mg.innerHTML=myList.length?myList.map(cardHTML).join(''):`<div style="text-align:center;padding:2rem;color:rgba(255,255,255,.22)">아직 신청한 모임이 없어요</div>`;
-  wg.innerHTML=wishList.length?wishList.map(cardHTML).join(''):`<div style="text-align:center;padding:2rem;color:rgba(255,255,255,.22)">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;
-}
+function renderMy(){const g=document.getElementById('myGrid');if(!g)return;const list=meetings.filter(m=>applied.has(m.id));g.innerHTML=list.length?list.map(cardHTML).join(''):`<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.22)">아직 신청한 모임이 없어요</div>`;}
+function renderWish(){const g=document.getElementById('wishGrid');if(!g)return;const list=meetings.filter(m=>wishlisted.has(m.id));g.innerHTML=list.length?list.map(cardHTML).join(''):`<div style="text-align:center;padding:3rem;color:rgba(255,255,255,.22)">찜한 모임이 없어요 — 🤍 버튼을 눌러보세요</div>`;}
 
 /* ── TABS ─────────────────────────────────────────────── */
 function switchTab(t,el){
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
-  ['tabAll','tabMyandwish','tabNotice'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
-  document.getElementById({all:'tabAll',myandwish:'tabMyandwish',notice:'tabNotice'}[t]).style.display='block';
+  ['tabAll','tabMy','tabWish'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+  document.getElementById({all:'tabAll',my:'tabMy',wish:'tabWish'}[t]).style.display='block';
 }
 
 /* ── MEETING MODAL ────────────────────────────────────── */

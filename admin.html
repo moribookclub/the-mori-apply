@@ -14,7 +14,8 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .logo{font-size:1.2rem;font-weight:700;letter-spacing:.1em}
 .logo span{color:rgba(255,200,80,.7);font-size:.78rem;margin-left:6px;font-weight:400}
 .nav-right{display:flex;align-items:center;gap:8px}
-.btn-sm{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.55);padding:5px 11px;border-radius:6px;font-size:.75rem;cursor:pointer}
+.btn-sm{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.55);padding:5px 11px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:all .2s}
+.btn-sm:hover{border-color:rgba(255,255,255,.45);color:#fff}
 .btn-home{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:6px;font-size:.78rem;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px}
 .btn-home:hover{background:rgba(255,255,255,.15)}
 .avatar-circle{width:32px;height:32px;border-radius:50%;background:rgba(255,200,80,.2);border:2px solid rgba(255,200,80,.4);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:600;overflow:hidden}
@@ -22,7 +23,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .page-wrap{max-width:1000px;margin:0 auto;padding:2rem 1.25rem 4rem}
 .page-title{font-size:1.4rem;font-weight:700;margin-bottom:.3rem}
 .page-sub{font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:2rem}
-.admin-tab-bar{display:flex;gap:0;background:rgba(255,255,255,.06);border-radius:8px;padding:4px;margin-bottom:2rem;flex-wrap:wrap}
+.admin-tab-bar{display:flex;gap:0;background:rgba(255,255,255,.06);border-radius:8px;padding:4px;margin-bottom:2rem;max-width:600px;flex-wrap:wrap}
 .admin-tab{flex:1;text-align:center;padding:9px 0;font-size:.82rem;cursor:pointer;border-radius:6px;color:rgba(255,255,255,.4);transition:all .2s;white-space:nowrap;min-width:80px}
 .admin-tab.active{background:#fff;color:#0d1f3c;font-weight:600}
 .section-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem}
@@ -50,7 +51,9 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-approve{background:#fff;color:#0d1f3c;border:none;padding:6px 13px;border-radius:5px;font-size:.76rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .btn-approve:hover{opacity:.85}
 .btn-reject{background:transparent;border:1px solid rgba(255,100,100,.35);color:rgba(255,130,130,.8);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
+.btn-reject:hover{border-color:rgba(255,100,100,.6)}
 .btn-cancel-wait{background:transparent;border:1px solid rgba(255,150,50,.3);color:rgba(255,180,80,.8);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
+.btn-cancel-wait:hover{border-color:rgba(255,150,50,.6)}
 .btn-staff{background:rgba(100,180,255,.1);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
 .btn-revoke{background:rgba(255,150,50,.1);border:1px solid rgba(255,150,50,.3);color:rgba(255,180,80,.9);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
 .btn-csv{background:#fff;color:#0d1f3c;border:none;padding:7px 15px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer}
@@ -60,16 +63,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .applicant-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.85);vertical-align:middle}
 .applicant-table tr:last-child td{border-bottom:none}
 .applicant-table tr:hover td{background:rgba(255,255,255,.03)}
-/* RICH TEXT EDITOR */
-.rich-editor-wrap{border:1px solid rgba(255,255,255,.12);border-radius:10px;overflow:hidden;margin-bottom:.8rem}
-.rich-toolbar{background:rgba(255,255,255,.05);padding:6px 10px;display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08)}
-.rich-toolbar button{background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);padding:4px 9px;border-radius:4px;font-size:.78rem;cursor:pointer;transition:all .15s}
-.rich-toolbar button:hover{background:rgba(255,255,255,.1);color:#fff}
-.rich-toolbar input[type=color]{width:28px;height:28px;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px;cursor:pointer;background:transparent}
-.rich-toolbar select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;padding:3px 6px;border-radius:4px;font-size:.78rem;outline:none}
-.rich-toolbar select option{background:#0d1f3c}
-.rich-editor{min-height:100px;padding:12px;outline:none;font-size:.88rem;line-height:1.7;color:#fff;white-space:pre-wrap}
 /* FORM EDITOR */
+.form-editor-section{margin-bottom:1rem}
+.form-editor-section textarea,.form-editor-section input[type=text],.form-editor-section input[type=number]{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:10px 12px;color:#fff;font-size:.85rem;outline:none;resize:vertical;font-family:inherit}
+.form-editor-section textarea:focus,.form-editor-section input:focus{border-color:rgba(255,255,255,.3)}
 .btn-save{background:#fff;color:#0d1f3c;border:none;padding:8px 18px;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer}
 .btn-save:hover{opacity:.85}
 .q-group-title{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.06em;text-transform:uppercase;margin:1.4rem 0 .7rem;padding-bottom:.4rem;border-bottom:1px solid rgba(255,255,255,.08)}
@@ -87,7 +84,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-q-del:hover{color:rgba(255,130,130,.9);border-color:rgba(255,100,100,.4)}
 .btn-add-q{background:transparent;border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.45);padding:9px;border-radius:8px;width:100%;cursor:pointer;font-size:.83rem;transition:all .2s;margin-top:.3rem}
 .btn-add-q:hover{border-color:rgba(255,255,255,.4);color:#fff}
-/* QUOTA / NOTICE */
+/* QUOTA */
 .quota-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;margin-bottom:.8rem}
 .quota-row label{font-size:.83rem;color:rgba(255,255,255,.6);flex:1}
 .quota-input-sm{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#fff;width:50px;text-align:center;padding:4px 6px;font-size:.88rem;outline:none}
@@ -102,6 +99,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .profile-q{font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.3rem}
 .applied-chip{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;font-size:.78rem;color:rgba(255,255,255,.7);margin:3px}
 .profile-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,.08)}
+/* TOAST/MODAL */
 .empty{text-align:center;padding:2.5rem;color:rgba(255,255,255,.22);font-size:.88rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;color:#0d1f3c;padding:11px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -132,7 +130,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .access-denied .icon{font-size:3rem;margin-bottom:1rem}
 .access-denied h2{font-size:1.3rem;font-weight:700;margin-bottom:.6rem}
 .access-denied p{color:rgba(255,255,255,.45);font-size:.88rem;line-height:1.7}
-.notice-preview{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:1rem;margin-top:.6rem;font-size:.83rem;color:rgba(255,255,255,.6);min-height:40px}
 </style>
 </head>
 <body>
@@ -182,7 +179,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <div id="tabMeetings" style="display:none">
       <div class="section-card">
         <div class="section-head">
-          <div><h2>모임 신청자 명단</h2></div>
+          <div><h2>모임 신청자 명단</h2><p>모임별 신청자를 확인하고 CSV로 내보낼 수 있어요</p></div>
           <button class="btn-csv" onclick="exportCSV()">CSV 내보내기</button>
         </div>
         <div class="filter-chips" id="meetingChips"></div>
@@ -192,68 +189,41 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 
     <!-- 설정 -->
     <div id="tabSettings" style="display:none">
-      <!-- 기본 신청수 -->
       <div class="section-card">
-        <div class="section-head"><div><h2>기본 신청 수 설정</h2></div></div>
+        <div class="section-head"><div><h2>기본 신청 수 설정</h2><p>모든 멤버에게 적용되는 기본 최대 신청 수예요</p></div></div>
         <div class="quota-row">
           <label>1인 기본 최대 신청 수</label>
           <input class="quota-input-sm" id="globalQuotaInput" type="number" min="1" max="20" value="2">
           <span style="color:rgba(255,255,255,.35);font-size:.83rem">개</span>
           <button class="btn-quota-save" onclick="saveGlobalQuota()">저장</button>
         </div>
-      </div>
-
-      <!-- 신청페이지 공지사항 -->
-      <div class="section-card">
-        <div class="section-head"><div><h2>📢 신청페이지 공지사항</h2><p>모임 신청 페이지 상단에 표시돼요</p></div></div>
-        <div id="noticeEditorWrap"></div>
-        <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
-          <button class="btn-save" onclick="saveNoticeBoard()">저장</button>
-          <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearNoticeBoard()">공지 삭제</button>
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
-        <div class="notice-preview" id="noticeBoardPreview"></div>
-      </div>
-
-      <!-- 대기화면 공지사항 -->
-      <div class="section-card">
-        <div class="section-head"><div><h2>⏳ 신청서 검토화면 공지사항</h2><p>대기중인 멤버에게 보이는 안내 메시지예요</p></div></div>
-        <div id="waitingNoticeEditorWrap"></div>
-        <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
-          <button class="btn-save" onclick="saveWaitingNotice()">저장</button>
-          <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearWaitingNotice()">공지 삭제</button>
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
-        <div class="notice-preview" id="waitingNoticePreview"></div>
+        <p style="font-size:.78rem;color:rgba(255,255,255,.35);line-height:1.6">※ 개인별 신청 수는 각 멤버 프로필에서 따로 설정할 수 있어요.</p>
       </div>
     </div>
 
     <!-- 신청서 편집 -->
     <div id="tabForm" style="display:none">
-      <!-- 안내문 -->
       <div class="section-card">
         <div class="section-head"><div><h2>신청서 안내문</h2></div></div>
-        <div id="noticeEditorFormWrap"></div>
-        <button class="btn-save" style="margin-top:.8rem" onclick="saveNotice()">저장</button>
+        <div class="form-editor-section"><textarea id="editorNotice" rows="4" placeholder="안내문을 입력해주세요"></textarea></div>
+        <button class="btn-save" onclick="saveNotice()">저장</button>
       </div>
-      <!-- 개인정보 동의 -->
       <div class="section-card">
         <div class="section-head"><div><h2>개인정보 동의 문구</h2></div></div>
-        <div id="privacyEditorWrap"></div>
-        <button class="btn-save" style="margin-top:.8rem" onclick="savePrivacy()">저장</button>
+        <div class="form-editor-section"><textarea id="editorPrivacy" rows="5" placeholder="개인정보 수집 동의 문구를 입력해주세요"></textarea></div>
+        <button class="btn-save" onclick="savePrivacy()">저장</button>
       </div>
-      <!-- 질문 -->
       <div class="section-card">
-        <div class="section-head"><div><h2>추가 질문 관리</h2></div></div>
-        <div class="q-group-title">🆕 신규멤버 질문</div>
+        <div class="section-head"><div><h2>추가 질문 관리</h2><p>신규/기존/공통 질문을 각각 관리할 수 있어요</p></div></div>
+        <div class="q-group-title">📋 공통 질문 (신규+기존 모두에게)</div>
+        <div id="commonQEditor"></div>
+        <button class="btn-add-q" onclick="openAddQuestionModal('common')">+ 공통 질문 추가</button>
+        <div class="q-group-title" style="margin-top:1.5rem">🆕 신규멤버 질문</div>
         <div id="newMemberQEditor"></div>
         <button class="btn-add-q" onclick="openAddQuestionModal('new')">+ 신규멤버 질문 추가</button>
         <div class="q-group-title" style="margin-top:1.5rem">🔄 기존멤버 질문</div>
         <div id="existingMemberQEditor"></div>
         <button class="btn-add-q" onclick="openAddQuestionModal('existing')">+ 기존멤버 질문 추가</button>
-        <div class="q-group-title" style="margin-top:1.5rem">📋 공통 질문 (신규+기존 모두)</div>
-        <div id="commonQEditor"></div>
-        <button class="btn-add-q" onclick="openAddQuestionModal('common')">+ 공통 질문 추가</button>
       </div>
     </div>
   </div>
@@ -261,24 +231,24 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 
 <div class="toast" id="toast"></div>
 
-<!-- 질문 모달 -->
+<!-- 질문 추가/수정 모달 -->
 <div class="modal-overlay" id="questionModal">
   <div class="modal">
     <h2 id="qModalTitle">질문 추가</h2>
+
     <div class="form-group">
       <label>질문 내용 * (줄바꿈 자유롭게)</label>
-      <textarea id="q-text" rows="3" placeholder="질문을 입력해주세요"></textarea>
+      <textarea id="q-text" rows="3" placeholder="질문을 입력해주세요&#10;줄바꿈도 자유롭게 사용하세요"></textarea>
     </div>
+
     <div class="form-row-2">
       <div class="form-group">
         <label>텍스트 크기</label>
         <select id="q-fontsize">
-          <option value="0.75rem">매우 작게</option>
-          <option value="0.85rem">작게</option>
+          <option value="0.8rem">작게</option>
           <option value="0.9rem" selected>보통</option>
           <option value="1rem">크게</option>
           <option value="1.15rem">매우 크게</option>
-          <option value="1.3rem">제목</option>
         </select>
       </div>
       <div class="form-group">
@@ -286,14 +256,16 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
         <input type="color" id="q-color" value="#ffffff">
       </div>
     </div>
+
     <div class="form-group">
       <label>질문 이미지 (선택)</label>
-      <input type="file" id="q-image" accept="image/*" onchange="previewQImage(this)" style="background:transparent;border:1px dashed rgba(255,255,255,.2);padding:8px;cursor:pointer;width:100%;border-radius:6px;color:rgba(255,255,255,.6)">
+      <input type="file" id="q-image" accept="image/*" onchange="previewQImage(this)" style="background:transparent;border:1px dashed rgba(255,255,255,.2);padding:8px;cursor:pointer">
       <img id="q-image-preview" class="img-preview" style="display:none">
       <input type="hidden" id="q-image-data">
-      <button id="q-image-clear" onclick="clearQImage()" style="display:none;margin-top:4px;background:transparent;border:1px solid rgba(255,100,100,.3);color:rgba(255,130,130,.7);padding:4px 10px;border-radius:5px;font-size:.75rem;cursor:pointer">이미지 제거</button>
     </div>
+
     <div class="divider"></div>
+
     <div class="form-group">
       <label>답변 형식</label>
       <select id="q-type" onchange="toggleAnswerOptions()">
@@ -303,15 +275,18 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
         <option value="multi">객관식 (복수 선택)</option>
       </select>
     </div>
+
     <div id="optionsSection" style="display:none">
       <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:.5rem">선택지 입력</div>
       <div class="option-list" id="optionList"></div>
       <button class="btn-add-option" onclick="addOption()">+ 선택지 추가</button>
     </div>
+
     <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:.8rem">
       <input type="checkbox" id="q-required" style="width:17px;height:17px;accent-color:#fff">
       <label style="font-size:.85rem;color:rgba(255,255,255,.6)">필수 질문</label>
     </div>
+
     <div class="modal-btns">
       <button class="btn-modal-cancel" onclick="closeQuestionModal()">취소</button>
       <button class="btn-modal-ok" id="qModalOkBtn" onclick="submitQuestion()">추가</button>
@@ -336,52 +311,8 @@ const auth=firebase.auth(),db=firebase.firestore();
 const ADMIN_EMAIL='nohjunhyouk@gmail.com';
 let user=null,meetings=[],allMembers=[];
 let formConfig={notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[]};
-let siteConfig={noticeBoard:'',waitingNotice:'',globalQuota:2};
-let memberFilter='pending',adminSelected=null,editingQId=null,editingQGroup=null;
+let memberFilter='pending',adminSelected=null,editingQId=null,editingQGroup=null,globalQuota=2;
 
-/* ── RICH TEXT EDITOR ─────────────────────────────────── */
-function createRichEditor(id, initialHTML=''){
-  return `<div class="rich-editor-wrap" id="wrap-${id}">
-    <div class="rich-toolbar">
-      <select onchange="execCmd('fontSize',this.value,this);this.value=''" title="크기">
-        <option value="">크기</option>
-        <option value="1">매우 작게</option>
-        <option value="2">작게</option>
-        <option value="3">보통</option>
-        <option value="4">크게</option>
-        <option value="5">매우 크게</option>
-        <option value="6">제목</option>
-      </select>
-      <input type="color" value="#ffffff" oninput="execCmd('foreColor',this.value,this)" title="글자색">
-      <button onclick="execCmd('bold',null,this)" title="굵게"><b>B</b></button>
-      <button onclick="execCmd('italic',null,this)" title="기울임"><i>I</i></button>
-      <button onclick="execCmd('underline',null,this)" title="밑줄"><u>U</u></button>
-      <button onclick="execCmd('justifyLeft',null,this)" title="왼쪽">◀</button>
-      <button onclick="execCmd('justifyCenter',null,this)" title="가운데">■</button>
-      <button onclick="execCmd('justifyRight',null,this)" title="오른쪽">▶</button>
-      <button onclick="execCmd('insertUnorderedList',null,this)" title="목록">≡</button>
-    </div>
-    <div class="rich-editor" id="${id}" contenteditable="true" oninput="updatePreview('${id}')">${initialHTML}</div>
-  </div>`;
-}
-
-function execCmd(cmd, val, el){
-  const toolbar=el.closest('.rich-editor-wrap').querySelector('.rich-editor');
-  toolbar.focus();
-  document.execCommand(cmd, false, val);
-}
-
-function getRichContent(id){
-  const el=document.getElementById(id);
-  return el?el.innerHTML:'';
-}
-
-function updatePreview(editorId){
-  if(editorId==='noticeEditorBoard') document.getElementById('noticeBoardPreview').innerHTML=getRichContent(editorId);
-  if(editorId==='waitingNoticeEditor') document.getElementById('waitingNoticePreview').innerHTML=getRichContent(editorId);
-}
-
-/* ── AUTH ─────────────────────────────────────────────── */
 auth.onAuthStateChanged(async fb=>{
   if(!fb||fb.email!==ADMIN_EMAIL){document.getElementById('screenDenied').style.display='block';document.getElementById('adminMain').style.display='none';return;}
   user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
@@ -389,64 +320,20 @@ auth.onAuthStateChanged(async fb=>{
   document.getElementById('adminSubtitle').textContent=`${user.name} 님으로 로그인됨`;
   const av=user.photo?`<img src="${user.photo}" alt="">`:user.initial;
   document.getElementById('navRight').innerHTML=`<a class="btn-home" href="index.html">← 메인으로</a><div class="avatar-circle">${av}</div><button class="btn-sm" onclick="auth.signOut().then(()=>location.href='index.html')">로그아웃</button>`;
-  await loadSiteConfig();
-  await loadFormConfig();
-  listenMeetings();
-  renderMemberList();
-  initEditors();
+  await loadFormConfig();await loadGlobalQuota();listenMeetings();renderMemberList();
 });
 
-function initEditors(){
-  // 설정탭 에디터
-  document.getElementById('noticeEditorWrap').innerHTML=createRichEditor('noticeEditorBoard', siteConfig.noticeBoard||'');
-  document.getElementById('waitingNoticeEditorWrap').innerHTML=createRichEditor('waitingNoticeEditor', siteConfig.waitingNotice||'');
-  document.getElementById('noticeBoardPreview').innerHTML=siteConfig.noticeBoard||'';
-  document.getElementById('waitingNoticePreview').innerHTML=siteConfig.waitingNotice||'';
-  // 신청서 편집탭 에디터
-  document.getElementById('noticeEditorFormWrap').innerHTML=createRichEditor('noticeEditorForm', formConfig.notice||'');
-  document.getElementById('privacyEditorWrap').innerHTML=createRichEditor('privacyEditor', formConfig.privacy||'');
-}
-
-/* ── SITE CONFIG ──────────────────────────────────────── */
-async function loadSiteConfig(){
+/* ── QUOTA ────────────────────────────────────────────── */
+async function loadGlobalQuota(){
   const doc=await db.collection('settings').doc('config').get();
-  if(doc.exists){
-    const d=doc.data();
-    siteConfig={noticeBoard:d.noticeBoard||'',waitingNotice:d.waitingNotice||'',globalQuota:d.maxApply||2};
-  }
-  const qi=document.getElementById('globalQuotaInput');if(qi)qi.value=siteConfig.globalQuota;
+  if(doc.exists&&doc.data().maxApply)globalQuota=doc.data().maxApply;
+  const el=document.getElementById('globalQuotaInput');if(el)el.value=globalQuota;
 }
 async function saveGlobalQuota(){
   const v=parseInt(document.getElementById('globalQuotaInput').value)||1;
-  siteConfig.globalQuota=Math.max(1,v);
-  await db.collection('settings').doc('config').set({maxApply:siteConfig.globalQuota},{merge:true});
-  showToast(`기본 최대 신청 수를 ${siteConfig.globalQuota}개로 설정했어요 ✅`);
-}
-async function saveNoticeBoard(){
-  siteConfig.noticeBoard=getRichContent('noticeEditorBoard');
-  await db.collection('settings').doc('config').set({noticeBoard:siteConfig.noticeBoard},{merge:true});
-  document.getElementById('noticeBoardPreview').innerHTML=siteConfig.noticeBoard;
-  showToast('신청페이지 공지사항이 저장되었어요 ✅');
-}
-async function clearNoticeBoard(){
-  siteConfig.noticeBoard='';
-  await db.collection('settings').doc('config').set({noticeBoard:''},{merge:true});
-  document.getElementById('noticeEditorBoard').innerHTML='';
-  document.getElementById('noticeBoardPreview').innerHTML='';
-  showToast('공지사항이 삭제되었어요');
-}
-async function saveWaitingNotice(){
-  siteConfig.waitingNotice=getRichContent('waitingNoticeEditor');
-  await db.collection('settings').doc('config').set({waitingNotice:siteConfig.waitingNotice},{merge:true});
-  document.getElementById('waitingNoticePreview').innerHTML=siteConfig.waitingNotice;
-  showToast('검토화면 공지사항이 저장되었어요 ✅');
-}
-async function clearWaitingNotice(){
-  siteConfig.waitingNotice='';
-  await db.collection('settings').doc('config').set({waitingNotice:''},{merge:true});
-  document.getElementById('waitingNoticeEditor').innerHTML='';
-  document.getElementById('waitingNoticePreview').innerHTML='';
-  showToast('공지사항이 삭제되었어요');
+  globalQuota=Math.max(1,v);
+  await db.collection('settings').doc('config').set({maxApply:globalQuota},{merge:true});
+  showToast(`기본 최대 신청 수를 ${globalQuota}개로 설정했어요 ✅`);
 }
 
 /* ── FORM CONFIG ──────────────────────────────────────── */
@@ -454,36 +341,43 @@ async function loadFormConfig(){
   const doc=await db.collection('settings').doc('formConfig').get();
   if(doc.exists){
     const d=doc.data();
-    formConfig={notice:d.notice||'',privacy:d.privacy||'',commonQuestions:d.commonQuestions||[],newQuestions:d.newQuestions||d.questions||[],existingQuestions:d.existingQuestions||[]};
+    formConfig={
+      notice:d.notice||'',privacy:d.privacy||'',
+      commonQuestions:d.commonQuestions||[],
+      newQuestions:d.newQuestions||d.questions||[],
+      existingQuestions:d.existingQuestions||[]
+    };
   } else {
-    formConfig={notice:'<p>THE MORI 독서모임에 지원해 주셔서 감사합니다.<br>아래 내용을 성실하게 작성해 주세요.</p>',privacy:'<p>수집하는 개인정보 항목: 성명, 연락처, 생년월일<br>수집 목적: 모임 운영 및 회원 관리<br>보유 기간: 탈퇴 시까지</p>',commonQuestions:[],newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],existingQuestions:[]};
+    formConfig={notice:'THE MORI 독서모임에 지원해 주셔서 감사합니다.\n아래 내용을 성실하게 작성해 주세요.',privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',
+      commonQuestions:[],
+      newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],
+      existingQuestions:[]
+    };
   }
+  const ne=document.getElementById('editorNotice'),pe=document.getElementById('editorPrivacy');
+  if(ne)ne.value=formConfig.notice;if(pe)pe.value=formConfig.privacy;
   renderQuestionEditor();
 }
 async function saveFormConfig(){await db.collection('settings').doc('formConfig').set(formConfig);}
-async function saveNotice(){
-  formConfig.notice=getRichContent('noticeEditorForm');
-  await saveFormConfig();showToast('안내문이 저장되었어요 ✅');
-}
-async function savePrivacy(){
-  formConfig.privacy=getRichContent('privacyEditor');
-  await saveFormConfig();showToast('개인정보 동의 문구가 저장되었어요 ✅');
-}
+async function saveNotice(){formConfig.notice=document.getElementById('editorNotice').value;await saveFormConfig();showToast('안내문이 저장되었어요 ✅');}
+async function savePrivacy(){formConfig.privacy=document.getElementById('editorPrivacy').value;await saveFormConfig();showToast('개인정보 동의 문구가 저장되었어요 ✅');}
 
 /* ── QUESTION EDITOR ──────────────────────────────────── */
 function renderQuestionEditor(){
-  ['new','existing','common'].forEach(group=>{
-    const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
-    const elId={new:'newMemberQEditor',existing:'existingMemberQEditor',common:'commonQEditor'};
+  ['common','new','existing'].forEach(group=>{
+    const key=group+'Questions'+(group==='new'?'':group==='existing'?'':'');
+    const keyMap={common:'commonQuestions',new:'newQuestions',existing:'existingQuestions'};
+    const elId={common:'commonQEditor',new:'newMemberQEditor',existing:'existingMemberQEditor'};
     const el=document.getElementById(elId[group]);if(!el)return;
     const list=formConfig[keyMap[group]]||[];
     el.innerHTML=list.length?list.map(q=>{
       const typeLabel={textarea:'장문',text:'단문',single:'단일선택',multi:'복수선택'}[q.type]||'장문';
+      const optHtml=q.options?.length?`<span class="q-meta-tag">${q.options.length}개 선택지</span>`:'';
       return `<div class="question-item">
         <div class="q-preview">
           <div class="q-preview-text" style="font-size:${q.fontSize||'0.9rem'};color:${q.color||'#fff'}">${q.text}${q.required?' <span style="color:rgba(255,150,150,.8);font-size:.75rem">*필수</span>':''}</div>
           ${q.imageData?`<img class="q-preview-img" src="${q.imageData}">`:''}
-          <div class="q-meta"><span class="q-meta-tag">${typeLabel}</span>${q.options?.length?`<span class="q-meta-tag">${q.options.length}개 선택지</span>`:''}</div>
+          <div class="q-meta"><span class="q-meta-tag">${typeLabel}</span>${optHtml}</div>
         </div>
         <div class="q-btns"><button class="btn-q-edit" onclick="openEditQuestionModal('${q.id}','${group}')">수정</button><button class="btn-q-del" onclick="deleteQuestion('${q.id}','${group}')">삭제</button></div>
       </div>`;
@@ -491,48 +385,75 @@ function renderQuestionEditor(){
   });
 }
 
-function toggleAnswerOptions(){const t=document.getElementById('q-type').value;document.getElementById('optionsSection').style.display=(t==='single'||t==='multi')?'block':'none';}
+/* ── QUESTION MODAL ───────────────────────────────────── */
+function toggleAnswerOptions(){
+  const t=document.getElementById('q-type').value;
+  document.getElementById('optionsSection').style.display=(t==='single'||t==='multi')?'block':'none';
+}
 function previewQImage(input){
   if(!input.files||!input.files[0])return;
   const reader=new FileReader();
-  reader.onload=e=>{document.getElementById('q-image-data').value=e.target.result;const p=document.getElementById('q-image-preview');p.src=e.target.result;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';};
+  reader.onload=e=>{
+    document.getElementById('q-image-data').value=e.target.result;
+    const prev=document.getElementById('q-image-preview');prev.src=e.target.result;prev.style.display='block';
+  };
   reader.readAsDataURL(input.files[0]);
 }
-function clearQImage(){document.getElementById('q-image-data').value='';document.getElementById('q-image-preview').style.display='none';document.getElementById('q-image-clear').style.display='none';document.getElementById('q-image').value='';}
-function addOption(val=''){const list=document.getElementById('optionList');const div=document.createElement('div');div.className='option-row';div.innerHTML=`<input type="text" placeholder="선택지 입력" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;list.appendChild(div);}
-function getOptions(){return[...document.querySelectorAll('#optionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);}
+function addOption(val=''){
+  const list=document.getElementById('optionList');
+  const div=document.createElement('div');div.className='option-row';
+  div.innerHTML=`<input type="text" placeholder="선택지 입력" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;
+  list.appendChild(div);
+}
+function getOptions(){return [...document.querySelectorAll('#optionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);}
 
 function openAddQuestionModal(group){
   editingQId=null;editingQGroup=group;
-  const gLabel={new:'신규멤버',existing:'기존멤버',common:'공통'}[group];
+  const gLabel={common:'공통',new:'신규멤버',existing:'기존멤버'}[group];
   document.getElementById('qModalTitle').textContent=`${gLabel} 질문 추가`;
   document.getElementById('qModalOkBtn').textContent='추가';
-  document.getElementById('q-text').value='';document.getElementById('q-type').value='textarea';document.getElementById('q-required').checked=false;document.getElementById('q-fontsize').value='0.9rem';document.getElementById('q-color').value='#ffffff';clearQImage();document.getElementById('optionList').innerHTML='';document.getElementById('optionsSection').style.display='none';
+  document.getElementById('q-text').value='';
+  document.getElementById('q-type').value='textarea';
+  document.getElementById('q-required').checked=false;
+  document.getElementById('q-fontsize').value='0.9rem';
+  document.getElementById('q-color').value='#ffffff';
+  document.getElementById('q-image-data').value='';
+  document.getElementById('q-image-preview').style.display='none';
+  document.getElementById('optionList').innerHTML='';
+  document.getElementById('optionsSection').style.display='none';
   document.getElementById('questionModal').classList.add('open');
 }
 function openEditQuestionModal(id,group){
-  const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
+  const keyMap={common:'commonQuestions',new:'newQuestions',existing:'existingQuestions'};
   const q=formConfig[keyMap[group]]?.find(x=>x.id===id);if(!q)return;
   editingQId=id;editingQGroup=group;
-  document.getElementById('qModalTitle').textContent='질문 수정';document.getElementById('qModalOkBtn').textContent='저장';
-  document.getElementById('q-text').value=q.text;document.getElementById('q-type').value=q.type;document.getElementById('q-required').checked=q.required;document.getElementById('q-fontsize').value=q.fontSize||'0.9rem';document.getElementById('q-color').value=q.color||'#ffffff';
+  document.getElementById('qModalTitle').textContent='질문 수정';
+  document.getElementById('qModalOkBtn').textContent='저장';
+  document.getElementById('q-text').value=q.text;
+  document.getElementById('q-type').value=q.type;
+  document.getElementById('q-required').checked=q.required;
+  document.getElementById('q-fontsize').value=q.fontSize||'0.9rem';
+  document.getElementById('q-color').value=q.color||'#ffffff';
   document.getElementById('q-image-data').value=q.imageData||'';
-  const p=document.getElementById('q-image-preview');
-  if(q.imageData){p.src=q.imageData;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';}else{p.style.display='none';document.getElementById('q-image-clear').style.display='none';}
+  const prev=document.getElementById('q-image-preview');
+  if(q.imageData){prev.src=q.imageData;prev.style.display='block';}else{prev.style.display='none';}
   document.getElementById('optionList').innerHTML='';
-  if(q.options?.length){q.options.forEach(o=>addOption(o));document.getElementById('optionsSection').style.display='block';}else document.getElementById('optionsSection').style.display='none';
+  if(q.options?.length){(q.options||[]).forEach(o=>addOption(o));document.getElementById('optionsSection').style.display='block';}
+  else document.getElementById('optionsSection').style.display='none';
   toggleAnswerOptions();
   document.getElementById('questionModal').classList.add('open');
 }
 function closeQuestionModal(){document.getElementById('questionModal').classList.remove('open');editingQId=null;editingQGroup=null;}
 async function submitQuestion(){
   const text=document.getElementById('q-text').value.trim();if(!text){showToast('질문 내용을 입력해주세요');return;}
-  const type=document.getElementById('q-type').value,required=document.getElementById('q-required').checked;
-  const fontSize=document.getElementById('q-fontsize').value,color=document.getElementById('q-color').value;
+  const type=document.getElementById('q-type').value;
+  const required=document.getElementById('q-required').checked;
+  const fontSize=document.getElementById('q-fontsize').value;
+  const color=document.getElementById('q-color').value;
   const imageData=document.getElementById('q-image-data').value||null;
   const options=(type==='single'||type==='multi')?getOptions():[];
   if((type==='single'||type==='multi')&&options.length<2){showToast('선택지를 2개 이상 입력해주세요');return;}
-  const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
+  const keyMap={common:'commonQuestions',new:'newQuestions',existing:'existingQuestions'};
   const key=keyMap[editingQGroup];
   const qObj={id:editingQId||'q'+Date.now(),text,type,required,fontSize,color,imageData,options};
   if(editingQId)formConfig[key]=formConfig[key].map(q=>q.id===editingQId?qObj:q);
@@ -542,7 +463,7 @@ async function submitQuestion(){
 }
 async function deleteQuestion(id,group){
   if(!confirm('이 질문을 삭제할까요?'))return;
-  const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
+  const keyMap={common:'commonQuestions',new:'newQuestions',existing:'existingQuestions'};
   formConfig[keyMap[group]]=formConfig[keyMap[group]].filter(q=>q.id!==id);
   await saveFormConfig();renderQuestionEditor();showToast('질문이 삭제되었어요');
 }
@@ -561,30 +482,80 @@ async function renderMemberList(){
   g.innerHTML=list.map(u=>{
     const av=u.photo?`<img src="${u.photo}" alt="">`:u.name?.[0]||'?';
     const roleBadge=u.role?`<span class="badge ${statusMap[u.role]||'badge-none'}">${statusLabel[u.role]||u.role}</span>`:`<span class="badge badge-none">미분류</span>`;
-    const customQuota=u.maxApply?` · 한도 ${u.maxApply}개`:'';
+    const customQuota=u.maxApply?` · 신청한도 ${u.maxApply}개`:'';
     let actions='';
-    if(!u.role||u.role==='pending'||u.role==='cancelled'){actions=`<button class="btn-approve" onclick="event.stopPropagation();approveMember('${u.email}')">✅ 승인</button><button class="btn-cancel-wait" onclick="event.stopPropagation();cancelWaiting('${u.email}','${u.name||''}')">대기취소</button><button class="btn-reject" onclick="event.stopPropagation();rejectMember('${u.email}','${u.name||''}')">거절</button>`;}
-    else if(u.role==='member'){actions=`<button class="btn-staff" onclick="event.stopPropagation();setRole('${u.email}','staff')">운영진 부여</button><button class="btn-cancel-wait" onclick="event.stopPropagation();setRole('${u.email}','pending')">대기로 변경</button>`;}
-    else if(u.role==='staff'){actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">운영진 회수</button>`;}
+    if(!u.role||u.role==='pending'){
+      actions=`<button class="btn-approve" onclick="event.stopPropagation();approveMember('${u.email}')">✅ 승인</button><button class="btn-cancel-wait" onclick="event.stopPropagation();cancelWaiting('${u.email}','${u.name||''}')">대기취소</button><button class="btn-reject" onclick="event.stopPropagation();rejectMember('${u.email}','${u.name||''}')">거절</button>`;
+    } else if(u.role==='member'){
+      actions=`<button class="btn-staff" onclick="event.stopPropagation();setRole('${u.email}','staff')">운영진 부여</button><button class="btn-cancel-wait" onclick="event.stopPropagation();setRole('${u.email}','pending')">대기로 변경</button>`;
+    } else if(u.role==='staff'){
+      actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">운영진 회수</button>`;
+    }
     return `<div class="member-row" onclick="openProfileModal('${u.email}')">
       <div class="member-av">${av}</div>
-      <div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${customQuota}</div><div class="member-badges">${roleBadge}</div></div>
+      <div class="member-info">
+        <div class="member-name">${u.name||'이름 없음'}</div>
+        <div class="member-meta">${u.email} · ${u.memberType||'-'}${customQuota}</div>
+        <div class="member-badges">${roleBadge}</div>
+      </div>
       <div class="member-actions">${actions}</div>
     </div>`;
   }).join('');
 }
+
 function filterMembers(f,el){memberFilter=f;document.querySelectorAll('.filter-chips .chip').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderMemberList();}
 async function approveMember(email){await db.collection('users').doc(email).update({role:'member'});showToast('승인되었어요 ✅');renderMemberList();}
-async function cancelWaiting(email,name){if(!confirm(`"${name}" 님의 대기를 취소할까요?`))return;await db.collection('users').doc(email).update({role:'cancelled'});showToast('대기가 취소되었어요');renderMemberList();}
-async function rejectMember(email,name){if(!confirm(`"${name}" 님을 거절하고 데이터를 삭제할까요?`))return;await db.collection('users').doc(email).delete();showToast('거절되었어요');renderMemberList();}
-async function setRole(email,role){await db.collection('users').doc(email).update({role});const msg={staff:'운영진 권한을 부여했어요',member:'참여자로 변경되었어요',pending:'대기 상태로 변경되었어요'};showToast(msg[role]||'변경되었어요');renderMemberList();}
+async function cancelWaiting(email,name){
+  if(!confirm(`"${name}" 님의 대기를 취소할까요?\n신청서 데이터는 유지됩니다.`))return;
+  await db.collection('users').doc(email).update({role:'cancelled'});showToast('대기가 취소되었어요');renderMemberList();
+}
+async function rejectMember(email,name){
+  if(!confirm(`"${name}" 님을 거절하고 데이터를 삭제할까요?`))return;
+  await db.collection('users').doc(email).delete();showToast('거절되었어요');renderMemberList();
+}
+async function setRole(email,role){
+  await db.collection('users').doc(email).update({role});
+  const msg={staff:'운영진 권한을 부여했어요',member:'참여자로 변경되었어요',pending:'대기 상태로 변경되었어요'};
+  showToast(msg[role]||'변경되었어요');renderMemberList();
+}
 
+/* ── 멤버 CSV 내보내기 ────────────────────────────────── */
+async function exportMembersCSV(){
+  const snap=await db.collection('users').get();
+  const allQ=[...(formConfig.commonQuestions||[]),...(formConfig.newQuestions||[]),...(formConfig.existingQuestions||[])];
+  const qHeaders=allQ.map(q=>q.text);
+  const headers=['이름','이메일','성별','생년월일','연락처','멤버구분','권한',...qHeaders,'신청한 모임'];
+  const rows=[headers];
+  snap.docs.forEach(d=>{
+    const u=d.data();
+    const answers=allQ.map(q=>{
+      const a=u.answers?.[q.id];
+      return Array.isArray(a)?a.join(', '):(a||'-');
+    });
+    const appliedTitles=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id).join(', ');
+    rows.push([u.name||'',u.email||'',u.gender||'',u.birth||'',u.phone||'',u.memberType||'',u.role||'',...answers,appliedTitles]);
+  });
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='THE_MORI_멤버목록.csv';a.click();
+  showToast('멤버 CSV 다운로드 완료 ✅');
+}
+
+/* ── PROFILE MODAL ────────────────────────────────────── */
 async function openProfileModal(email){
   const doc=await db.collection('users').doc(email).get();if(!doc.exists)return;
-  const u=doc.data(),currentQuota=u.maxApply||siteConfig.globalQuota;
+  const u=doc.data();
+  const currentQuota=u.maxApply||globalQuota;
   const appliedMeetings=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id);
-  const allQ=[...(formConfig.commonQuestions||[]),...(u.memberType==='신규멤버'?formConfig.newQuestions||[]:formConfig.existingQuestions||[])];
-  const answersHTML=allQ.length&&u.answers?allQ.map(q=>{const a=u.answers[q.id];const aText=Array.isArray(a)?a.join(', '):(a||'-');return`<div><div class="profile-q">${q.text}</div><div class="profile-answer">${aText}</div></div>`;}).join(''):'';
+  const allQ=[
+    ...(formConfig.commonQuestions||[]),
+    ...(u.memberType==='신규멤버'?formConfig.newQuestions||[]:formConfig.existingQuestions||[])
+  ];
+  const answersHTML=allQ.length&&u.answers?allQ.map(q=>{
+    const a=u.answers[q.id];
+    const aText=Array.isArray(a)?a.join(', '):(a||'-');
+    return`<div><div class="profile-q">${q.text}</div><div class="profile-answer">${aText}</div></div>`;
+  }).join(''):'';
   document.getElementById('profileModalTitle').textContent=u.name||email;
   document.getElementById('profileModalContent').innerHTML=`
     <div class="profile-section">
@@ -604,36 +575,33 @@ async function openProfileModal(email){
     <div class="profile-section">
       <div class="profile-section-title">개인 신청 한도</div>
       <div class="quota-row">
-        <label>최대 신청 수 <span style="color:rgba(255,255,255,.3);font-size:.75rem">(기본: ${siteConfig.globalQuota}개)</span></label>
+        <label>최대 신청 수 <span style="color:rgba(255,255,255,.3);font-size:.75rem">(기본: ${globalQuota}개)</span></label>
         <input class="quota-input-sm" id="memberQuotaInput" type="number" min="1" max="20" value="${currentQuota}">
         <span style="color:rgba(255,255,255,.35);font-size:.83rem">개</span>
         <button class="btn-quota-save" onclick="saveMemberQuota('${u.email}')">저장</button>
       </div>
     </div>
     <div class="profile-actions">
-      ${!u.role||u.role==='pending'||u.role==='cancelled'?`<button class="btn-approve" onclick="approveMember('${u.email}');closeProfileModal()">✅ 승인</button><button class="btn-cancel-wait" onclick="cancelWaiting('${u.email}','${u.name||''}');closeProfileModal()">대기취소</button><button class="btn-reject" onclick="rejectMember('${u.email}','${u.name||''}');closeProfileModal()">거절</button>`:''}
+      ${!u.role||u.role==='pending'?`<button class="btn-approve" onclick="approveMember('${u.email}');closeProfileModal()">✅ 승인</button><button class="btn-cancel-wait" onclick="cancelWaiting('${u.email}','${u.name||''}');closeProfileModal()">대기취소</button><button class="btn-reject" onclick="rejectMember('${u.email}','${u.name||''}');closeProfileModal()">거절</button>`:''}
       ${u.role==='member'?`<button class="btn-staff" onclick="setRole('${u.email}','staff');closeProfileModal()">운영진 부여</button>`:''}
       ${u.role==='staff'?`<button class="btn-revoke" onclick="setRole('${u.email}','member');closeProfileModal()">운영진 회수</button>`:''}
     </div>`;
   document.getElementById('profileModal').classList.add('open');
 }
-async function saveMemberQuota(email){const v=parseInt(document.getElementById('memberQuotaInput').value)||siteConfig.globalQuota;await db.collection('users').doc(email).update({maxApply:Math.max(1,v)});showToast(`개인 신청 한도가 ${v}개로 설정되었어요 ✅`);renderMemberList();}
+async function saveMemberQuota(email){
+  const v=parseInt(document.getElementById('memberQuotaInput').value)||globalQuota;
+  await db.collection('users').doc(email).update({maxApply:Math.max(1,v)});
+  showToast(`개인 신청 한도가 ${v}개로 설정되었어요 ✅`);renderMemberList();
+}
 function closeProfileModal(){document.getElementById('profileModal').classList.remove('open');}
 
-/* ── CSV ──────────────────────────────────────────────── */
-async function exportMembersCSV(){
-  const snap=await db.collection('users').get();
-  const allQ=[...(formConfig.commonQuestions||[]),...(formConfig.newQuestions||[]),...(formConfig.existingQuestions||[])];
-  const headers=['이름','이메일','성별','생년월일','연락처','멤버구분','권한',...allQ.map(q=>q.text),'신청한 모임'];
-  const rows=[headers];
-  snap.docs.forEach(d=>{const u=d.data();const answers=allQ.map(q=>{const a=u.answers?.[q.id];return Array.isArray(a)?a.join(', '):(a||'-');});const appliedTitles=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id).join(', ');rows.push([u.name||'',u.email||'',u.gender||'',u.birth||'',u.phone||'',u.memberType||'',u.role||'',...answers,appliedTitles]);});
-  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_멤버목록.csv';a.click();showToast('멤버 CSV 다운로드 완료 ✅');
-}
-
 /* ── MEETINGS ─────────────────────────────────────────── */
-function listenMeetings(){db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()}));renderMeetingChips();});}
-function renderMeetingChips(){document.getElementById('meetingChips').innerHTML=meetings.map(m=>`<div class="chip${adminSelected===m.id?' active':''}" onclick="selectMeeting('${m.id}')">${m.title}</div>`).join('');}
+function listenMeetings(){
+  db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()}));renderMeetingChips();});
+}
+function renderMeetingChips(){
+  document.getElementById('meetingChips').innerHTML=meetings.map(m=>`<div class="chip${adminSelected===m.id?' active':''}" onclick="selectMeeting('${m.id}')">${m.title}</div>`).join('');
+}
 function selectMeeting(id){adminSelected=id;renderMeetingChips();renderApplicantTable();}
 async function renderApplicantTable(){
   const wrap=document.getElementById('applicantTableWrap');
@@ -648,7 +616,8 @@ async function exportCSV(){
   const rows=[['모임','책제목','저자','이름','이메일','신청시각']];
   for(const m of meetings){const snap=await db.collection('meetings').doc(m.id).collection('applicants').get();snap.docs.forEach(d=>{const a=d.data();rows.push([m.title,m.title,m.author,a.name,a.email,a.time]);});}
   const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_신청자명단.csv';a.click();showToast('CSV 다운로드 완료 ✅');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_신청자명단.csv';a.click();
+  showToast('CSV 다운로드 완료 ✅');
 }
 
 /* ── TABS ─────────────────────────────────────────────── */
