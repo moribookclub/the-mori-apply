@@ -530,18 +530,6 @@ async function saveUserData(){
 function listenMeetings(){
   unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
     meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
-    db.collection('settings').doc('config').get().then(d=>{
-      if(d.exists){
-        if(d.data().maxApply) maxApply=d.data().maxApply;
-        // 공지사항 배너
-        const nb=document.getElementById('noticeBanner');
-        const nc=document.getElementById('noticeBannerContent');
-        const np=document.getElementById('noticePageContent');
-        if(nb&&nc&&d.data().noticeBoard){nb.style.display='block';nc.innerHTML=d.data().noticeBoard;}
-        else if(nb){nb.style.display='none';}
-        if(np) np.innerHTML=d.data().noticeBoard||'<span style="color:rgba(255,255,255,.25)">등록된 공지사항이 없어요</span>';
-      }
-    });
     renderAll();updateNav();
   });
 }
