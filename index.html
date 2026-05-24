@@ -297,59 +297,53 @@ let unsubMeetings=null;
    AUTH
 ══════════════════════════════════════════ */
 auth.onAuthStateChanged(fb=>{
-  // 로그아웃 시 구독 해제
   if(unsubMeetings){ unsubMeetings(); unsubMeetings=null; }
-
   if(!fb){
     user=null; userRole=null; applied=new Set(); wishlisted=new Set();
     showScreen('login'); updateNav();
     return;
   }
+
   user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
 
-  // 관리자 + 일반유저 모두 동일하게 Firestore에서 데이터 읽기
-  db.collection('users').doc(user.email).get().then(doc=>{
-    if(user.email===ADMIN_EMAIL){
-      userRole='admin';
+  if(fb.email===ADMIN_EMAIL){
+    // userRole을 Firestore 호출 전에 먼저 세팅
+    userRole='admin';
+    db.collection('users').doc(fb.email).get().then(doc=>{
       if(doc.exists){
         const d=doc.data();
         applied=new Set(d.applied||[]);
         wishlisted=new Set(d.wishlisted||[]);
-        if(d.maxApply) maxApply=d.maxApply;
       } else {
-        // 관리자 문서 없으면 applied/wishlisted만 생성 (role 필드 없음)
-        db.collection('users').doc(user.email).set({
-          name:user.name, email:user.email, photo:user.photo||'',
-          applied:[], wishlisted:[]
-        });
+        db.collection('users').doc(fb.email).set(
+          {name:fb.displayName,email:fb.email,photo:fb.photoURL||'',applied:[],wishlisted:[]},
+          {merge:true}
+        );
       }
       loadFormConfig().then(()=>{ initMain(); updateNav(); });
-      return;
-    }
+    }).catch(err=>{ console.error(err); showToast('데이터 로드 오류'); });
+    return;
+  }
 
-    // 일반 유저
+  db.collection('users').doc(fb.email).get().then(doc=>{
     if(!doc.exists){
+      userRole='';
       loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
       return;
     }
     const d=doc.data();
     userRole=d.role||'';
     if(d.maxApply) maxApply=d.maxApply;
-
     if(userRole==='member'||userRole==='staff'){
       applied=new Set(d.applied||[]);
       wishlisted=new Set(d.wishlisted||[]);
       loadFormConfig().then(()=>{ initMain(); updateNav(); });
     } else if(userRole==='pending'){
-      showScreen('waiting'); updateNav();
-      loadWaitingNotice();
+      showScreen('waiting'); updateNav(); loadWaitingNotice();
     } else {
       loadFormConfig().then(()=>{ showScreen('form'); updateNav(); });
     }
-  }).catch(err=>{
-    console.error('Firestore 읽기 오류:',err);
-    showToast('데이터 로드 오류. 새로고침해주세요.');
-  });
+  }).catch(err=>{ console.error('Firestore 읽기 오류:',err); showToast('데이터 로드 오류. 새로고침해주세요.'); });
 });
 
 function googleLogin(){
@@ -415,21 +409,21 @@ function updateNav(){
     nr.innerHTML=`<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;
     return;
   }
-  // 관리자는 한도 체크 표시 없이 항상 정상
-  const effectiveMax = isAdmin() ? 9999 : maxApply;
-  const cnt=myApplyCount(), cls=cnt>=effectiveMax?'full-quota':cnt>=effectiveMax-1?'warn':'';
-  const av=user.photo?`<img src="${user.photo}" alt="">`:user.initial;
-  const rb=isAdmin()
-    ?`<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)">관리자</span>`
-    :isStaff()
-    ?`<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(100,180,255,.15);border:1px solid rgba(100,180,255,.3);color:rgba(150,210,255,.9)">운영진</span>`
-    :'';
-  const adminLink=isAdmin()
-    ?`<a href="admin.html" style="background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9);padding:5px 11px;border-radius:6px;font-size:.75rem;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center">관리자 페이지</a>`
-    :'';
-  nr.innerHTML=`${rb}${adminLink}<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
-  const sb=document.getElementById('staffBar');
-  if(sb) sb.style.display=canManage()?'flex':'none';
+  const admin = (userRole==='admin');
+  const cnt = myApplyCount();
+  const cls = admin ? '' : (cnt>=maxApply ? 'full-quota' : cnt>=maxApply-1 ? 'warn' : '');
+  const av = user.photo ? `<img src="${user.photo}" alt="">` : user.initial;
+  const rb = admin
+    ? `<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)">관리자</span>`
+    : (userRole==='staff')
+    ? `<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(100,180,255,.15);border:1px solid rgba(100,180,255,.3);color:rgba(150,210,255,.9)">운영진</span>`
+    : '';
+  const adminLink = admin
+    ? `<a href="admin.html" style="display:inline-block;background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9);padding:5px 11px;border-radius:6px;font-size:.75rem;text-decoration:none;white-space:nowrap">관리자 페이지</a>`
+    : '';
+  nr.innerHTML = `${rb}${adminLink}<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
+  const sb = document.getElementById('staffBar');
+  if(sb) sb.style.display = canManage() ? 'flex' : 'none';
 }
 
 /* ── FORM CONFIG ──────────────────────────────────────── */
@@ -538,7 +532,7 @@ async function applyMeeting(id){
   } else {
     // 신청
     if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
-    if(!isAdmin()&&myApplyCount()>=maxApply){showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`);return;}
+    if(userRole!=='admin' && myApplyCount()>=maxApply){showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`);return;}
     applied.add(id);
     await aRef.set({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});
     await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
@@ -562,7 +556,7 @@ function pushNotif(msg){if('Notification'in window&&Notification.permission==='g
 /* ── CARD ─────────────────────────────────────────────── */
 function cardHTML(m){
   const isFull=m.applied>=m.max,isApplied=applied.has(m.id),isWish=wishlisted.has(m.id);
-  const isQuotaFull=user&&myApplyCount()>=maxApply&&!isApplied;
+  const isQuotaFull = userRole!=='admin' && user && myApplyCount()>=maxApply && !isApplied;
   const pct=Math.round((m.applied/m.max)*100);
   const dateStr=new Date(m.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
   let badge,btnCls,btnTxt;
