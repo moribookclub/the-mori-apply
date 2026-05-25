@@ -452,8 +452,8 @@ function updateNav() {
 
   // 추가 버튼: 관리자만 표시
   const sb=document.getElementById('staffBar'), sbs=document.getElementById('staffBarSmall');
-  if(sb)  sb.style.display  = isAdmin() ? 'flex' : 'none';
-  if(sbs) sbs.style.display = isAdmin() ? 'flex' : 'none';
+if(sb) sb.style.display = isAdmin() ? 'flex' : 'none';
+if(sbs) sbs.style.display = isAdmin() ? 'flex' : 'none';
 }
 
 function initMain() { showScreen('main'); listenMeetings(); listenSmallGroups(); loadNotices(); }
@@ -669,11 +669,9 @@ function pushNotif(msg){if('Notification'in window&&Notification.permission==='g
 async function renderManageTab(){
   const ml=document.getElementById('manageMeetingList');
   if(ml){
-    // 모임장이면 자기 모임만 필터
     const visibleMeetings = isAdmin()
       ? meetings
       : meetings.filter(m => m.hostEmail === user.email);
-
     if(!visibleMeetings.length){
       ml.innerHTML=`<div class="empty">${isStaff()?'담당 독서모임이 없어요':'등록된 모임이 없어요'}</div>`;
     } else {
@@ -683,13 +681,11 @@ async function renderManageTab(){
       }).join('');
     }
   }
-
   const sl=document.getElementById('manageSmallList');
   if(sl){
     const visibleSmall = isAdmin()
       ? smallGroups
       : smallGroups.filter(m => m.hostEmail === user.email);
-
     if(!visibleSmall.length){
       sl.innerHTML=`<div class="empty">${isStaff()?'담당 소모임이 없어요':'등록된 소모임이 없어요'}</div>`;
     } else {
