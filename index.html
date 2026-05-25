@@ -581,7 +581,7 @@ async function renderManageTab(){
     else ml.innerHTML=meetings.map(m=>{
       const safeTitle=encodeURIComponent(m.title);
       return `<div class="manage-meeting-card">
-        <div class="manage-meeting-header" data-col="meetings" data-id="${m.id}" data-title="${safeTitle}" onclick="toggleBody(this)">
+        <div class="manage-meeting-header" data-col="meetings" data-id="${m.id}" data-title="${safeTitle}" onclick="toggleBody(event)">
           <div><div class="manage-meeting-title">${m.title}</div>
           <div class="manage-meeting-meta">${m.topic} · ${m.host} · ${m.date} · ${m.applied}/${m.max}명</div></div>
           <span class="manage-toggle-icon">▼</span>
@@ -596,7 +596,7 @@ async function renderManageTab(){
     else sl.innerHTML=smallGroups.map(m=>{
       const safeTitle=encodeURIComponent(m.name);
       return `<div class="manage-meeting-card">
-        <div class="manage-meeting-header" data-col="smallGroups" data-id="${m.id}" data-title="${safeTitle}" onclick="toggleBody(this)">
+        <div class="manage-meeting-header" data-col="smallGroups" data-id="${m.id}" data-title="${safeTitle}" onclick="toggleBody(event)">
           <div><div class="manage-meeting-title">${m.name}</div>
           <div class="manage-meeting-meta">모임장 ${m.host} · ${m.date} · ${m.applied}/${m.max}명</div></div>
           <span class="manage-toggle-icon">▼</span>
@@ -607,8 +607,8 @@ async function renderManageTab(){
   }
 }
 
-async function toggleBody(el){
-  const headerEl = el.closest('.manage-meeting-header');
+async function toggleBody(ev){
+  const headerEl = ev.currentTarget;
   if(!headerEl) return;
   ...
   body.innerHTML=html;
