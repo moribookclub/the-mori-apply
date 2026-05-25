@@ -83,6 +83,17 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-q-del{color:rgba(255,100,100,.5)}.btn-q-del:hover{color:rgba(255,130,130,.9);border-color:rgba(255,100,100,.4)}
 .btn-add-q{background:transparent;border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.45);padding:9px;border-radius:8px;width:100%;cursor:pointer;font-size:.83rem;transition:all .2s;margin-top:.3rem}
 .btn-add-q:hover{border-color:rgba(255,255,255,.4);color:#fff}
+/* 기본정보 편집 */
+.basic-field-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;margin-bottom:.5rem}
+.basic-field-label{font-size:.85rem;color:rgba(255,255,255,.7);flex:1}
+.basic-field-sub{font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px}
+.basic-field-toggle{display:flex;align-items:center;gap:6px;font-size:.78rem;color:rgba(255,255,255,.45)}
+.toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.15);border-radius:20px;transition:.3s}
+.toggle-slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-switch input:checked+.toggle-slider{background:rgba(100,200,120,.6)}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(16px)}
 .quota-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;margin-bottom:.8rem}
 .quota-row label{font-size:.83rem;color:rgba(255,255,255,.6);flex:1}
 .quota-input-sm{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#fff;width:50px;text-align:center;padding:4px 6px;font-size:.88rem;outline:none}
@@ -121,13 +132,14 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-del-option{background:none;border:none;color:rgba(255,100,100,.5);cursor:pointer;font-size:1rem;padding:0 4px}
 .btn-add-option{background:transparent;border:1px dashed rgba(255,255,255,.18);color:rgba(255,255,255,.4);padding:6px 12px;border-radius:6px;font-size:.78rem;cursor:pointer;width:100%}
 .btn-add-option:hover{border-color:rgba(255,255,255,.35);color:#fff}
+.btn-add-etc{background:rgba(255,180,80,.1);border:1px dashed rgba(255,180,80,.3);color:rgba(255,200,100,.8);padding:6px 12px;border-radius:6px;font-size:.78rem;cursor:pointer;width:100%;margin-top:4px}
+.btn-add-etc:hover{border-color:rgba(255,180,80,.6);color:rgba(255,220,120,.9)}
 .img-preview{max-width:100%;max-height:120px;border-radius:6px;margin-top:6px;object-fit:cover}
 .access-denied{max-width:400px;margin:8rem auto;text-align:center;padding:0 1.5rem}
 .access-denied .icon{font-size:3rem;margin-bottom:1rem}
 .access-denied h2{font-size:1.3rem;font-weight:700;margin-bottom:.6rem}
 .access-denied p{color:rgba(255,255,255,.45);font-size:.88rem;line-height:1.7}
 .notice-preview{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:1rem;margin-top:.6rem;font-size:.83rem;color:rgba(255,255,255,.6);min-height:40px}
-/* 멤버 선택 리스트 */
 .member-select-list{display:flex;flex-direction:column;gap:.4rem;max-height:320px;overflow-y:auto;margin-bottom:1rem}
 .member-select-row{display:flex;align-items:center;gap:10px;padding:.6rem .8rem;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s}
 .member-select-row:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
@@ -242,6 +254,47 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
         <div id="privacyEditorWrap"></div>
         <button class="btn-save" style="margin-top:.8rem" onclick="savePrivacy()">저장</button>
       </div>
+
+      <!-- 기본 정보 필드 설정 -->
+      <div class="section-card">
+        <div class="section-head"><div><h2>기본 정보 항목 설정</h2><p>신청서에 표시할 기본 항목을 on/off 할 수 있어요</p></div>
+          <button class="btn-save" onclick="saveBasicFields()">저장</button>
+        </div>
+        <div class="basic-field-row">
+          <div><div class="basic-field-label">성함</div><div class="basic-field-sub">실명 입력 (필수 고정)</div></div>
+          <label class="toggle-switch"><input type="checkbox" checked disabled><span class="toggle-slider"></span></label>
+        </div>
+        <div class="basic-field-row">
+          <div><div class="basic-field-label">성별</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="bf-gender" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="basic-field-row">
+          <div><div class="basic-field-label">생년월일</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="bf-birth" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="basic-field-row">
+          <div><div class="basic-field-label">연락처</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="bf-phone" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="basic-field-row">
+          <div><div class="basic-field-label">멤버 구분</div><div class="basic-field-sub">신규멤버 / 기존멤버 선택</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="bf-memberType" checked><span class="toggle-slider"></span></label>
+        </div>
+        <!-- 성별 선택지 편집 -->
+        <div id="genderOptionsWrap" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07)">
+          <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">성별 선택지</div>
+          <div class="option-list" id="genderOptionList"></div>
+          <button class="btn-add-option" onclick="addGenderOption()">+ 선택지 추가</button>
+        </div>
+        <!-- 멤버 구분 선택지 편집 -->
+        <div id="memberTypeOptionsWrap" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07)">
+          <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">멤버 구분 선택지</div>
+          <div class="option-list" id="memberTypeOptionList"></div>
+          <button class="btn-add-option" onclick="addMemberTypeOption()">+ 선택지 추가</button>
+        </div>
+      </div>
+
+      <!-- 추가 질문 -->
       <div class="section-card">
         <div class="section-head"><div><h2>추가 질문 관리</h2></div></div>
         <div class="q-group-title">🆕 신규멤버 질문</div>
@@ -280,12 +333,18 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     </div>
     <div class="divider"></div>
     <div class="form-group"><label>답변 형식</label>
-      <select id="q-type" onchange="toggleAnswerOptions()"><option value="textarea">장문 텍스트</option><option value="text">단문 텍스트</option><option value="single">객관식 (단일 선택)</option><option value="multi">객관식 (복수 선택)</option></select>
+      <select id="q-type" onchange="toggleAnswerOptions()">
+        <option value="textarea">장문 텍스트</option>
+        <option value="text">단문 텍스트</option>
+        <option value="single">객관식 (단일 선택)</option>
+        <option value="multi">객관식 (복수 선택)</option>
+      </select>
     </div>
     <div id="optionsSection" style="display:none">
       <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:.5rem">선택지 입력</div>
       <div class="option-list" id="optionList"></div>
       <button class="btn-add-option" onclick="addOption()">+ 선택지 추가</button>
+      <button class="btn-add-etc" onclick="addEtcOption()" id="addEtcBtn">+ 기타 (직접 입력) 추가</button>
     </div>
     <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:.8rem">
       <input type="checkbox" id="q-required" style="width:17px;height:17px;accent-color:#fff">
@@ -329,11 +388,10 @@ firebase.initializeApp({apiKey:"AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",authDom
 const auth=firebase.auth(), db=firebase.firestore();
 const ADMIN_EMAIL='nohjunhyouk@gmail.com';
 let user=null, meetings=[], allMembers=[];
-let formConfig={notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[]};
+let formConfig={notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};
 let siteConfig={noticeBoard:'',waitingNotice:'',globalQuota:2};
 let memberFilter='pending', adminSelected=null, editingQId=null, editingQGroup=null;
-// 멤버 추가 모달 상태
-let addMemberContext=null; // {col, id, existingEmails}
+let addMemberContext=null;
 let selectedMemberEmails=new Set();
 
 /* ── RICH TEXT EDITOR ─────────────────────────────────── */
@@ -385,6 +443,7 @@ function initEditors(){
   document.getElementById('waitingNoticePreview').innerHTML=siteConfig.waitingNotice||'';
   document.getElementById('noticeEditorFormWrap').innerHTML=createRichEditor('noticeEditorForm',formConfig.notice||'');
   document.getElementById('privacyEditorWrap').innerHTML=createRichEditor('privacyEditor',formConfig.privacy||'');
+  renderBasicFieldsEditor();
 }
 
 /* ── SITE CONFIG ──────────────────────────────────────── */
@@ -402,13 +461,64 @@ async function clearWaitingNotice(){siteConfig.waitingNotice='';await db.collect
 /* ── FORM CONFIG ──────────────────────────────────────── */
 async function loadFormConfig(){
   const doc=await db.collection('settings').doc('formConfig').get();
-  if(doc.exists){const d=doc.data();formConfig={notice:d.notice||'',privacy:d.privacy||'',commonQuestions:d.commonQuestions||[],newQuestions:d.newQuestions||d.questions||[],existingQuestions:d.existingQuestions||[]};}
-  else{formConfig={notice:'<p>THE MORI 독서모임에 지원해 주셔서 감사합니다.</p>',privacy:'<p>수집 항목: 성명, 연락처, 생년월일</p>',commonQuestions:[],newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],existingQuestions:[]};}
+  if(doc.exists){
+    const d=doc.data();
+    formConfig={
+      notice:d.notice||'', privacy:d.privacy||'',
+      commonQuestions:d.commonQuestions||[],
+      newQuestions:d.newQuestions||d.questions||[],
+      existingQuestions:d.existingQuestions||[],
+      basicFields:d.basicFields||{gender:true,birth:true,phone:true,memberType:true},
+      genderOptions:d.genderOptions||['남성','여성','기타'],
+      memberTypeOptions:d.memberTypeOptions||['신규멤버','기존멤버']
+    };
+  } else {
+    formConfig={notice:'<p>THE MORI 독서모임에 지원해 주셔서 감사합니다.</p>',privacy:'<p>수집 항목: 성명, 연락처, 생년월일</p>',commonQuestions:[],newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};
+  }
   renderQuestionEditor();
 }
 async function saveFormConfig(){await db.collection('settings').doc('formConfig').set(formConfig);}
 async function saveNotice(){formConfig.notice=getRichContent('noticeEditorForm');await saveFormConfig();showToast('안내문이 저장되었어요 ✅');}
 async function savePrivacy(){formConfig.privacy=getRichContent('privacyEditor');await saveFormConfig();showToast('개인정보 동의 문구가 저장되었어요 ✅');}
+
+/* ── 기본정보 필드 편집 ───────────────────────────────── */
+function renderBasicFieldsEditor(){
+  // 토글 상태 반영
+  const bf=formConfig.basicFields||{gender:true,birth:true,phone:true,memberType:true};
+  document.getElementById('bf-gender').checked=bf.gender!==false;
+  document.getElementById('bf-birth').checked=bf.birth!==false;
+  document.getElementById('bf-phone').checked=bf.phone!==false;
+  document.getElementById('bf-memberType').checked=bf.memberType!==false;
+  // 성별 선택지
+  const gl=document.getElementById('genderOptionList');
+  gl.innerHTML='';
+  (formConfig.genderOptions||['남성','여성','기타']).forEach(v=>addOptionToList(gl,v));
+  // 멤버구분 선택지
+  const ml=document.getElementById('memberTypeOptionList');
+  ml.innerHTML='';
+  (formConfig.memberTypeOptions||['신규멤버','기존멤버']).forEach(v=>addOptionToList(ml,v));
+}
+function addOptionToList(listEl,val){
+  const div=document.createElement('div'); div.className='option-row';
+  div.innerHTML=`<input type="text" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;
+  listEl.appendChild(div);
+}
+function addGenderOption(){addOptionToList(document.getElementById('genderOptionList'),'');}
+function addMemberTypeOption(){addOptionToList(document.getElementById('memberTypeOptionList'),'');}
+async function saveBasicFields(){
+  formConfig.basicFields={
+    gender:document.getElementById('bf-gender').checked,
+    birth:document.getElementById('bf-birth').checked,
+    phone:document.getElementById('bf-phone').checked,
+    memberType:document.getElementById('bf-memberType').checked
+  };
+  formConfig.genderOptions=[...document.querySelectorAll('#genderOptionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);
+  formConfig.memberTypeOptions=[...document.querySelectorAll('#memberTypeOptionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);
+  if(!formConfig.genderOptions.length) formConfig.genderOptions=['남성','여성','기타'];
+  if(!formConfig.memberTypeOptions.length) formConfig.memberTypeOptions=['신규멤버','기존멤버'];
+  await saveFormConfig();
+  showToast('기본 정보 설정이 저장되었어요 ✅');
+}
 
 /* ── QUESTION EDITOR ──────────────────────────────────── */
 function renderQuestionEditor(){
@@ -419,39 +529,114 @@ function renderQuestionEditor(){
     const list=formConfig[keyMap[group]]||[];
     el.innerHTML=list.length?list.map(q=>{
       const typeLabel={textarea:'장문',text:'단문',single:'단일선택',multi:'복수선택'}[q.type]||'장문';
+      const hasEtc=q.options&&q.options.includes('__etc__');
       return `<div class="question-item"><div class="q-preview"><div class="q-preview-text" style="font-size:${q.fontSize||'0.9rem'};color:${q.color||'#fff'}">${q.text}${q.required?' <span style="color:rgba(255,150,150,.8);font-size:.75rem">*필수</span>':''}</div>${q.imageData?`<img class="q-preview-img" src="${q.imageData}">`:''}
-        <div class="q-meta"><span class="q-meta-tag">${typeLabel}</span>${q.options?.length?`<span class="q-meta-tag">${q.options.length}개 선택지</span>`:''}</div></div>
+        <div class="q-meta"><span class="q-meta-tag">${typeLabel}</span>${q.options?.length?`<span class="q-meta-tag">${q.options.filter(o=>o!=='__etc__').length}개 선택지${hasEtc?' + 기타':''}</span>`:''}</div></div>
         <div class="q-btns"><button class="btn-q-edit" onclick="openEditQuestionModal('${q.id}','${group}')">수정</button><button class="btn-q-del" onclick="deleteQuestion('${q.id}','${group}')">삭제</button></div></div>`;
     }).join(''):`<div style="color:rgba(255,255,255,.25);font-size:.82rem;padding:.5rem 0">등록된 질문이 없어요</div>`;
   });
 }
-function toggleAnswerOptions(){document.getElementById('optionsSection').style.display=(document.getElementById('q-type').value==='single'||document.getElementById('q-type').value==='multi')?'block':'none';}
+
+function toggleAnswerOptions(){
+  const t=document.getElementById('q-type').value;
+  document.getElementById('optionsSection').style.display=(t==='single'||t==='multi')?'block':'none';
+}
 function previewQImage(input){if(!input.files||!input.files[0])return;const r=new FileReader();r.onload=e=>{document.getElementById('q-image-data').value=e.target.result;const p=document.getElementById('q-image-preview');p.src=e.target.result;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';};r.readAsDataURL(input.files[0]);}
 function clearQImage(){document.getElementById('q-image-data').value='';document.getElementById('q-image-preview').style.display='none';document.getElementById('q-image-clear').style.display='none';document.getElementById('q-image').value='';}
-function addOption(val=''){const list=document.getElementById('optionList');const div=document.createElement('div');div.className='option-row';div.innerHTML=`<input type="text" placeholder="선택지 입력" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;list.appendChild(div);}
-function getOptions(){return[...document.querySelectorAll('#optionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);}
-function openAddQuestionModal(group){editingQId=null;editingQGroup=group;const gLabel={new:'신규멤버',existing:'기존멤버',common:'공통'}[group];document.getElementById('qModalTitle').textContent=`${gLabel} 질문 추가`;document.getElementById('qModalOkBtn').textContent='추가';document.getElementById('q-text').value='';document.getElementById('q-type').value='textarea';document.getElementById('q-required').checked=false;document.getElementById('q-fontsize').value='0.9rem';document.getElementById('q-color').value='#ffffff';clearQImage();document.getElementById('optionList').innerHTML='';document.getElementById('optionsSection').style.display='none';document.getElementById('questionModal').classList.add('open');}
-function openEditQuestionModal(id,group){const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};const q=formConfig[keyMap[group]]?.find(x=>x.id===id);if(!q)return;editingQId=id;editingQGroup=group;document.getElementById('qModalTitle').textContent='질문 수정';document.getElementById('qModalOkBtn').textContent='저장';document.getElementById('q-text').value=q.text;document.getElementById('q-type').value=q.type;document.getElementById('q-required').checked=q.required;document.getElementById('q-fontsize').value=q.fontSize||'0.9rem';document.getElementById('q-color').value=q.color||'#ffffff';document.getElementById('q-image-data').value=q.imageData||'';const p=document.getElementById('q-image-preview');if(q.imageData){p.src=q.imageData;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';}else{p.style.display='none';document.getElementById('q-image-clear').style.display='none';}document.getElementById('optionList').innerHTML='';if(q.options?.length){q.options.forEach(o=>addOption(o));document.getElementById('optionsSection').style.display='block';}else document.getElementById('optionsSection').style.display='none';toggleAnswerOptions();document.getElementById('questionModal').classList.add('open');}
+
+function addOption(val=''){
+  const list=document.getElementById('optionList');
+  const div=document.createElement('div'); div.className='option-row';
+  div.innerHTML=`<input type="text" placeholder="선택지 입력" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;
+  list.appendChild(div);
+  checkEtcBtn();
+}
+function addEtcOption(){
+  // 이미 기타가 있으면 추가 안 함
+  const opts=getOptions();
+  if(opts.includes('__etc__')){showToast('기타는 한 번만 추가할 수 있어요');return;}
+  const list=document.getElementById('optionList');
+  const div=document.createElement('div'); div.className='option-row';
+  div.innerHTML=`<input type="text" value="기타 (직접 입력)" readonly style="color:rgba(255,200,100,.8);background:rgba(255,200,80,.07)"><input type="hidden" value="__etc__"><button class="btn-del-option" onclick="this.parentElement.remove();checkEtcBtn()">✕</button>`;
+  list.appendChild(div);
+  checkEtcBtn();
+}
+function checkEtcBtn(){
+  const hasEtc=getOptionsRaw().includes('__etc__');
+  const btn=document.getElementById('addEtcBtn');
+  if(btn) btn.style.opacity=hasEtc?'0.4':'1';
+}
+function getOptions(){
+  // hidden value가 있으면 그걸, 없으면 text input 값 반환
+  return [...document.querySelectorAll('#optionList .option-row')].map(row=>{
+    const hidden=row.querySelector('input[type=hidden]');
+    if(hidden) return hidden.value;
+    return row.querySelector('input[type=text]')?.value.trim()||'';
+  }).filter(Boolean);
+}
+function getOptionsRaw(){ return getOptions(); }
+
+function openAddQuestionModal(group){
+  editingQId=null;editingQGroup=group;
+  const gLabel={new:'신규멤버',existing:'기존멤버',common:'공통'}[group];
+  document.getElementById('qModalTitle').textContent=`${gLabel} 질문 추가`;
+  document.getElementById('qModalOkBtn').textContent='추가';
+  document.getElementById('q-text').value='';document.getElementById('q-type').value='textarea';
+  document.getElementById('q-required').checked=false;document.getElementById('q-fontsize').value='0.9rem';
+  document.getElementById('q-color').value='#ffffff';clearQImage();
+  document.getElementById('optionList').innerHTML='';document.getElementById('optionsSection').style.display='none';
+  checkEtcBtn();
+  document.getElementById('questionModal').classList.add('open');
+}
+function openEditQuestionModal(id,group){
+  const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
+  const q=formConfig[keyMap[group]]?.find(x=>x.id===id);if(!q)return;
+  editingQId=id;editingQGroup=group;
+  document.getElementById('qModalTitle').textContent='질문 수정';document.getElementById('qModalOkBtn').textContent='저장';
+  document.getElementById('q-text').value=q.text;document.getElementById('q-type').value=q.type;
+  document.getElementById('q-required').checked=q.required;document.getElementById('q-fontsize').value=q.fontSize||'0.9rem';
+  document.getElementById('q-color').value=q.color||'#ffffff';document.getElementById('q-image-data').value=q.imageData||'';
+  const p=document.getElementById('q-image-preview');
+  if(q.imageData){p.src=q.imageData;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';}
+  else{p.style.display='none';document.getElementById('q-image-clear').style.display='none';}
+  document.getElementById('optionList').innerHTML='';
+  if(q.options?.length){
+    q.options.forEach(o=>{
+      if(o==='__etc__') addEtcOption();
+      else addOption(o);
+    });
+    document.getElementById('optionsSection').style.display='block';
+  } else document.getElementById('optionsSection').style.display='none';
+  toggleAnswerOptions();checkEtcBtn();
+  document.getElementById('questionModal').classList.add('open');
+}
 function closeQuestionModal(){document.getElementById('questionModal').classList.remove('open');editingQId=null;editingQGroup=null;}
+
 async function submitQuestion(){
   const text=document.getElementById('q-text').value.trim();if(!text){showToast('질문 내용을 입력해주세요');return;}
-  const type=document.getElementById('q-type').value,required=document.getElementById('q-required').checked,fontSize=document.getElementById('q-fontsize').value,color=document.getElementById('q-color').value,imageData=document.getElementById('q-image-data').value||null;
+  const type=document.getElementById('q-type').value,required=document.getElementById('q-required').checked;
+  const fontSize=document.getElementById('q-fontsize').value,color=document.getElementById('q-color').value;
+  const imageData=document.getElementById('q-image-data').value||null;
   const options=(type==='single'||type==='multi')?getOptions():[];
-  if((type==='single'||type==='multi')&&options.length<2){showToast('선택지를 2개 이상 입력해주세요');return;}
+  // 선택지 1개 이상이면 저장 가능 (기타만 있어도 OK)
+  if((type==='single'||type==='multi')&&options.length<1){showToast('선택지를 1개 이상 입력해주세요');return;}
   const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
   const key=keyMap[editingQGroup];
   const qObj={id:editingQId||'q'+Date.now(),text,type,required,fontSize,color,imageData,options};
-  if(editingQId)formConfig[key]=formConfig[key].map(q=>q.id===editingQId?qObj:q);
+  if(editingQId) formConfig[key]=formConfig[key].map(q=>q.id===editingQId?qObj:q);
   else formConfig[key].push(qObj);
-  await saveFormConfig();closeQuestionModal();renderQuestionEditor();showToast(editingQId?'질문이 수정되었어요':'질문이 추가되었어요');
+  await saveFormConfig();closeQuestionModal();renderQuestionEditor();
+  showToast(editingQId?'질문이 수정되었어요':'질문이 추가되었어요');
 }
-async function deleteQuestion(id,group){if(!confirm('이 질문을 삭제할까요?'))return;const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};formConfig[keyMap[group]]=formConfig[keyMap[group]].filter(q=>q.id!==id);await saveFormConfig();renderQuestionEditor();showToast('질문이 삭제되었어요');}
+async function deleteQuestion(id,group){
+  if(!confirm('이 질문을 삭제할까요?'))return;
+  const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
+  formConfig[keyMap[group]]=formConfig[keyMap[group]].filter(q=>q.id!==id);
+  await saveFormConfig();renderQuestionEditor();showToast('질문이 삭제되었어요');
+}
 
 /* ── MEMBERS ──────────────────────────────────────────── */
-async function loadAllMembers(){
-  const snap=await db.collection('users').get();
-  allMembers=snap.docs.map(d=>({...d.data()}));
-}
+async function loadAllMembers(){const snap=await db.collection('users').get();allMembers=snap.docs.map(d=>({...d.data()}));}
 async function renderMemberList(){
   const g=document.getElementById('memberList');g.innerHTML=`<div class="empty">불러오는 중...</div>`;
   await loadAllMembers();
@@ -459,7 +644,6 @@ async function renderMemberList(){
   if(memberFilter==='none') list=allMembers.filter(u=>!u.role);
   else if(memberFilter!=='all') list=allMembers.filter(u=>u.role===memberFilter);
   if(!list.length){g.innerHTML=`<div class="empty">해당하는 멤버가 없어요</div>`;return;}
-  // 역할 표시: staff → 모임장
   const statusMap={pending:'badge-pending',member:'badge-member',staff:'badge-staff'};
   const statusLabel={pending:'대기중',member:'참여자',staff:'모임장'};
   g.innerHTML=list.map(u=>{
@@ -477,11 +661,7 @@ function filterMembers(f,el){memberFilter=f;document.querySelectorAll('.filter-c
 async function approveMember(email){await db.collection('users').doc(email).update({role:'member'});showToast('승인되었어요 ✅');renderMemberList();}
 async function cancelWaiting(email,name){if(!confirm(`"${name}" 님의 대기를 취소할까요?`))return;await db.collection('users').doc(email).update({role:'cancelled'});showToast('대기가 취소되었어요');renderMemberList();}
 async function rejectMember(email,name){if(!confirm(`"${name}" 님을 거절하고 데이터를 삭제할까요?`))return;await db.collection('users').doc(email).delete();showToast('거절되었어요');renderMemberList();}
-async function setRole(email,role){
-  await db.collection('users').doc(email).update({role});
-  const msg={staff:'모임장 권한을 부여했어요',member:'참여자로 변경되었어요',pending:'대기 상태로 변경되었어요'};
-  showToast(msg[role]||'변경되었어요');renderMemberList();
-}
+async function setRole(email,role){await db.collection('users').doc(email).update({role});const msg={staff:'모임장 권한을 부여했어요',member:'참여자로 변경되었어요',pending:'대기 상태로 변경되었어요'};showToast(msg[role]||'변경되었어요');renderMemberList();}
 
 async function openProfileModal(email){
   const doc=await db.collection('users').doc(email).get();if(!doc.exists)return;
@@ -557,26 +737,19 @@ async function exportCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_신청자명단.csv';a.click();showToast('CSV 다운로드 완료 ✅');
 }
 
-/* ══════════════════════════════════════════
-   멤버 선택 추가 모달
-══════════════════════════════════════════ */
-async function openAddMemberModal(col, id, title){
+/* ── 멤버 선택 추가 모달 ──────────────────────────────── */
+async function openAddMemberModal(col,id,title){
   selectedMemberEmails=new Set();
-  // 이미 신청자인 이메일 목록 조회
   const snap=await db.collection(col).doc(id).collection('applicants').get();
   const existingEmails=new Set(snap.docs.map(d=>d.id));
-  addMemberContext={col, id, title};
+  addMemberContext={col,id,title};
   document.getElementById('addMemberModalTitle').textContent=`멤버 추가 — ${title}`;
   document.getElementById('memberSearchInput').value='';
   document.getElementById('addMemberSelectedInfo').textContent='';
-  // 참여자(member), 모임장(staff) 멤버만 필터링, 이미 신청자 제외
-  const eligible=allMembers.filter(u=>
-    (u.role==='member'||u.role==='staff') && !existingEmails.has(u.email)
-  );
+  const eligible=allMembers.filter(u=>(u.role==='member'||u.role==='staff')&&!existingEmails.has(u.email));
   renderMemberSelectList(eligible);
   document.getElementById('addMemberModal').classList.add('open');
 }
-
 function renderMemberSelectList(list){
   const el=document.getElementById('memberSelectList');
   if(!list.length){el.innerHTML=`<div style="color:rgba(255,255,255,.25);font-size:.83rem;padding:1rem 0;text-align:center">추가 가능한 멤버가 없어요</div>`;return;}
@@ -586,45 +759,28 @@ function renderMemberSelectList(list){
     const sel=selectedMemberEmails.has(u.email);
     return `<div class="member-select-row${sel?' selected':''}" onclick="toggleMemberSelect('${u.email}')">
       <div class="member-select-av">${av}</div>
-      <div class="member-select-info">
-        <div class="member-select-name">${u.name||'이름 없음'} <span style="font-size:.7rem;color:rgba(255,255,255,.35)">${roleLabel[u.role]||''}</span></div>
-        <div class="member-select-email">${u.email}</div>
-      </div>
+      <div class="member-select-info"><div class="member-select-name">${u.name||'이름 없음'} <span style="font-size:.7rem;color:rgba(255,255,255,.35)">${roleLabel[u.role]||''}</span></div><div class="member-select-email">${u.email}</div></div>
       <input type="checkbox" class="member-select-check" ${sel?'checked':''} readonly>
     </div>`;
   }).join('');
 }
-
 function toggleMemberSelect(email){
   if(selectedMemberEmails.has(email)) selectedMemberEmails.delete(email);
   else selectedMemberEmails.add(email);
-  updateMemberSelectInfo();
-  filterMemberSelectList(); // 리스트 재렌더 (체크 상태 반영)
+  document.getElementById('addMemberSelectedInfo').textContent=selectedMemberEmails.size?`${selectedMemberEmails.size}명 선택됨`:'';
+  filterMemberSelectList();
 }
-
-function updateMemberSelectInfo(){
-  const cnt=selectedMemberEmails.size;
-  document.getElementById('addMemberSelectedInfo').textContent=cnt?`${cnt}명 선택됨`:'';
-}
-
 function filterMemberSelectList(){
   const q=document.getElementById('memberSearchInput').value.trim().toLowerCase();
-  const existingSet=addMemberContext?new Set():new Set(); // 이미 로드 시 제외됨
-  const eligible=allMembers.filter(u=>
-    (u.role==='member'||u.role==='staff') &&
-    (!q || (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q))
-  );
+  const eligible=allMembers.filter(u=>(u.role==='member'||u.role==='staff')&&(!q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));
   renderMemberSelectList(eligible);
 }
-
 async function confirmAddSelectedMembers(){
   if(!addMemberContext||selectedMemberEmails.size===0){showToast('추가할 멤버를 선택해주세요');return;}
   const {col,id}=addMemberContext;
-  const m=col==='meetings'?meetings.find(x=>x.id===id):null;
   let added=0;
   for(const email of selectedMemberEmails){
-    const u=allMembers.find(x=>x.email===email);
-    if(!u) continue;
+    const u=allMembers.find(x=>x.email===email);if(!u)continue;
     await db.collection(col).doc(id).collection('applicants').doc(email).set({name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''});
     await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});
     const field=col==='meetings'?'applied':'appliedSmall';
@@ -635,7 +791,6 @@ async function confirmAddSelectedMembers(){
   closeAddMemberModal();
   if(col==='meetings') renderApplicantTable();
 }
-
 function closeAddMemberModal(){document.getElementById('addMemberModal').classList.remove('open');addMemberContext=null;selectedMemberEmails=new Set();}
 
 /* ── TABS ─────────────────────────────────────────────── */
@@ -643,7 +798,8 @@ function switchAdminTab(t,el){
   document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
   ['tabMembers','tabMeetings','tabSettings','tabForm'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById({members:'tabMembers',meetings:'tabMeetings',settings:'tabSettings',form:'tabForm'}[t]).style.display='block';
-  if(t==='meetings')renderMeetingChips();
+  if(t==='meetings') renderMeetingChips();
+  if(t==='form') renderBasicFieldsEditor();
 }
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 </script>
