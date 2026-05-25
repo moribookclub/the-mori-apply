@@ -592,7 +592,7 @@ async function toggleWishSmall(id){
 function pushNotif(msg){if('Notification'in window&&Notification.permission==='granted')new Notification('THE MORI APPLY',{body:msg});else if('Notification'in window&&Notification.permission!=='denied')Notification.requestPermission().then(p=>p==='granted'?new Notification('THE MORI APPLY',{body:msg}):showToast(msg));else showToast(msg);}
 
 /* ══════════════════════════════════════════
-   모임관리 탭
+   모임관리 탭 — 이 블록 전체를 기존 코드와 교체
 ══════════════════════════════════════════ */
 async function renderManageTab(){
   await renderManageList('meetings', meetings, 'manageMeetingList', m=>m.title, m=>`${m.topic} · ${m.host} · ${m.date}`);
@@ -602,9 +602,10 @@ async function renderManageTab(){
 async function renderManageList(col, list, elId, titleFn, metaFn){
   const el=document.getElementById(elId); if(!el) return;
   if(!list.length){el.innerHTML=`<div class="empty">등록된 모임이 없어요</div>`;return;}
-  el.innerHTML=list.map(m=>`
-    <div class="manage-meeting-card">
-      <div class="manage-meeting-header" onclick="toggleManageBody('${col}-${m.id}','${col}','${m.id}')">
+  el.innerHTML=list.map(m=>{
+    const safeTitle=(titleFn(m)||'').replace(/'/g,"\\'");
+    return `<div class="manage-meeting-card">
+      <div class="manage-meeting-header" onclick="toggleManageBody('${col}-${m.id}','${col}','${m.id}','${safeTitle}')">
         <div>
           <div class="manage-meeting-title">${titleFn(m)}</div>
           <div class="manage-meeting-meta">${metaFn(m)} · 신청 ${m.applied}/${m.max}명</div>
@@ -612,75 +613,139 @@ async function renderManageList(col, list, elId, titleFn, metaFn){
         <span class="manage-toggle-icon" id="icon-${col}-${m.id}">▼</span>
       </div>
       <div class="manage-meeting-body" id="body-${col}-${m.id}"></div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-async function toggleManageBody(key, col, id){
+async function toggleManageBody(key, col, id, title){
   const body=document.getElementById(`body-${key}`), icon=document.getElementById(`icon-${key}`);
   if(!body) return;
   if(body.classList.contains('open')){body.classList.remove('open');icon.textContent='▼';return;}
   body.classList.add('open'); icon.textContent='▲';
   body.innerHTML=`<div style="padding:.5rem 0;color:rgba(255,255,255,.3);font-size:.82rem">불러오는 중...</div>`;
   const snap=await db.collection(col).doc(id).collection('applicants').orderBy('time').get();
-  const m=col==='meetings'?meetings.find(x=>x.id===id):smallGroups.find(x=>x.id===id);
   let html='';
-  if(snap.empty){html=`<div style="color:rgba(255,255,255,.25);font-size:.82rem;padding:.4rem 0">신청자가 없어요</div>`;}
-  else{html=snap.docs.map(d=>{const a=d.data();const av=a.photo?`<img src="${a.photo}" alt="">`:a.name?.[0]||'?';return`<div class="applicant-row"><div class="applicant-av">${av}</div><div class="applicant-info"><div class="applicant-name">${a.name}</div><div class="applicant-email">${a.email}</div></div><button class="btn-remove-member" onclick="removeMember('${col}','${id}','${a.email}','${a.name}')">제거</button></div>`;}).join('');}
-  html+=`<div class="add-member-row"><input class="add-member-input" id="inp-${key}" type="text" placeholder="이메일로 멤버 검색 후 추가"><button class="btn-add-member" onclick="inlineSearchMember('${col}','${id}','${key}')">추가</button></div>`;
-  html+=`<div id="search-result-${key}" style="margin-top:.5rem"></div>`;
+  if(snap.empty){
+    html=`<div style="color:rgba(255,255,255,.25);font-size:.82rem;padding:.4rem 0">신청자가 없어요</div>`;
+  } else {
+    html=snap.docs.map(d=>{
+      const a=d.data();
+      const av=a.photo?`<img src="${a.photo}" alt="">`:a.name?.[0]||'?';
+      const safeName=(a.name||'').replace(/'/g,"\\'");
+      return `<div class="applicant-row">
+        <div class="applicant-av">${av}</div>
+        <div class="applicant-info"><div class="applicant-name">${a.name}</div><div class="applicant-email">${a.email}</div></div>
+        <button class="btn-remove-member" onclick="removeMember('${col}','${id}','${a.email}','${safeName}')">제거</button>
+      </div>`;
+    }).join('');
+  }
+  const safeTitle=(title||'').replace(/'/g,"\\'");
+  html+=`<div style="margin-top:.8rem">
+    <button style="background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:8px;border-radius:8px;font-size:.83rem;cursor:pointer;width:100%;transition:all .2s"
+      onmouseover="this.style.borderColor='rgba(255,255,255,.4)';this.style.color='#fff'"
+      onmouseout="this.style.borderColor='rgba(255,255,255,.2)';this.style.color='rgba(255,255,255,.6)'"
+      onclick="openAddMemberModal('${col}','${id}','${safeTitle}')">+ 멤버 추가</button>
+  </div>`;
   body.innerHTML=html;
 }
 
-async function inlineSearchMember(col, id, key){
-  const email=document.getElementById(`inp-${key}`)?.value.trim().toLowerCase();
-  const resEl=document.getElementById(`search-result-${key}`);
-  if(!email){showToast('이메일을 입력해주세요');return;}
-  resEl.innerHTML=`<div style="font-size:.8rem;color:rgba(255,255,255,.35)">검색 중...</div>`;
-  try{
-    const doc=await db.collection('users').doc(email).get();
-    if(!doc.exists||!['member','staff','admin'].includes(doc.data().role||'')){
-      resEl.innerHTML=`<div style="font-size:.8rem;color:rgba(255,130,130,.8)">승인된 멤버를 찾을 수 없어요</div>`;return;
-    }
-    const u=doc.data();
-    // 이미 신청자인지 확인
-    const existing=await db.collection(col).doc(id).collection('applicants').doc(email).get();
-    if(existing.exists){resEl.innerHTML=`<div style="font-size:.8rem;color:rgba(255,180,80,.8)">이미 신청자 목록에 있어요</div>`;return;}
-    const m=col==='meetings'?meetings.find(x=>x.id===id):smallGroups.find(x=>x.id===id);
-    resEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border-radius:8px;padding:.6rem .8rem">
-      <div style="flex:1;font-size:.85rem"><strong>${u.name}</strong> <span style="color:rgba(255,255,255,.4);font-size:.75rem">${u.email}</span></div>
-      <button class="btn-add-member" onclick="confirmAddMember('${col}','${id}','${key}','${u.email}','${u.name}')">추가 확인</button>
-    </div>`;
-  }catch(e){resEl.innerHTML=`<div style="font-size:.8rem;color:rgba(255,130,130,.8)">오류가 발생했어요</div>`;}
+/* ── 멤버 선택 추가 모달 ──────────────────────────────── */
+async function openAddMemberModal(col, id, title){
+  selectedMemberEmails=new Set();
+  // 이미 신청자인 이메일 조회
+  const snap=await db.collection(col).doc(id).collection('applicants').get();
+  const existingEmails=new Set(snap.docs.map(d=>d.id));
+  // 참여자/모임장 멤버 로드 (대기중 제외)
+  const uSnap=await db.collection('users').get();
+  const eligible=uSnap.docs
+    .map(d=>d.data())
+    .filter(u=>(u.role==='member'||u.role==='staff')&&!existingEmails.has(u.email));
+  addMemberTarget={col, id, title, eligible};
+  document.getElementById('addMemberModalTitle').textContent=`멤버 추가 — ${title}`;
+  document.getElementById('memberSearchInput').value='';
+  document.getElementById('addMemberSelectedInfo').textContent='';
+  renderMemberSelectList(eligible);
+  document.getElementById('addMemberModal').classList.add('open');
 }
 
-async function confirmAddMember(col, id, key, email, name){
-  const m=col==='meetings'?meetings.find(x=>x.id===id):smallGroups.find(x=>x.id===id);
-  if(!m){showToast('모임 정보를 찾을 수 없어요');return;}
-  if(m.applied>=m.max){showToast('정원이 가득 찼어요');return;}
-  // 신청자 서브컬렉션에 추가
-  await db.collection(col).doc(id).collection('applicants').doc(email).set({name,email,time:new Date().toLocaleString('ko-KR'),photo:''});
-  await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});
-  // 유저 문서의 applied/appliedSmall 배열에도 추가
-  const field=col==='meetings'?'applied':'appliedSmall';
-  await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});
-  showToast(`${name} 님이 추가되었어요 ✅`);
+function renderMemberSelectList(list){
+  const el=document.getElementById('memberSelectList');
+  if(!list.length){
+    el.innerHTML=`<div style="color:rgba(255,255,255,.25);font-size:.83rem;padding:1rem 0;text-align:center">추가 가능한 멤버가 없어요</div>`;
+    return;
+  }
+  const roleLabel={member:'참여자',staff:'모임장'};
+  el.innerHTML=list.map(u=>{
+    const av=u.photo?`<img src="${u.photo}" alt="">`:u.name?.[0]||'?';
+    const sel=selectedMemberEmails.has(u.email);
+    return `<div class="member-select-row${sel?' selected':''}" onclick="toggleMemberSelect('${u.email}')">
+      <div class="member-select-av">${av}</div>
+      <div class="member-select-info">
+        <div class="member-select-name">${u.name||'이름 없음'} <span style="font-size:.7rem;color:rgba(255,255,255,.35)">${roleLabel[u.role]||''}</span></div>
+        <div class="member-select-email">${u.email}</div>
+      </div>
+      <input type="checkbox" style="width:17px;height:17px;accent-color:#fff;flex-shrink:0;pointer-events:none" ${sel?'checked':''}>
+    </div>`;
+  }).join('');
+}
+
+function toggleMemberSelect(email){
+  if(selectedMemberEmails.has(email)) selectedMemberEmails.delete(email);
+  else selectedMemberEmails.add(email);
+  const cnt=selectedMemberEmails.size;
+  document.getElementById('addMemberSelectedInfo').textContent=cnt?`${cnt}명 선택됨`:'';
+  filterMemberSelectList();
+}
+
+function filterMemberSelectList(){
+  if(!addMemberTarget?.eligible) return;
+  const q=document.getElementById('memberSearchInput').value.trim().toLowerCase();
+  const filtered=addMemberTarget.eligible.filter(u=>
+    !q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)
+  );
+  renderMemberSelectList(filtered);
+}
+
+async function confirmAddSelectedMembers(){
+  if(!addMemberTarget||selectedMemberEmails.size===0){showToast('추가할 멤버를 선택해주세요');return;}
+  const {col,id,eligible}=addMemberTarget;
+  let added=0;
+  for(const email of selectedMemberEmails){
+    const u=eligible.find(x=>x.email===email);
+    if(!u) continue;
+    await db.collection(col).doc(id).collection('applicants').doc(email).set(
+      {name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''}
+    );
+    await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});
+    const field=col==='meetings'?'applied':'appliedSmall';
+    await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});
+    added++;
+  }
+  showToast(`${added}명이 추가되었어요 ✅`);
+  closeAddMemberModal();
   // 패널 새로고침
-  const body=document.getElementById(`body-${key}`);
-  if(body&&body.classList.contains('open')) toggleManageBody(key,col,id).then(()=>toggleManageBody(key,col,id));
-  else await toggleManageBody(key,col,id);
+  const key=`${col}-${id}`, body=document.getElementById(`body-${key}`);
+  const m=col==='meetings'?meetings.find(x=>x.id===id):smallGroups.find(x=>x.id===id);
+  const titleFn=col==='meetings'?x=>x.title:x=>x.name;
+  if(body){body.classList.remove('open');await toggleManageBody(key,col,id,titleFn(m)||'');}
 }
 
 async function removeMember(col, id, email, name){
   if(!confirm(`"${name}" 님을 이 모임에서 제거할까요?`))return;
   await db.collection(col).doc(id).collection('applicants').doc(email).delete();
   await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(-1)});
-  // 유저 문서의 applied 배열에서도 제거
   const field=col==='meetings'?'applied':'appliedSmall';
   await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayRemove(id)},{merge:true});
   showToast(`${name} 님이 제거되었어요`);
-  // 해당 패널 새로고침
   const key=`${col}-${id}`, body=document.getElementById(`body-${key}`);
-  if(body){body.classList.remove('open');await toggleManageBody(key,col,id);}
+  const m=col==='meetings'?meetings.find(x=>x.id===id):smallGroups.find(x=>x.id===id);
+  const titleFn=col==='meetings'?x=>x.title:x=>x.name;
+  if(body){body.classList.remove('open');await toggleManageBody(key,col,id,titleFn(m)||'');}
+}
+
+function closeAddMemberModal(){
+  document.getElementById('addMemberModal').classList.remove('open');
+  addMemberTarget=null; selectedMemberEmails=new Set();
 }
 
 /* ── RENDER ─────────────────────────────────────────────── */
