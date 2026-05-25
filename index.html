@@ -607,53 +607,10 @@ async function renderManageTab(){
   }
 }
 
-async function toggleBody(headerEl){
-  const col=headerEl.dataset.col;
-  const id=headerEl.dataset.id;
-  const title=decodeURIComponent(headerEl.dataset.title);
-  const body=document.getElementById('body-'+col+'-'+id);
-  const icon=headerEl.querySelector('.manage-toggle-icon');
-  if(!body) return;
-  if(body.classList.contains('open')){
-    body.classList.remove('open');
-    icon.textContent='▼';
-    return;
-  }
-  body.classList.add('open');
-  icon.textContent='▲';
-  body.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:.82rem;padding:.5rem 0">불러오는 중...</div>';
-  const snap=await db.collection(col).doc(id).collection('applicants').orderBy('time').get();
-  let html='';
-  if(snap.empty){
-    html='<div style="color:rgba(255,255,255,.25);font-size:.82rem;padding:.3rem 0">신청자가 없어요</div>';
-  } else {
-    snap.docs.forEach(function(d){
-      const a=d.data();
-      const av=a.photo?('<img src="'+a.photo+'" alt="">'):((a.name||'?')[0]);
-      const safeName=encodeURIComponent(a.name||'');
-      const safeEmail=encodeURIComponent(a.email||'');
-      html+='<div class="applicant-row">'
-        +'<div class="applicant-av">'+av+'</div>'
-        +'<div class="applicant-info">'
-          +'<div class="applicant-name">'+(a.name||'')+'</div>'
-          +'<div class="applicant-email">'+a.email+'</div>'
-        +'</div>'
-        +'<button class="btn-remove-member"'
-          +' data-col="'+col+'"'
-          +' data-id="'+id+'"'
-          +' data-email="'+safeEmail+'"'
-          +' data-name="'+safeName+'"'
-          +' onclick="removeMemberBtn(this)">제거</button>'
-      +'</div>';
-    });
-  }
-  const safeTitle=encodeURIComponent(title);
-  html+='<div style="margin-top:.8rem">'
-    +'<button data-col="'+col+'" data-id="'+id+'" data-title="'+safeTitle+'" onclick="openAddMemberModalBtn(this)"'
-    +' style="width:100%;background:rgba(255,255,255,.07);border:1px dashed rgba(255,255,255,.2);'
-    +'color:rgba(255,255,255,.6);padding:8px;border-radius:8px;font-size:.83rem;cursor:pointer">'
-    +'+ 멤버 추가</button>'
-  +'</div>';
+async function toggleBody(el){
+  const headerEl = el.closest('.manage-meeting-header');
+  if(!headerEl) return;
+  ...
   body.innerHTML=html;
 }
 
