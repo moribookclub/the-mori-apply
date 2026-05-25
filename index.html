@@ -115,7 +115,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .form-group label{display:block;font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:5px}
 .form-group input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 11px;color:#fff;font-size:.85rem;outline:none}
 .form-group input:focus{border-color:rgba(255,255,255,.35)}
-/* 멤버 선택 드롭다운 */
 .form-group select.member-select-dropdown{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 11px;color:#fff;font-size:.85rem;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none}
 .form-group select.member-select-dropdown:focus{border-color:rgba(255,255,255,.35)}
 .form-group select.member-select-dropdown option{background:#0d1f3c;color:#fff}
@@ -127,11 +126,11 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .form-section-label{font-size:.72rem;color:rgba(255,255,255,.3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.8rem;font-weight:600}
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem}
 .confirm-overlay.open{display:flex}
-.confirm-box{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:1.8rem;width:100%;max-width:340px;text-align:center}
+.confirm-box{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:1.8rem;width:100%;max-width:360px;text-align:center}
 .confirm-box p{font-size:.95rem;color:rgba(255,255,255,.8);margin-bottom:1.5rem;line-height:1.6}
-.confirm-btns{display:flex;gap:10px}
-.btn-confirm-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.88rem}
-.btn-confirm-ok{flex:1;background:rgba(255,80,80,.8);border:none;color:#fff;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.88rem}
+.confirm-btns{display:flex;gap:10px;flex-direction:column}
+.btn-confirm-cancel{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.85rem;width:100%}
+.btn-confirm-ok{background:rgba(255,80,80,.8);border:none;color:#fff;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.85rem;width:100%}
 .empty{text-align:center;padding:2.5rem;color:rgba(255,255,255,.22);font-size:.88rem}
 .manage-section{max-width:980px;margin:0 auto;padding:0 1.25rem 4rem}
 .manage-meeting-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:.8rem;overflow:hidden}
@@ -162,6 +161,18 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .member-select-email{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:1px}
 .member-search-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:8px 11px;color:#fff;font-size:.84rem;outline:none;margin-bottom:.7rem;font-family:inherit}
 .member-search-input:focus{border-color:rgba(255,255,255,.3)}
+/* 취소 확인 팝업 전용 스타일 */
+.cancel-confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:400;display:none;align-items:center;justify-content:center;padding:1rem}
+.cancel-confirm-overlay.open{display:flex}
+.cancel-confirm-box{background:#0d1f3c;border:1px solid rgba(255,100,100,.25);border-radius:16px;padding:1.8rem;width:100%;max-width:380px}
+.cancel-confirm-title{font-size:1rem;font-weight:700;color:#fff;margin-bottom:.8rem}
+.cancel-confirm-body{font-size:.88rem;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:.5rem}
+.cancel-token-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,180,80,.12);border:1px solid rgba(255,180,80,.3);border-radius:20px;padding:5px 14px;font-size:.85rem;color:rgba(255,210,100,.9);font-weight:600;margin:8px 0 1.2rem}
+.cancel-confirm-btns{display:flex;flex-direction:column;gap:8px}
+.btn-cancel-yes{background:rgba(255,80,80,.85);border:none;color:#fff;padding:11px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.88rem;transition:opacity .2s}
+.btn-cancel-yes:hover{opacity:.88}
+.btn-cancel-no{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.6);padding:11px 16px;border-radius:8px;cursor:pointer;font-size:.85rem;transition:all .2s}
+.btn-cancel-no:hover{border-color:rgba(255,255,255,.4);color:#fff}
 </style>
 </head>
 <body>
@@ -229,12 +240,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <div class="tab" onclick="switchTab('wish',this)">찜</div>
   </div>
   <div id="tabAll">
-    <!-- 관리자만 모임 추가 버튼 표시 -->
     <div id="staffBar" class="staff-bar" style="display:none"><button class="btn-admin" onclick="openAddModal('meeting')">+ 모임 추가</button></div>
     <div id="cardGrid" class="grid"><div class="empty">모임 불러오는 중...</div></div>
   </div>
   <div id="tabSmall" style="display:none">
-    <!-- 관리자만 소모임 추가 버튼 표시 -->
     <div id="staffBarSmall" class="staff-bar" style="display:none"><button class="btn-admin" onclick="openAddModal('small')">+ 소모임 추가</button></div>
     <div id="smallGrid" class="grid"><div class="empty">소모임 불러오는 중...</div></div>
   </div>
@@ -266,12 +275,26 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 
 <div class="toast" id="toast"></div>
 
+<!-- 기존 삭제 확인 팝업 -->
 <div class="confirm-overlay" id="confirmBox">
   <div class="confirm-box">
     <p id="confirmMsg"></p>
     <div class="confirm-btns">
-      <button class="btn-confirm-cancel" onclick="closeConfirm()">취소</button>
       <button class="btn-confirm-ok" id="confirmOkBtn">삭제</button>
+      <button class="btn-confirm-cancel" onclick="closeConfirm()">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- 독서모임 취소 확인 팝업 -->
+<div class="cancel-confirm-overlay" id="cancelConfirmBox">
+  <div class="cancel-confirm-box">
+    <div class="cancel-confirm-title">⚠️ 모임 취소 확인</div>
+    <div class="cancel-confirm-body" id="cancelConfirmBody"></div>
+    <div class="cancel-token-badge" id="cancelTokenBadge"></div>
+    <div class="cancel-confirm-btns">
+      <button class="btn-cancel-yes" id="cancelConfirmYesBtn">예, 모임을 취소합니다</button>
+      <button class="btn-cancel-no" onclick="closeCancelConfirm()">아니오, 모임을 취소하지 않습니다</button>
     </div>
   </div>
 </div>
@@ -289,7 +312,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <div class="form-section-label">🗓 모임 정보</div>
     <div class="form-row">
       <div class="form-group"><label>모임명 *</label><input id="f-topic" type="text" placeholder="예) 정기모임"></div>
-      <!-- 파트너: 관리자는 드롭다운, 수정 시에는 기존값 표시 -->
       <div class="form-group">
         <label>파트너 *</label>
         <select id="f-host-select" class="member-select-dropdown"></select>
@@ -358,18 +380,18 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 const ADMIN_EMAIL = 'nohjunhyouk@gmail.com';
+const DEFAULT_CANCEL_TOKEN = 2; // 기본 취소 가능 횟수
 
 let user = null, userRole = null;
 let meetings = [], smallGroups = [];
 let applied = new Set(), wishlisted = new Set();
 let appliedSmall = new Set(), wishlistedSmall = new Set();
-let maxApply = 2, notifSent = {}, editingId = null, editingSmallId = null;
+let maxApply = 2, cancelToken = DEFAULT_CANCEL_TOKEN;
+let notifSent = {}, editingId = null, editingSmallId = null;
 let formConfig = {notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};
 let unsubMeetings = null, unsubSmall = null;
 let addMemberTarget = null;
 let selectedEmails = new Set();
-
-// 멤버 목록 캐시 (모달 드롭다운용)
 let eligibleMembers = [];
 
 function isAdmin()   { return userRole === 'admin'; }
@@ -394,8 +416,10 @@ auth.onAuthStateChanged(fb => {
         const d = doc.data();
         applied = new Set(d.applied||[]); wishlisted = new Set(d.wishlisted||[]);
         appliedSmall = new Set(d.appliedSmall||[]); wishlistedSmall = new Set(d.wishlistedSmall||[]);
+        // 관리자도 cancelToken 보유 (제한 없이 쓰지만 로드는 함)
+        cancelToken = d.cancelToken !== undefined ? d.cancelToken : DEFAULT_CANCEL_TOKEN;
       } else {
-        db.collection('users').doc(fb.email).set({name:fb.displayName,email:fb.email,photo:fb.photoURL||'',applied:[],wishlisted:[],appliedSmall:[],wishlistedSmall:[]},{merge:true});
+        db.collection('users').doc(fb.email).set({name:fb.displayName,email:fb.email,photo:fb.photoURL||'',applied:[],wishlisted:[],appliedSmall:[],wishlistedSmall:[],cancelToken:DEFAULT_CANCEL_TOKEN},{merge:true});
       }
       loadFormConfig().then(() => { initMain(); updateNav(); });
     }).catch(err => { console.error(err); showToast('데이터 로드 오류'); });
@@ -406,6 +430,8 @@ auth.onAuthStateChanged(fb => {
     const d = doc.data();
     userRole = d.role || '';
     if (d.maxApply) maxApply = d.maxApply;
+    // cancelToken: 저장된 값 우선, 없으면 기본값
+    cancelToken = d.cancelToken !== undefined ? d.cancelToken : DEFAULT_CANCEL_TOKEN;
     if (userRole==='member'||userRole==='staff') {
       applied = new Set(d.applied||[]); wishlisted = new Set(d.wishlisted||[]);
       appliedSmall = new Set(d.appliedSmall||[]); wishlistedSmall = new Set(d.wishlistedSmall||[]);
@@ -438,7 +464,9 @@ function updateNav() {
   const av=user.photo?`<img src="${user.photo}" alt="">`:user.initial;
   const roleBadge=admin?`<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)">관리자</span>`:(userRole==='staff')?`<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(100,180,255,.15);border:1px solid rgba(100,180,255,.3);color:rgba(150,210,255,.9)">모임장</span>`:'';
   const adminBtn=admin?`<a href="admin.html" style="display:inline-block;background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9);padding:5px 12px;border-radius:6px;font-size:.75rem;font-weight:600;text-decoration:none;white-space:nowrap">관리자 페이지</a>`:'';
-  nr.innerHTML=`${roleBadge}${adminBtn}<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
+  // 취소 토큰 표시 (관리자 제외)
+  const tokenBadge = !admin ? `<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;background:rgba(255,180,80,.1);border:1px solid rgba(255,180,80,.25);color:rgba(255,200,100,.8);white-space:nowrap">취소 ${cancelToken}회</span>` : '';
+  nr.innerHTML=`${roleBadge}${adminBtn}${tokenBadge}<div class="apply-counter ${cls}">신청 <strong>${cnt}</strong></div><div class="avatar-circle">${av}</div><span class="user-name">${user.name}</span><button class="btn-sm" onclick="logout()">로그아웃</button>`;
 
   const manageTab=document.getElementById('tabManageBtn');
   if (canManage()) {
@@ -450,10 +478,10 @@ function updateNav() {
     }
   } else if (manageTab) manageTab.remove();
 
-  // 추가 버튼: 관리자만 표시
+  // 추가 버튼: 관리자만
   const sb=document.getElementById('staffBar'), sbs=document.getElementById('staffBarSmall');
-if(sb) sb.style.display = isAdmin() ? 'flex' : 'none';
-if(sbs) sbs.style.display = isAdmin() ? 'flex' : 'none';
+  if(sb)  sb.style.display  = isAdmin() ? 'flex' : 'none';
+  if(sbs) sbs.style.display = isAdmin() ? 'flex' : 'none';
 }
 
 function initMain() { showScreen('main'); listenMeetings(); listenSmallGroups(); loadNotices(); }
@@ -498,25 +526,15 @@ async function loadFormConfig() {
   } catch(e){console.error('formConfig 로드 실패',e);}
 
   const bf=formConfig.basicFields||{};
-  const fgGender=document.getElementById('fg-gender');
-  const fgBirth=document.getElementById('fg-birth');
-  const fgPhone=document.getElementById('fg-phone');
-  const fgMemberType=document.getElementById('fg-memberType');
-  if(fgGender) fgGender.style.display=bf.gender===false?'none':'block';
-  if(fgBirth) fgBirth.style.display=bf.birth===false?'none':'block';
-  if(fgPhone) fgPhone.style.display=bf.phone===false?'none':'block';
-  if(fgMemberType) fgMemberType.style.display=bf.memberType===false?'none':'block';
-
+  ['fg-gender','fg-birth','fg-phone','fg-memberType'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    const key=['gender','birth','phone','memberType'][i];
+    if(el) el.style.display=bf[key]===false?'none':'block';
+  });
   const gg=document.getElementById('genderRadioGroup');
-  if(gg) gg.innerHTML=(formConfig.genderOptions||['남성','여성','기타']).map(v=>
-    `<label class="radio-label"><input type="radio" name="gender" value="${v}"> ${v}</label>`
-  ).join('');
-
+  if(gg) gg.innerHTML=(formConfig.genderOptions||['남성','여성','기타']).map(v=>`<label class="radio-label"><input type="radio" name="gender" value="${v}"> ${v}</label>`).join('');
   const mg=document.getElementById('memberTypeRadioGroup');
-  if(mg) mg.innerHTML=(formConfig.memberTypeOptions||['신규멤버','기존멤버']).map(v=>
-    `<label class="radio-label"><input type="radio" name="memberType" value="${v}" onchange="toggleMemberFields()"> ${v}</label>`
-  ).join('');
-
+  if(mg) mg.innerHTML=(formConfig.memberTypeOptions||['신규멤버','기존멤버']).map(v=>`<label class="radio-label"><input type="radio" name="memberType" value="${v}" onchange="toggleMemberFields()"> ${v}</label>`).join('');
   const fn=document.getElementById('formNotice'), pt=document.getElementById('privacyText');
   if(fn) fn.textContent=formConfig.notice;
   if(pt) pt.textContent=formConfig.privacy;
@@ -540,21 +558,13 @@ function renderQBlock(qs,prefix){
     return `<div class="field-group">${img}<label style="${ls}">${q.text}${q.required?' *':''}</label>${input}</div>`;
   }).join('');
 }
-
-function toggleEtcInput(radio, qid){
-  const inp=document.getElementById('etc-'+qid);
-  if(!inp) return;
-  if(radio.checked){ inp.style.display='inline-block'; inp.focus(); }
-  else inp.style.display='none';
-}
-
+function toggleEtcInput(radio,qid){const inp=document.getElementById('etc-'+qid);if(!inp)return;if(radio.checked){inp.style.display='inline-block';inp.focus();}else inp.style.display='none';}
 function renderAllQuestions(){
   const nEl=document.getElementById('dynamicQuestions'),eEl=document.getElementById('existingDynamicQuestions'),cEl=document.getElementById('commonDynamicQuestions');
   if(nEl) nEl.innerHTML=renderQBlock(formConfig.newQuestions||[],'dq-');
   if(eEl) eEl.innerHTML=renderQBlock(formConfig.existingQuestions||[],'eq-');
   if(cEl) cEl.innerHTML=renderQBlock(formConfig.commonQuestions||[],'cq-');
 }
-
 function toggleMemberFields(){
   const v=document.querySelector('input[name="memberType"]:checked')?.value;
   document.getElementById('newMemberFields').style.display=v==='신규멤버'?'block':'none';
@@ -578,24 +588,9 @@ async function submitApplication(){
   const answers={};
   function collectQ(qs,prefix){
     for(const q of qs){
-      if(q.type==='multi'){
-        const checked=[...document.querySelectorAll(`input[name="${prefix}${q.id}"]:checked`)].map(i=>{
-          if(i.value==='__etc__'){const inp=document.getElementById('etc-'+prefix+q.id);return inp?inp.value.trim()||'기타':'기타';}
-          return i.value;
-        });
-        if(q.required&&!checked.length){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}
-        answers[q.id]=checked;
-      } else if(q.type==='single'){
-        const el=document.querySelector(`input[name="${prefix}${q.id}"]:checked`);
-        if(q.required&&!el){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}
-        if(el?.value==='__etc__'){const inp=document.getElementById('etc-'+prefix+q.id);answers[q.id]=inp?inp.value.trim()||'기타':'기타';}
-        else answers[q.id]=el?.value||'';
-      } else {
-        const el=document.getElementById(`${prefix}${q.id}`);
-        const val=el?el.value.trim():'';
-        if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return false;}
-        answers[q.id]=val;
-      }
+      if(q.type==='multi'){const checked=[...document.querySelectorAll(`input[name="${prefix}${q.id}"]:checked`)].map(i=>{if(i.value==='__etc__'){const inp=document.getElementById('etc-'+prefix+q.id);return inp?inp.value.trim()||'기타':'기타';}return i.value;});if(q.required&&!checked.length){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}answers[q.id]=checked;}
+      else if(q.type==='single'){const el=document.querySelector(`input[name="${prefix}${q.id}"]:checked`);if(q.required&&!el){showToast(`"${q.text}"을(를) 선택해주세요`);return false;}if(el?.value==='__etc__'){const inp=document.getElementById('etc-'+prefix+q.id);answers[q.id]=inp?inp.value.trim()||'기타':'기타';}else answers[q.id]=el?.value||'';}
+      else{const el=document.getElementById(`${prefix}${q.id}`);const val=el?el.value.trim():'';if(q.required&&!val){showToast(`"${q.text}"을(를) 입력해주세요`);return false;}answers[q.id]=val;}
     }
     return true;
   }
@@ -603,7 +598,8 @@ async function submitApplication(){
   const prefix=memberType==='신규멤버'?'dq-':'eq-';
   if(!collectQ(typeQs,prefix))return;
   if(!collectQ(formConfig.commonQuestions||[],'cq-'))return;
-  await db.collection('users').doc(user.email).set({name,email:user.email,photo:user.photo||'',gender:gender||'',birth,phone,memberType:memberType||'',answers,role:'pending',appliedAt:firebase.firestore.FieldValue.serverTimestamp()});
+  // 신규 가입 시 cancelToken 기본값으로 세팅
+  await db.collection('users').doc(user.email).set({name,email:user.email,photo:user.photo||'',gender:gender||'',birth,phone,memberType:memberType||'',answers,role:'pending',cancelToken:DEFAULT_CANCEL_TOKEN,appliedAt:firebase.firestore.FieldValue.serverTimestamp()});
   userRole='pending'; showScreen('waiting'); updateNav();
   showToast('신청서가 제출되었어요! 승인을 기다려주세요 📬');
 }
@@ -622,14 +618,82 @@ function listenMeetings(){
     meetings=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll();updateNav();
   });
 }
+
+/* ── 독서모임 신청/취소 (취소 토큰 적용) ─────────────── */
 async function applyMeeting(id){
   if(!user){showToast('로그인 후 신청할 수 있어요');return;}
   const m=meetings.find(x=>x.id===id);if(!m)return;
+
+  if(applied.has(id)){
+    // 취소 시도 → 팝업 표시
+    showCancelConfirm(id, m.title);
+    return;
+  }
+  // 신청
   const mRef=db.collection('meetings').doc(id),aRef=mRef.collection('applicants').doc(user.email);
-  if(applied.has(id)){applied.delete(id);await aRef.delete();await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});showToast('신청이 취소되었어요');}
-  else{if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}if(userRole!=='admin'&&myApplyCount()>=maxApply){showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`);return;}applied.add(id);await aRef.set({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});showToast('신청 완료! 모임에서 만나요 📚');}
+  if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
+  if(userRole!=='admin'&&myApplyCount()>=maxApply){showToast(`최대 ${maxApply}개 모임까지 신청할 수 있어요`);return;}
+  applied.add(id);
+  await aRef.set({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});
+  await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
+  showToast('신청 완료! 모임에서 만나요 📚');
   await saveUserData();updateNav();renderAll();
 }
+
+/* 취소 확인 팝업 */
+function showCancelConfirm(id, title){
+  const body = document.getElementById('cancelConfirmBody');
+  const badge = document.getElementById('cancelTokenBadge');
+  const yesBtn = document.getElementById('cancelConfirmYesBtn');
+
+  if(isAdmin()){
+    // 관리자는 토큰 제한 없음
+    body.textContent = `"${title}" 모임 신청을 취소하시겠습니까?`;
+    badge.style.display = 'none';
+    yesBtn.onclick = () => doCancelMeeting(id);
+  } else {
+    body.textContent = `모임 취소는 최대 ${DEFAULT_CANCEL_TOKEN}회까지만 가능합니다. 정말 취소하시겠습니까?`;
+    badge.style.display = 'inline-flex';
+    badge.textContent = `🎟 현재 남은 취소 가능 횟수 ${cancelToken}회`;
+
+    if(cancelToken <= 0){
+      // 토큰 없음 → 버튼 비활성화
+      yesBtn.disabled = true;
+      yesBtn.style.opacity = '0.4';
+      yesBtn.style.cursor = 'not-allowed';
+      yesBtn.textContent = '취소 불가 (토큰 소진)';
+      yesBtn.onclick = null;
+    } else {
+      yesBtn.disabled = false;
+      yesBtn.style.opacity = '';
+      yesBtn.style.cursor = '';
+      yesBtn.textContent = '예, 모임을 취소합니다';
+      yesBtn.onclick = () => doCancelMeeting(id);
+    }
+  }
+  document.getElementById('cancelConfirmBox').classList.add('open');
+}
+
+function closeCancelConfirm(){
+  document.getElementById('cancelConfirmBox').classList.remove('open');
+}
+
+async function doCancelMeeting(id){
+  closeCancelConfirm();
+  const mRef=db.collection('meetings').doc(id), aRef=mRef.collection('applicants').doc(user.email);
+  applied.delete(id);
+  await aRef.delete();
+  await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
+
+  // 관리자가 아닌 경우에만 토큰 차감
+  if(!isAdmin()){
+    cancelToken = Math.max(0, cancelToken - 1);
+    await db.collection('users').doc(user.email).update({cancelToken});
+  }
+  showToast('신청이 취소되었어요');
+  await saveUserData();updateNav();renderAll();
+}
+
 async function toggleWish(id){
   if(!user){showToast('로그인 후 찜할 수 있어요');return;}
   const m=meetings.find(x=>x.id===id);
@@ -661,17 +725,10 @@ async function toggleWishSmall(id){
 }
 function pushNotif(msg){if('Notification'in window&&Notification.permission==='granted')new Notification('THE MORI APPLY',{body:msg});else if('Notification'in window&&Notification.permission!=='denied')Notification.requestPermission().then(p=>p==='granted'?new Notification('THE MORI APPLY',{body:msg}):showToast(msg));else showToast(msg);}
 
-/* ── 모임관리 탭 렌더 ─────────────────────────────────────
-   관리자: 전체 모임 표시
-   모임장: hostEmail 필드가 자신의 이메일인 모임만 표시
-   (독서모임은 hostEmail, 소모임은 hostEmail 필드로 판별)
-*/
 async function renderManageTab(){
   const ml=document.getElementById('manageMeetingList');
   if(ml){
-    const visibleMeetings = isAdmin()
-      ? meetings
-      : meetings.filter(m => m.hostEmail === user.email);
+    const visibleMeetings = isAdmin() ? meetings : meetings.filter(m=>m.hostEmail===user.email);
     if(!visibleMeetings.length){
       ml.innerHTML=`<div class="empty">${isStaff()?'담당 독서모임이 없어요':'등록된 모임이 없어요'}</div>`;
     } else {
@@ -683,9 +740,7 @@ async function renderManageTab(){
   }
   const sl=document.getElementById('manageSmallList');
   if(sl){
-    const visibleSmall = isAdmin()
-      ? smallGroups
-      : smallGroups.filter(m => m.hostEmail === user.email);
+    const visibleSmall = isAdmin() ? smallGroups : smallGroups.filter(m=>m.hostEmail===user.email);
     if(!visibleSmall.length){
       sl.innerHTML=`<div class="empty">${isStaff()?'담당 소모임이 없어요':'등록된 소모임이 없어요'}</div>`;
     } else {
@@ -698,12 +753,10 @@ async function renderManageTab(){
 }
 
 async function toggleBody(el){
-  const h=el.closest('.manage-meeting-header');
-  if(!h) return;
-  const col=h.dataset.col, id=h.dataset.id, title=decodeURIComponent(h.dataset.title||'');
+  const h=el.closest('.manage-meeting-header');if(!h)return;
+  const col=h.dataset.col,id=h.dataset.id,title=decodeURIComponent(h.dataset.title||'');
   const body=document.getElementById('body-'+col+'-'+id);
-  const icon=h.querySelector('.manage-toggle-icon');
-  if(!body) return;
+  const icon=h.querySelector('.manage-toggle-icon');if(!body)return;
   if(body.classList.contains('open')){body.classList.remove('open');icon.textContent='▼';return;}
   body.classList.add('open');icon.textContent='▲';
   body.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:.82rem;padding:.5rem 0">불러오는 중...</div>';
@@ -714,7 +767,6 @@ async function toggleBody(el){
   html+='<div style="margin-top:.8rem"><button data-col="'+col+'" data-id="'+id+'" data-title="'+encodeURIComponent(title)+'" onclick="openAddMemberModalBtn(this)" style="width:100%;background:rgba(255,255,255,.07);border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:8px;border-radius:8px;font-size:.83rem;cursor:pointer">+ 멤버 추가</button></div>';
   body.innerHTML=html;
 }
-
 async function openAddMemberModalBtn(btn){await openAddMemberModal(btn.dataset.col,btn.dataset.id,decodeURIComponent(btn.dataset.title));}
 async function removeMemberBtn(btn){
   const col=btn.dataset.col,id=btn.dataset.id,email=decodeURIComponent(btn.dataset.email),name=decodeURIComponent(btn.dataset.name);
@@ -762,7 +814,7 @@ function toggleMemberSel(rowEl){
   filterMemberSelectList();
 }
 function filterMemberSelectList(){
-  if(!addMemberTarget?.eligible) return;
+  if(!addMemberTarget?.eligible)return;
   const q=document.getElementById('memberSearchInput').value.trim().toLowerCase();
   const filtered=addMemberTarget.eligible.filter(u=>!q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q));
   renderMemberSelectList(filtered);
@@ -812,7 +864,6 @@ function meetingCardHTML(m){
   else if(isQuotaFull){badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='quota-full';btnTxt='한도초과';}
   else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';}
   const clickable=isApplied||(!isFull&&!isQuotaFull);
-  // 카드 수정/삭제: 관리자만
   const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}','meeting')">삭제</button></div>`:'';
   return `<div class="card${isWish?' wishlisted':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}</div><div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div></div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" onclick="${clickable?`applyMeeting('${m.id}')`:''}">${btnTxt}</button></div></div>`;
 }
@@ -824,140 +875,90 @@ function smallCardHTML(m){
   if(isApplied){badge=`<span class="card-badge badge-mine">신청완료</span>`;btnCls='applied';btnTxt='신청취소';}
   else if(isFull){badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';}
   else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';}
-  // 카드 수정/삭제: 관리자만
   const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditSmallModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.name}','small')">삭제</button></div>`:'';
   return `<div class="card${isWish?' wishlisted':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}<span class="badge-small">소모임</span></div><div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWishSmall('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div><div class="book-info"><div class="book-title">${m.name}</div></div><div class="meeting-meta-header"><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div></div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" onclick="${(!isFull||isApplied)?`applySmall('${m.id}')`:''}">${btnTxt}</button></div></div>`;
 }
 
 function switchTab(t,el){
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); el.classList.add('active');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
   ['tabAll','tabSmall','tabApplied','tabWish','tabManage'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
   document.getElementById({all:'tabAll',small:'tabSmall',applied:'tabApplied',wish:'tabWish',manage:'tabManage'}[t]).style.display='block';
   if(t==='manage') renderManageTab();
 }
 
-/* ── 멤버 드롭다운 로드 (모달용) ─────────────────────────
-   member, staff, admin(관리자 본인)을 포함해 선택 가능하게 함
-*/
 async function loadEligibleMembers(){
-  const snap = await db.collection('users').get();
-  eligibleMembers = snap.docs.map(d=>d.data()).filter(u=>
-    u.role==='member' || u.role==='staff' || u.email===ADMIN_EMAIL
-  );
+  const snap=await db.collection('users').get();
+  eligibleMembers=snap.docs.map(d=>d.data()).filter(u=>u.role==='member'||u.role==='staff'||u.email===ADMIN_EMAIL);
   eligibleMembers.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 }
-
-function buildHostDropdown(selectId, currentValue=''){
-  const sel = document.getElementById(selectId);
-  if(!sel) return;
-  const roleLabel = {member:'참여자', staff:'모임장', admin:'관리자'};
-  sel.innerHTML = `<option value="">선택해주세요</option>` +
+function buildHostDropdown(selectId,currentValue=''){
+  const sel=document.getElementById(selectId);if(!sel)return;
+  const roleLabel={member:'참여자',staff:'모임장',admin:'관리자'};
+  sel.innerHTML=`<option value="">선택해주세요</option>`+
     eligibleMembers.map(u=>{
-      const label = `${u.name||u.email} (${roleLabel[u.role]||u.role})`;
-      const selected = (currentValue && (u.name===currentValue || u.email===currentValue)) ? 'selected' : '';
+      const label=`${u.name||u.email} (${roleLabel[u.role]||u.role})`;
+      const selected=(currentValue&&(u.name===currentValue||u.email===currentValue))?'selected':'';
       return `<option value="${u.name}||${u.email}" ${selected}>${label}</option>`;
     }).join('');
 }
 
-/* ── 독서모임 모달 ────────────────────────────────────── */
 async function openAddModal(type){
   if(type==='small'){openAddSmallModal();return;}
   editingId=null;
   document.getElementById('modalTitle').textContent='새 모임 추가';
   document.getElementById('modalOkBtn').textContent='추가하기';
   ['f-title','f-author','f-topic','f-place'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-max').value=7;
-  document.getElementById('f-time').value='19:00';
-  document.getElementById('f-date').value='';
-  await loadEligibleMembers();
-  buildHostDropdown('f-host-select','');
+  document.getElementById('f-max').value=7;document.getElementById('f-time').value='19:00';document.getElementById('f-date').value='';
+  await loadEligibleMembers();buildHostDropdown('f-host-select','');
   document.getElementById('addModal').classList.add('open');
 }
 async function openEditModal(id){
   const m=meetings.find(x=>x.id===id);if(!m)return;
   editingId=id;
-  document.getElementById('modalTitle').textContent='모임 수정';
-  document.getElementById('modalOkBtn').textContent='저장하기';
-  document.getElementById('f-title').value=m.title;
-  document.getElementById('f-author').value=m.author;
-  document.getElementById('f-topic').value=m.topic;
-  document.getElementById('f-date').value=m.date;
-  document.getElementById('f-time').value=m.time;
-  document.getElementById('f-place').value=m.place;
-  document.getElementById('f-max').value=m.max;
-  await loadEligibleMembers();
-  buildHostDropdown('f-host-select', m.host);
+  document.getElementById('modalTitle').textContent='모임 수정';document.getElementById('modalOkBtn').textContent='저장하기';
+  document.getElementById('f-title').value=m.title;document.getElementById('f-author').value=m.author;
+  document.getElementById('f-topic').value=m.topic;document.getElementById('f-date').value=m.date;
+  document.getElementById('f-time').value=m.time;document.getElementById('f-place').value=m.place;document.getElementById('f-max').value=m.max;
+  await loadEligibleMembers();buildHostDropdown('f-host-select',m.host);
   document.getElementById('addModal').classList.add('open');
 }
 function closeAddModal(){document.getElementById('addModal').classList.remove('open');editingId=null;}
-
 async function submitMeeting(){
-  const title=document.getElementById('f-title').value.trim();
-  const author=document.getElementById('f-author').value.trim();
-  const topic=document.getElementById('f-topic').value.trim();
-  const date=document.getElementById('f-date').value;
-  const time=document.getElementById('f-time').value;
-  const place=document.getElementById('f-place').value.trim();
-  const max=parseInt(document.getElementById('f-max').value)||7;
-  const hostRaw=document.getElementById('f-host-select').value;
+  const title=document.getElementById('f-title').value.trim(),author=document.getElementById('f-author').value.trim(),topic=document.getElementById('f-topic').value.trim();
+  const date=document.getElementById('f-date').value,time=document.getElementById('f-time').value,place=document.getElementById('f-place').value.trim();
+  const max=parseInt(document.getElementById('f-max').value)||7,hostRaw=document.getElementById('f-host-select').value;
   if(!title||!author||!topic||!date||!place||!hostRaw){showToast('필수 항목을 모두 입력해주세요');return;}
-  // value는 "이름||이메일" 형식
-  const [hostName, hostEmail] = hostRaw.split('||');
-  if(editingId){
-    await db.collection('meetings').doc(editingId).update({title,author,topic,host:hostName,hostEmail,date,time,place,max});
-    showToast('모임이 수정되었어요 ✅');
-  } else {
-    await db.collection('meetings').add({title,author,topic,host:hostName,hostEmail,date,time,place,max,applied:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    showToast('모임이 추가되었어요 ✅');
-  }
+  const [hostName,hostEmail]=hostRaw.split('||');
+  if(editingId){await db.collection('meetings').doc(editingId).update({title,author,topic,host:hostName,hostEmail,date,time,place,max});showToast('모임이 수정되었어요 ✅');}
+  else{await db.collection('meetings').add({title,author,topic,host:hostName,hostEmail,date,time,place,max,applied:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});showToast('모임이 추가되었어요 ✅');}
   closeAddModal();
 }
-
-/* ── 소모임 모달 ─────────────────────────────────────── */
 async function openAddSmallModal(){
   editingSmallId=null;
-  document.getElementById('smallModalTitle').textContent='새 소모임 추가';
-  document.getElementById('smallModalOkBtn').textContent='추가하기';
+  document.getElementById('smallModalTitle').textContent='새 소모임 추가';document.getElementById('smallModalOkBtn').textContent='추가하기';
   ['sg-name','sg-place'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('sg-max').value=6;
-  document.getElementById('sg-time').value='19:00';
-  document.getElementById('sg-date').value='';
-  await loadEligibleMembers();
-  buildHostDropdown('sg-host-select','');
+  document.getElementById('sg-max').value=6;document.getElementById('sg-time').value='19:00';document.getElementById('sg-date').value='';
+  await loadEligibleMembers();buildHostDropdown('sg-host-select','');
   document.getElementById('smallModal').classList.add('open');
 }
 async function openEditSmallModal(id){
   const m=smallGroups.find(x=>x.id===id);if(!m)return;
   editingSmallId=id;
-  document.getElementById('smallModalTitle').textContent='소모임 수정';
-  document.getElementById('smallModalOkBtn').textContent='저장하기';
-  document.getElementById('sg-name').value=m.name;
-  document.getElementById('sg-date').value=m.date;
-  document.getElementById('sg-time').value=m.time;
-  document.getElementById('sg-place').value=m.place;
-  document.getElementById('sg-max').value=m.max;
-  await loadEligibleMembers();
-  buildHostDropdown('sg-host-select', m.host);
+  document.getElementById('smallModalTitle').textContent='소모임 수정';document.getElementById('smallModalOkBtn').textContent='저장하기';
+  document.getElementById('sg-name').value=m.name;document.getElementById('sg-date').value=m.date;
+  document.getElementById('sg-time').value=m.time;document.getElementById('sg-place').value=m.place;document.getElementById('sg-max').value=m.max;
+  await loadEligibleMembers();buildHostDropdown('sg-host-select',m.host);
   document.getElementById('smallModal').classList.add('open');
 }
 function closeSmallModal(){document.getElementById('smallModal').classList.remove('open');editingSmallId=null;}
-
 async function submitSmallGroup(){
-  const name=document.getElementById('sg-name').value.trim();
-  const date=document.getElementById('sg-date').value;
-  const time=document.getElementById('sg-time').value;
-  const place=document.getElementById('sg-place').value.trim();
-  const max=parseInt(document.getElementById('sg-max').value)||6;
-  const hostRaw=document.getElementById('sg-host-select').value;
+  const name=document.getElementById('sg-name').value.trim(),date=document.getElementById('sg-date').value;
+  const time=document.getElementById('sg-time').value,place=document.getElementById('sg-place').value.trim();
+  const max=parseInt(document.getElementById('sg-max').value)||6,hostRaw=document.getElementById('sg-host-select').value;
   if(!name||!date||!place||!hostRaw){showToast('필수 항목을 모두 입력해주세요');return;}
-  const [hostName, hostEmail] = hostRaw.split('||');
-  if(editingSmallId){
-    await db.collection('smallGroups').doc(editingSmallId).update({name,host:hostName,hostEmail,date,time,place,max});
-    showToast('소모임이 수정되었어요 ✅');
-  } else {
-    await db.collection('smallGroups').add({name,host:hostName,hostEmail,date,time,place,max,applied:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-    showToast('소모임이 추가되었어요 ✅');
-  }
+  const [hostName,hostEmail]=hostRaw.split('||');
+  if(editingSmallId){await db.collection('smallGroups').doc(editingSmallId).update({name,host:hostName,hostEmail,date,time,place,max});showToast('소모임이 수정되었어요 ✅');}
+  else{await db.collection('smallGroups').add({name,host:hostName,hostEmail,date,time,place,max,applied:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});showToast('소모임이 추가되었어요 ✅');}
   closeSmallModal();
 }
 
@@ -965,15 +966,13 @@ function confirmDelete(id,name,type){document.getElementById('confirmMsg').inner
 function closeConfirm(){document.getElementById('confirmBox').classList.remove('open');}
 async function deleteItem(id,type){
   closeConfirm();
-  const col=type==='meeting'?'meetings':'smallGroups';
-  const aSet=type==='meeting'?applied:appliedSmall;
+  const col=type==='meeting'?'meetings':'smallGroups',aSet=type==='meeting'?applied:appliedSmall;
   const aSnap=await db.collection(col).doc(id).collection('applicants').get();
   const batch=db.batch();aSnap.docs.forEach(d=>batch.delete(d.ref));batch.delete(db.collection(col).doc(id));
   await batch.commit();
   if(aSet.has(id)){aSet.delete(id);await saveUserData();updateNav();}
   showToast('삭제되었어요');
 }
-
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 </script>
 </body>

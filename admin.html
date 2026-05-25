@@ -46,6 +46,8 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .badge-member{background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);color:rgba(130,230,130,.9)}
 .badge-staff{background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9)}
 .badge-none{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4)}
+/* 취소 토큰 뱃지 */
+.badge-token{background:rgba(255,180,80,.1);border:1px solid rgba(255,180,80,.25);color:rgba(255,210,100,.9);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
 .member-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
 .btn-approve{background:#fff;color:#0d1f3c;border:none;padding:6px 13px;border-radius:5px;font-size:.76rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .btn-approve:hover{opacity:.85}
@@ -83,11 +85,9 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .btn-q-del{color:rgba(255,100,100,.5)}.btn-q-del:hover{color:rgba(255,130,130,.9);border-color:rgba(255,100,100,.4)}
 .btn-add-q{background:transparent;border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.45);padding:9px;border-radius:8px;width:100%;cursor:pointer;font-size:.83rem;transition:all .2s;margin-top:.3rem}
 .btn-add-q:hover{border-color:rgba(255,255,255,.4);color:#fff}
-/* 기본정보 편집 */
 .basic-field-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;margin-bottom:.5rem}
 .basic-field-label{font-size:.85rem;color:rgba(255,255,255,.7);flex:1}
 .basic-field-sub{font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px}
-.basic-field-toggle{display:flex;align-items:center;gap:6px;font-size:.78rem;color:rgba(255,255,255,.45)}
 .toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0}
 .toggle-switch input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.15);border-radius:20px;transition:.3s}
@@ -98,6 +98,14 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .quota-row label{font-size:.83rem;color:rgba(255,255,255,.6);flex:1}
 .quota-input-sm{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#fff;width:50px;text-align:center;padding:4px 6px;font-size:.88rem;outline:none}
 .btn-quota-save{background:#fff;color:#0d1f3c;border:none;padding:5px 12px;border-radius:5px;font-size:.78rem;font-weight:600;cursor:pointer}
+/* 취소 토큰 관리 행 */
+.token-row{display:flex;align-items:center;gap:8px;background:rgba(255,180,80,.05);border:1px solid rgba(255,180,80,.15);border-radius:8px;padding:10px 14px;margin-bottom:.5rem;flex-wrap:wrap}
+.token-row label{font-size:.83rem;color:rgba(255,210,120,.8);flex:1;min-width:120px}
+.token-current{font-size:1rem;font-weight:700;color:rgba(255,210,100,.9);min-width:2em;text-align:center}
+.btn-token-minus{background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);color:rgba(255,150,150,.9);width:28px;height:28px;border-radius:5px;font-size:1rem;cursor:pointer;font-weight:700;flex-shrink:0}
+.btn-token-plus{background:rgba(100,220,100,.12);border:1px solid rgba(100,220,100,.3);color:rgba(130,230,130,.9);width:28px;height:28px;border-radius:5px;font-size:1rem;cursor:pointer;font-weight:700;flex-shrink:0}
+.btn-token-save{background:rgba(255,200,80,.9);color:#0d1f3c;border:none;padding:5px 12px;border-radius:5px;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0}
+.btn-token-reset{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:5px 10px;border-radius:5px;font-size:.75rem;cursor:pointer;flex-shrink:0}
 .profile-section{margin-bottom:1.2rem}
 .profile-section-title{font-size:.75rem;color:rgba(255,255,255,.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem;font-weight:600}
 .profile-row{display:flex;gap:8px;margin-bottom:.4rem;font-size:.85rem}
@@ -254,8 +262,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
         <div id="privacyEditorWrap"></div>
         <button class="btn-save" style="margin-top:.8rem" onclick="savePrivacy()">저장</button>
       </div>
-
-      <!-- 기본 정보 필드 설정 -->
       <div class="section-card">
         <div class="section-head"><div><h2>기본 정보 항목 설정</h2><p>신청서에 표시할 기본 항목을 on/off 할 수 있어요</p></div>
           <button class="btn-save" onclick="saveBasicFields()">저장</button>
@@ -264,37 +270,21 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
           <div><div class="basic-field-label">성함</div><div class="basic-field-sub">실명 입력 (필수 고정)</div></div>
           <label class="toggle-switch"><input type="checkbox" checked disabled><span class="toggle-slider"></span></label>
         </div>
-        <div class="basic-field-row">
-          <div><div class="basic-field-label">성별</div></div>
-          <label class="toggle-switch"><input type="checkbox" id="bf-gender" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="basic-field-row">
-          <div><div class="basic-field-label">생년월일</div></div>
-          <label class="toggle-switch"><input type="checkbox" id="bf-birth" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="basic-field-row">
-          <div><div class="basic-field-label">연락처</div></div>
-          <label class="toggle-switch"><input type="checkbox" id="bf-phone" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="basic-field-row">
-          <div><div class="basic-field-label">멤버 구분</div><div class="basic-field-sub">신규멤버 / 기존멤버 선택</div></div>
-          <label class="toggle-switch"><input type="checkbox" id="bf-memberType" checked><span class="toggle-slider"></span></label>
-        </div>
-        <!-- 성별 선택지 편집 -->
+        <div class="basic-field-row"><div><div class="basic-field-label">성별</div></div><label class="toggle-switch"><input type="checkbox" id="bf-gender" checked><span class="toggle-slider"></span></label></div>
+        <div class="basic-field-row"><div><div class="basic-field-label">생년월일</div></div><label class="toggle-switch"><input type="checkbox" id="bf-birth" checked><span class="toggle-slider"></span></label></div>
+        <div class="basic-field-row"><div><div class="basic-field-label">연락처</div></div><label class="toggle-switch"><input type="checkbox" id="bf-phone" checked><span class="toggle-slider"></span></label></div>
+        <div class="basic-field-row"><div><div class="basic-field-label">멤버 구분</div><div class="basic-field-sub">신규멤버 / 기존멤버 선택</div></div><label class="toggle-switch"><input type="checkbox" id="bf-memberType" checked><span class="toggle-slider"></span></label></div>
         <div id="genderOptionsWrap" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07)">
           <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">성별 선택지</div>
           <div class="option-list" id="genderOptionList"></div>
           <button class="btn-add-option" onclick="addGenderOption()">+ 선택지 추가</button>
         </div>
-        <!-- 멤버 구분 선택지 편집 -->
         <div id="memberTypeOptionsWrap" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07)">
           <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">멤버 구분 선택지</div>
           <div class="option-list" id="memberTypeOptionList"></div>
           <button class="btn-add-option" onclick="addMemberTypeOption()">+ 선택지 추가</button>
         </div>
       </div>
-
-      <!-- 추가 질문 -->
       <div class="section-card">
         <div class="section-head"><div><h2>추가 질문 관리</h2></div></div>
         <div class="q-group-title">🆕 신규멤버 질문</div>
@@ -334,10 +324,8 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <div class="divider"></div>
     <div class="form-group"><label>답변 형식</label>
       <select id="q-type" onchange="toggleAnswerOptions()">
-        <option value="textarea">장문 텍스트</option>
-        <option value="text">단문 텍스트</option>
-        <option value="single">객관식 (단일 선택)</option>
-        <option value="multi">객관식 (복수 선택)</option>
+        <option value="textarea">장문 텍스트</option><option value="text">단문 텍스트</option>
+        <option value="single">객관식 (단일 선택)</option><option value="multi">객관식 (복수 선택)</option>
       </select>
     </div>
     <div id="optionsSection" style="display:none">
@@ -387,6 +375,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 firebase.initializeApp({apiKey:"AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",authDomain:"the-mori-apply.firebaseapp.com",projectId:"the-mori-apply",storageBucket:"the-mori-apply.firebasestorage.app",messagingSenderId:"306904700616",appId:"1:306904700616:web:2217470905df10786837fd"});
 const auth=firebase.auth(), db=firebase.firestore();
 const ADMIN_EMAIL='nohjunhyouk@gmail.com';
+const DEFAULT_CANCEL_TOKEN=2;
 let user=null, meetings=[], allMembers=[];
 let formConfig={notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};
 let siteConfig={noticeBoard:'',waitingNotice:'',globalQuota:2};
@@ -398,10 +387,8 @@ let selectedMemberEmails=new Set();
 function createRichEditor(id,initialHTML=''){
   return `<div class="rich-editor-wrap" id="wrap-${id}">
     <div class="rich-toolbar">
-      <select onchange="execCmd('fontSize',this.value,this);this.value=''" title="크기">
-        <option value="">크기</option><option value="1">매우 작게</option><option value="2">작게</option><option value="3">보통</option><option value="4">크게</option><option value="5">매우 크게</option><option value="6">제목</option>
-      </select>
-      <input type="color" value="#ffffff" oninput="execCmd('foreColor',this.value,this)" title="글자색">
+      <select onchange="execCmd('fontSize',this.value,this);this.value=''"><option value="">크기</option><option value="1">매우 작게</option><option value="2">작게</option><option value="3">보통</option><option value="4">크게</option><option value="5">매우 크게</option><option value="6">제목</option></select>
+      <input type="color" value="#ffffff" oninput="execCmd('foreColor',this.value,this)">
       <button onclick="execCmd('bold',null,this)"><b>B</b></button>
       <button onclick="execCmd('italic',null,this)"><i>I</i></button>
       <button onclick="execCmd('underline',null,this)"><u>U</u></button>
@@ -461,20 +448,8 @@ async function clearWaitingNotice(){siteConfig.waitingNotice='';await db.collect
 /* ── FORM CONFIG ──────────────────────────────────────── */
 async function loadFormConfig(){
   const doc=await db.collection('settings').doc('formConfig').get();
-  if(doc.exists){
-    const d=doc.data();
-    formConfig={
-      notice:d.notice||'', privacy:d.privacy||'',
-      commonQuestions:d.commonQuestions||[],
-      newQuestions:d.newQuestions||d.questions||[],
-      existingQuestions:d.existingQuestions||[],
-      basicFields:d.basicFields||{gender:true,birth:true,phone:true,memberType:true},
-      genderOptions:d.genderOptions||['남성','여성','기타'],
-      memberTypeOptions:d.memberTypeOptions||['신규멤버','기존멤버']
-    };
-  } else {
-    formConfig={notice:'<p>THE MORI 독서모임에 지원해 주셔서 감사합니다.</p>',privacy:'<p>수집 항목: 성명, 연락처, 생년월일</p>',commonQuestions:[],newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};
-  }
+  if(doc.exists){const d=doc.data();formConfig={notice:d.notice||'',privacy:d.privacy||'',commonQuestions:d.commonQuestions||[],newQuestions:d.newQuestions||d.questions||[],existingQuestions:d.existingQuestions||[],basicFields:d.basicFields||{gender:true,birth:true,phone:true,memberType:true},genderOptions:d.genderOptions||['남성','여성','기타'],memberTypeOptions:d.memberTypeOptions||['신규멤버','기존멤버']};}
+  else{formConfig={notice:'<p>THE MORI 독서모임에 지원해 주셔서 감사합니다.</p>',privacy:'<p>수집 항목: 성명, 연락처, 생년월일</p>',commonQuestions:[],newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};}
   renderQuestionEditor();
 }
 async function saveFormConfig(){await db.collection('settings').doc('formConfig').set(formConfig);}
@@ -483,41 +458,26 @@ async function savePrivacy(){formConfig.privacy=getRichContent('privacyEditor');
 
 /* ── 기본정보 필드 편집 ───────────────────────────────── */
 function renderBasicFieldsEditor(){
-  // 토글 상태 반영
-  const bf=formConfig.basicFields||{gender:true,birth:true,phone:true,memberType:true};
+  const bf=formConfig.basicFields||{};
   document.getElementById('bf-gender').checked=bf.gender!==false;
   document.getElementById('bf-birth').checked=bf.birth!==false;
   document.getElementById('bf-phone').checked=bf.phone!==false;
   document.getElementById('bf-memberType').checked=bf.memberType!==false;
-  // 성별 선택지
-  const gl=document.getElementById('genderOptionList');
-  gl.innerHTML='';
+  const gl=document.getElementById('genderOptionList');gl.innerHTML='';
   (formConfig.genderOptions||['남성','여성','기타']).forEach(v=>addOptionToList(gl,v));
-  // 멤버구분 선택지
-  const ml=document.getElementById('memberTypeOptionList');
-  ml.innerHTML='';
+  const ml=document.getElementById('memberTypeOptionList');ml.innerHTML='';
   (formConfig.memberTypeOptions||['신규멤버','기존멤버']).forEach(v=>addOptionToList(ml,v));
 }
-function addOptionToList(listEl,val){
-  const div=document.createElement('div'); div.className='option-row';
-  div.innerHTML=`<input type="text" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;
-  listEl.appendChild(div);
-}
+function addOptionToList(listEl,val){const div=document.createElement('div');div.className='option-row';div.innerHTML=`<input type="text" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;listEl.appendChild(div);}
 function addGenderOption(){addOptionToList(document.getElementById('genderOptionList'),'');}
 function addMemberTypeOption(){addOptionToList(document.getElementById('memberTypeOptionList'),'');}
 async function saveBasicFields(){
-  formConfig.basicFields={
-    gender:document.getElementById('bf-gender').checked,
-    birth:document.getElementById('bf-birth').checked,
-    phone:document.getElementById('bf-phone').checked,
-    memberType:document.getElementById('bf-memberType').checked
-  };
+  formConfig.basicFields={gender:document.getElementById('bf-gender').checked,birth:document.getElementById('bf-birth').checked,phone:document.getElementById('bf-phone').checked,memberType:document.getElementById('bf-memberType').checked};
   formConfig.genderOptions=[...document.querySelectorAll('#genderOptionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);
   formConfig.memberTypeOptions=[...document.querySelectorAll('#memberTypeOptionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);
-  if(!formConfig.genderOptions.length) formConfig.genderOptions=['남성','여성','기타'];
-  if(!formConfig.memberTypeOptions.length) formConfig.memberTypeOptions=['신규멤버','기존멤버'];
-  await saveFormConfig();
-  showToast('기본 정보 설정이 저장되었어요 ✅');
+  if(!formConfig.genderOptions.length)formConfig.genderOptions=['남성','여성','기타'];
+  if(!formConfig.memberTypeOptions.length)formConfig.memberTypeOptions=['신규멤버','기존멤버'];
+  await saveFormConfig();showToast('기본 정보 설정이 저장되었어요 ✅');
 }
 
 /* ── QUESTION EDITOR ──────────────────────────────────── */
@@ -536,107 +496,37 @@ function renderQuestionEditor(){
     }).join(''):`<div style="color:rgba(255,255,255,.25);font-size:.82rem;padding:.5rem 0">등록된 질문이 없어요</div>`;
   });
 }
-
-function toggleAnswerOptions(){
-  const t=document.getElementById('q-type').value;
-  document.getElementById('optionsSection').style.display=(t==='single'||t==='multi')?'block':'none';
-}
+function toggleAnswerOptions(){const t=document.getElementById('q-type').value;document.getElementById('optionsSection').style.display=(t==='single'||t==='multi')?'block':'none';}
 function previewQImage(input){if(!input.files||!input.files[0])return;const r=new FileReader();r.onload=e=>{document.getElementById('q-image-data').value=e.target.result;const p=document.getElementById('q-image-preview');p.src=e.target.result;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';};r.readAsDataURL(input.files[0]);}
 function clearQImage(){document.getElementById('q-image-data').value='';document.getElementById('q-image-preview').style.display='none';document.getElementById('q-image-clear').style.display='none';document.getElementById('q-image').value='';}
-
-function addOption(val=''){
-  const list=document.getElementById('optionList');
-  const div=document.createElement('div'); div.className='option-row';
-  div.innerHTML=`<input type="text" placeholder="선택지 입력" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;
-  list.appendChild(div);
-  checkEtcBtn();
-}
-function addEtcOption(){
-  // 이미 기타가 있으면 추가 안 함
-  const opts=getOptions();
-  if(opts.includes('__etc__')){showToast('기타는 한 번만 추가할 수 있어요');return;}
-  const list=document.getElementById('optionList');
-  const div=document.createElement('div'); div.className='option-row';
-  div.innerHTML=`<input type="text" value="기타 (직접 입력)" readonly style="color:rgba(255,200,100,.8);background:rgba(255,200,80,.07)"><input type="hidden" value="__etc__"><button class="btn-del-option" onclick="this.parentElement.remove();checkEtcBtn()">✕</button>`;
-  list.appendChild(div);
-  checkEtcBtn();
-}
-function checkEtcBtn(){
-  const hasEtc=getOptionsRaw().includes('__etc__');
-  const btn=document.getElementById('addEtcBtn');
-  if(btn) btn.style.opacity=hasEtc?'0.4':'1';
-}
-function getOptions(){
-  // hidden value가 있으면 그걸, 없으면 text input 값 반환
-  return [...document.querySelectorAll('#optionList .option-row')].map(row=>{
-    const hidden=row.querySelector('input[type=hidden]');
-    if(hidden) return hidden.value;
-    return row.querySelector('input[type=text]')?.value.trim()||'';
-  }).filter(Boolean);
-}
-function getOptionsRaw(){ return getOptions(); }
-
-function openAddQuestionModal(group){
-  editingQId=null;editingQGroup=group;
-  const gLabel={new:'신규멤버',existing:'기존멤버',common:'공통'}[group];
-  document.getElementById('qModalTitle').textContent=`${gLabel} 질문 추가`;
-  document.getElementById('qModalOkBtn').textContent='추가';
-  document.getElementById('q-text').value='';document.getElementById('q-type').value='textarea';
-  document.getElementById('q-required').checked=false;document.getElementById('q-fontsize').value='0.9rem';
-  document.getElementById('q-color').value='#ffffff';clearQImage();
-  document.getElementById('optionList').innerHTML='';document.getElementById('optionsSection').style.display='none';
-  checkEtcBtn();
-  document.getElementById('questionModal').classList.add('open');
-}
-function openEditQuestionModal(id,group){
-  const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
-  const q=formConfig[keyMap[group]]?.find(x=>x.id===id);if(!q)return;
-  editingQId=id;editingQGroup=group;
-  document.getElementById('qModalTitle').textContent='질문 수정';document.getElementById('qModalOkBtn').textContent='저장';
-  document.getElementById('q-text').value=q.text;document.getElementById('q-type').value=q.type;
-  document.getElementById('q-required').checked=q.required;document.getElementById('q-fontsize').value=q.fontSize||'0.9rem';
-  document.getElementById('q-color').value=q.color||'#ffffff';document.getElementById('q-image-data').value=q.imageData||'';
-  const p=document.getElementById('q-image-preview');
-  if(q.imageData){p.src=q.imageData;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';}
-  else{p.style.display='none';document.getElementById('q-image-clear').style.display='none';}
-  document.getElementById('optionList').innerHTML='';
-  if(q.options?.length){
-    q.options.forEach(o=>{
-      if(o==='__etc__') addEtcOption();
-      else addOption(o);
-    });
-    document.getElementById('optionsSection').style.display='block';
-  } else document.getElementById('optionsSection').style.display='none';
-  toggleAnswerOptions();checkEtcBtn();
-  document.getElementById('questionModal').classList.add('open');
-}
+function addOption(val=''){const list=document.getElementById('optionList');const div=document.createElement('div');div.className='option-row';div.innerHTML=`<input type="text" placeholder="선택지 입력" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;list.appendChild(div);checkEtcBtn();}
+function addEtcOption(){const opts=getOptions();if(opts.includes('__etc__')){showToast('기타는 한 번만 추가할 수 있어요');return;}const list=document.getElementById('optionList');const div=document.createElement('div');div.className='option-row';div.innerHTML=`<input type="text" value="기타 (직접 입력)" readonly style="color:rgba(255,200,100,.8);background:rgba(255,200,80,.07)"><input type="hidden" value="__etc__"><button class="btn-del-option" onclick="this.parentElement.remove();checkEtcBtn()">✕</button>`;list.appendChild(div);checkEtcBtn();}
+function checkEtcBtn(){const hasEtc=getOptionsRaw().includes('__etc__');const btn=document.getElementById('addEtcBtn');if(btn)btn.style.opacity=hasEtc?'0.4':'1';}
+function getOptions(){return[...document.querySelectorAll('#optionList .option-row')].map(row=>{const hidden=row.querySelector('input[type=hidden]');if(hidden)return hidden.value;return row.querySelector('input[type=text]')?.value.trim()||'';}).filter(Boolean);}
+function getOptionsRaw(){return getOptions();}
+function openAddQuestionModal(group){editingQId=null;editingQGroup=group;const gLabel={new:'신규멤버',existing:'기존멤버',common:'공통'}[group];document.getElementById('qModalTitle').textContent=`${gLabel} 질문 추가`;document.getElementById('qModalOkBtn').textContent='추가';document.getElementById('q-text').value='';document.getElementById('q-type').value='textarea';document.getElementById('q-required').checked=false;document.getElementById('q-fontsize').value='0.9rem';document.getElementById('q-color').value='#ffffff';clearQImage();document.getElementById('optionList').innerHTML='';document.getElementById('optionsSection').style.display='none';checkEtcBtn();document.getElementById('questionModal').classList.add('open');}
+function openEditQuestionModal(id,group){const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};const q=formConfig[keyMap[group]]?.find(x=>x.id===id);if(!q)return;editingQId=id;editingQGroup=group;document.getElementById('qModalTitle').textContent='질문 수정';document.getElementById('qModalOkBtn').textContent='저장';document.getElementById('q-text').value=q.text;document.getElementById('q-type').value=q.type;document.getElementById('q-required').checked=q.required;document.getElementById('q-fontsize').value=q.fontSize||'0.9rem';document.getElementById('q-color').value=q.color||'#ffffff';document.getElementById('q-image-data').value=q.imageData||'';const p=document.getElementById('q-image-preview');if(q.imageData){p.src=q.imageData;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';}else{p.style.display='none';document.getElementById('q-image-clear').style.display='none';}document.getElementById('optionList').innerHTML='';if(q.options?.length){q.options.forEach(o=>{if(o==='__etc__')addEtcOption();else addOption(o);});document.getElementById('optionsSection').style.display='block';}else document.getElementById('optionsSection').style.display='none';toggleAnswerOptions();checkEtcBtn();document.getElementById('questionModal').classList.add('open');}
 function closeQuestionModal(){document.getElementById('questionModal').classList.remove('open');editingQId=null;editingQGroup=null;}
-
 async function submitQuestion(){
   const text=document.getElementById('q-text').value.trim();if(!text){showToast('질문 내용을 입력해주세요');return;}
   const type=document.getElementById('q-type').value,required=document.getElementById('q-required').checked;
   const fontSize=document.getElementById('q-fontsize').value,color=document.getElementById('q-color').value;
   const imageData=document.getElementById('q-image-data').value||null;
   const options=(type==='single'||type==='multi')?getOptions():[];
-  // 선택지 1개 이상이면 저장 가능 (기타만 있어도 OK)
   if((type==='single'||type==='multi')&&options.length<1){showToast('선택지를 1개 이상 입력해주세요');return;}
   const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
   const key=keyMap[editingQGroup];
   const qObj={id:editingQId||'q'+Date.now(),text,type,required,fontSize,color,imageData,options};
-  if(editingQId) formConfig[key]=formConfig[key].map(q=>q.id===editingQId?qObj:q);
+  if(editingQId)formConfig[key]=formConfig[key].map(q=>q.id===editingQId?qObj:q);
   else formConfig[key].push(qObj);
   await saveFormConfig();closeQuestionModal();renderQuestionEditor();
   showToast(editingQId?'질문이 수정되었어요':'질문이 추가되었어요');
 }
-async function deleteQuestion(id,group){
-  if(!confirm('이 질문을 삭제할까요?'))return;
-  const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
-  formConfig[keyMap[group]]=formConfig[keyMap[group]].filter(q=>q.id!==id);
-  await saveFormConfig();renderQuestionEditor();showToast('질문이 삭제되었어요');
-}
+async function deleteQuestion(id,group){if(!confirm('이 질문을 삭제할까요?'))return;const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};formConfig[keyMap[group]]=formConfig[keyMap[group]].filter(q=>q.id!==id);await saveFormConfig();renderQuestionEditor();showToast('질문이 삭제되었어요');}
 
 /* ── MEMBERS ──────────────────────────────────────────── */
 async function loadAllMembers(){const snap=await db.collection('users').get();allMembers=snap.docs.map(d=>({...d.data()}));}
+
 async function renderMemberList(){
   const g=document.getElementById('memberList');g.innerHTML=`<div class="empty">불러오는 중...</div>`;
   await loadAllMembers();
@@ -649,27 +539,90 @@ async function renderMemberList(){
   g.innerHTML=list.map(u=>{
     const av=u.photo?`<img src="${u.photo}" alt="">`:u.name?.[0]||'?';
     const roleBadge=u.role?`<span class="badge ${statusMap[u.role]||'badge-none'}">${statusLabel[u.role]||u.role}</span>`:`<span class="badge badge-none">미분류</span>`;
+    // 취소 토큰 뱃지
+    const token = u.cancelToken !== undefined ? u.cancelToken : DEFAULT_CANCEL_TOKEN;
+    const tokenBadge = (u.role==='member'||u.role==='staff') ? `<span class="badge badge-token">🎟 취소 ${token}회</span>` : '';
     const customQuota=u.maxApply?` · 한도 ${u.maxApply}개`:'';
     let actions='';
     if(!u.role||u.role==='pending'||u.role==='cancelled'){actions=`<button class="btn-approve" onclick="event.stopPropagation();approveMember('${u.email}')">✅ 승인</button><button class="btn-cancel-wait" onclick="event.stopPropagation();cancelWaiting('${u.email}','${u.name||''}')">대기취소</button><button class="btn-reject" onclick="event.stopPropagation();rejectMember('${u.email}','${u.name||''}')">거절</button>`;}
     else if(u.role==='member'){actions=`<button class="btn-staff" onclick="event.stopPropagation();setRole('${u.email}','staff')">모임장 부여</button><button class="btn-cancel-wait" onclick="event.stopPropagation();setRole('${u.email}','pending')">대기로 변경</button>`;}
     else if(u.role==='staff'){actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">모임장 회수</button>`;}
-    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${customQuota}</div><div class="member-badges">${roleBadge}</div></div><div class="member-actions">${actions}</div></div>`;
+    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${customQuota}</div><div class="member-badges">${roleBadge}${tokenBadge}</div></div><div class="member-actions">${actions}</div></div>`;
   }).join('');
 }
+
 function filterMembers(f,el){memberFilter=f;document.querySelectorAll('.filter-chips .chip').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderMemberList();}
-async function approveMember(email){await db.collection('users').doc(email).update({role:'member'});showToast('승인되었어요 ✅');renderMemberList();}
+async function approveMember(email){
+  // 승인 시 cancelToken 없으면 기본값 세팅
+  await db.collection('users').doc(email).update({role:'member'});
+  const doc=await db.collection('users').doc(email).get();
+  if(doc.exists&&doc.data().cancelToken===undefined){
+    await db.collection('users').doc(email).update({cancelToken:DEFAULT_CANCEL_TOKEN});
+  }
+  showToast('승인되었어요 ✅');renderMemberList();
+}
 async function cancelWaiting(email,name){if(!confirm(`"${name}" 님의 대기를 취소할까요?`))return;await db.collection('users').doc(email).update({role:'cancelled'});showToast('대기가 취소되었어요');renderMemberList();}
 async function rejectMember(email,name){if(!confirm(`"${name}" 님을 거절하고 데이터를 삭제할까요?`))return;await db.collection('users').doc(email).delete();showToast('거절되었어요');renderMemberList();}
 async function setRole(email,role){await db.collection('users').doc(email).update({role});const msg={staff:'모임장 권한을 부여했어요',member:'참여자로 변경되었어요',pending:'대기 상태로 변경되었어요'};showToast(msg[role]||'변경되었어요');renderMemberList();}
 
+/* ── 취소 토큰 관리 ──────────────────────────────────── */
+async function saveCancelToken(email){
+  const input=document.getElementById('cancelTokenInput-'+email);
+  if(!input)return;
+  const v=Math.max(0,parseInt(input.value)||0);
+  await db.collection('users').doc(email).update({cancelToken:v});
+  showToast(`취소 토큰이 ${v}회로 설정되었어요 ✅`);
+  renderMemberList();
+}
+async function addCancelToken(email, delta){
+  const doc=await db.collection('users').doc(email).get();
+  if(!doc.exists)return;
+  const cur=doc.data().cancelToken!==undefined?doc.data().cancelToken:DEFAULT_CANCEL_TOKEN;
+  const next=Math.max(0,cur+delta);
+  await db.collection('users').doc(email).update({cancelToken:next});
+  // 프로필 모달 내 표시 업데이트
+  const display=document.getElementById('tokenDisplay-'+email);
+  const input=document.getElementById('cancelTokenInput-'+email);
+  if(display)display.textContent=next;
+  if(input)input.value=next;
+  showToast(`취소 토큰 ${delta>0?'+'+delta:delta}회 → 현재 ${next}회`);
+  renderMemberList();
+}
+async function resetCancelToken(email){
+  await db.collection('users').doc(email).update({cancelToken:DEFAULT_CANCEL_TOKEN});
+  const display=document.getElementById('tokenDisplay-'+email);
+  const input=document.getElementById('cancelTokenInput-'+email);
+  if(display)display.textContent=DEFAULT_CANCEL_TOKEN;
+  if(input)input.value=DEFAULT_CANCEL_TOKEN;
+  showToast(`취소 토큰이 기본값(${DEFAULT_CANCEL_TOKEN}회)으로 초기화되었어요`);
+  renderMemberList();
+}
+
+/* ── 프로필 모달 ─────────────────────────────────────── */
 async function openProfileModal(email){
   const doc=await db.collection('users').doc(email).get();if(!doc.exists)return;
   const u=doc.data(),currentQuota=u.maxApply||siteConfig.globalQuota;
+  const currentToken=u.cancelToken!==undefined?u.cancelToken:DEFAULT_CANCEL_TOKEN;
   const appliedMeetings=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id);
   const allQ=[...(formConfig.commonQuestions||[]),...(u.memberType==='신규멤버'?formConfig.newQuestions||[]:formConfig.existingQuestions||[])];
   const answersHTML=allQ.length&&u.answers?allQ.map(q=>{const a=u.answers[q.id];const aText=Array.isArray(a)?a.join(', '):(a||'-');return`<div><div class="profile-q">${q.text}</div><div class="profile-answer">${aText}</div></div>`;}).join(''):'';
   const roleLabel={pending:'대기중',member:'참여자',staff:'모임장'}[u.role]||u.role||'미분류';
+
+  // 취소 토큰 관리 섹션 (member, staff만)
+  const tokenSection=(u.role==='member'||u.role==='staff')?`
+    <div class="profile-section">
+      <div class="profile-section-title">🎟 취소 토큰 관리</div>
+      <div class="token-row">
+        <label>현재 취소 가능 횟수</label>
+        <button class="btn-token-minus" onclick="addCancelToken('${u.email}',-1)">−</button>
+        <span class="token-current" id="tokenDisplay-${u.email}">${currentToken}</span>
+        <button class="btn-token-plus" onclick="addCancelToken('${u.email}',+1)">+</button>
+        <input type="hidden" id="cancelTokenInput-${u.email}" value="${currentToken}">
+        <button class="btn-token-reset" onclick="resetCancelToken('${u.email}')">기본값으로</button>
+      </div>
+      <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.3rem">기본값: ${DEFAULT_CANCEL_TOKEN}회 · +/− 버튼으로 즉시 조정돼요</div>
+    </div>`:'';
+
   document.getElementById('profileModalTitle').textContent=u.name||email;
   document.getElementById('profileModalContent').innerHTML=`
     <div class="profile-section">
@@ -695,6 +648,7 @@ async function openProfileModal(email){
         <button class="btn-quota-save" onclick="saveMemberQuota('${u.email}')">저장</button>
       </div>
     </div>
+    ${tokenSection}
     <div class="profile-actions">
       ${!u.role||u.role==='pending'||u.role==='cancelled'?`<button class="btn-approve" onclick="approveMember('${u.email}');closeProfileModal()">✅ 승인</button><button class="btn-cancel-wait" onclick="cancelWaiting('${u.email}','${u.name||''}');closeProfileModal()">대기취소</button><button class="btn-reject" onclick="rejectMember('${u.email}','${u.name||''}');closeProfileModal()">거절</button>`:''}
       ${u.role==='member'?`<button class="btn-staff" onclick="setRole('${u.email}','staff');closeProfileModal()">모임장 부여</button>`:''}
@@ -709,10 +663,16 @@ function closeProfileModal(){document.getElementById('profileModal').classList.r
 async function exportMembersCSV(){
   const snap=await db.collection('users').get();
   const allQ=[...(formConfig.commonQuestions||[]),...(formConfig.newQuestions||[]),...(formConfig.existingQuestions||[])];
-  const headers=['이름','이메일','성별','생년월일','연락처','멤버구분','권한',...allQ.map(q=>q.text),'신청한 모임'];
+  const headers=['이름','이메일','성별','생년월일','연락처','멤버구분','권한','취소토큰',...allQ.map(q=>q.text),'신청한 모임'];
   const rows=[headers];
   const roleLabel={pending:'대기중',member:'참여자',staff:'모임장'};
-  snap.docs.forEach(d=>{const u=d.data();const answers=allQ.map(q=>{const a=u.answers?.[q.id];return Array.isArray(a)?a.join(', '):(a||'-');});const appliedTitles=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id).join(', ');rows.push([u.name||'',u.email||'',u.gender||'',u.birth||'',u.phone||'',u.memberType||'',roleLabel[u.role]||u.role||'',...answers,appliedTitles]);});
+  snap.docs.forEach(d=>{
+    const u=d.data();
+    const token=u.cancelToken!==undefined?u.cancelToken:DEFAULT_CANCEL_TOKEN;
+    const answers=allQ.map(q=>{const a=u.answers?.[q.id];return Array.isArray(a)?a.join(', '):(a||'-');});
+    const appliedTitles=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id).join(', ');
+    rows.push([u.name||'',u.email||'',u.gender||'',u.birth||'',u.phone||'',u.memberType||'',roleLabel[u.role]||u.role||'',token,...answers,appliedTitles]);
+  });
   const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_멤버목록.csv';a.click();showToast('멤버 CSV 다운로드 완료 ✅');
 }
@@ -764,32 +724,13 @@ function renderMemberSelectList(list){
     </div>`;
   }).join('');
 }
-function toggleMemberSelect(email){
-  if(selectedMemberEmails.has(email)) selectedMemberEmails.delete(email);
-  else selectedMemberEmails.add(email);
-  document.getElementById('addMemberSelectedInfo').textContent=selectedMemberEmails.size?`${selectedMemberEmails.size}명 선택됨`:'';
-  filterMemberSelectList();
-}
-function filterMemberSelectList(){
-  const q=document.getElementById('memberSearchInput').value.trim().toLowerCase();
-  const eligible=allMembers.filter(u=>(u.role==='member'||u.role==='staff')&&(!q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));
-  renderMemberSelectList(eligible);
-}
+function toggleMemberSelect(email){if(selectedMemberEmails.has(email))selectedMemberEmails.delete(email);else selectedMemberEmails.add(email);document.getElementById('addMemberSelectedInfo').textContent=selectedMemberEmails.size?`${selectedMemberEmails.size}명 선택됨`:'';filterMemberSelectList();}
+function filterMemberSelectList(){const q=document.getElementById('memberSearchInput').value.trim().toLowerCase();const eligible=allMembers.filter(u=>(u.role==='member'||u.role==='staff')&&(!q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));renderMemberSelectList(eligible);}
 async function confirmAddSelectedMembers(){
   if(!addMemberContext||selectedMemberEmails.size===0){showToast('추가할 멤버를 선택해주세요');return;}
-  const {col,id}=addMemberContext;
-  let added=0;
-  for(const email of selectedMemberEmails){
-    const u=allMembers.find(x=>x.email===email);if(!u)continue;
-    await db.collection(col).doc(id).collection('applicants').doc(email).set({name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''});
-    await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});
-    const field=col==='meetings'?'applied':'appliedSmall';
-    await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});
-    added++;
-  }
-  showToast(`${added}명이 추가되었어요 ✅`);
-  closeAddMemberModal();
-  if(col==='meetings') renderApplicantTable();
+  const {col,id}=addMemberContext;let added=0;
+  for(const email of selectedMemberEmails){const u=allMembers.find(x=>x.email===email);if(!u)continue;await db.collection(col).doc(id).collection('applicants').doc(email).set({name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''});await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});const field=col==='meetings'?'applied':'appliedSmall';await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});added++;}
+  showToast(`${added}명이 추가되었어요 ✅`);closeAddMemberModal();if(col==='meetings')renderApplicantTable();
 }
 function closeAddMemberModal(){document.getElementById('addMemberModal').classList.remove('open');addMemberContext=null;selectedMemberEmails=new Set();}
 
@@ -798,8 +739,8 @@ function switchAdminTab(t,el){
   document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
   ['tabMembers','tabMeetings','tabSettings','tabForm'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById({members:'tabMembers',meetings:'tabMeetings',settings:'tabSettings',form:'tabForm'}[t]).style.display='block';
-  if(t==='meetings') renderMeetingChips();
-  if(t==='form') renderBasicFieldsEditor();
+  if(t==='meetings')renderMeetingChips();
+  if(t==='form')renderBasicFieldsEditor();
 }
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 </script>
