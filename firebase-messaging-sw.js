@@ -19,6 +19,6 @@ messaging.onBackgroundMessage(payload => {
   const { title, body } = payload.notification;
   self.registration.showNotification(title, {
     body: body,
-    icon: '/icon-192.png'
+    icon: '/the-mori-apply/icon-192.png'
   });
 });
