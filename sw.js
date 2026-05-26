@@ -20,7 +20,7 @@ messaging.onBackgroundMessage(payload => {
     icon: '/icon-192.png'
   });
 });
-const CACHE = 'mori-apply-v5';
+const CACHE = 'mori-apply-v6';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
