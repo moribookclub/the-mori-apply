@@ -1,728 +1,188 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>THE MORI APPLY — 관리자</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Apple SD Gothic Neo',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
-nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
-.logo{font-size:1.2rem;font-weight:700;letter-spacing:.1em}
-.logo span{color:rgba(255,200,80,.7);font-size:.78rem;margin-left:6px;font-weight:400}
-.nav-right{display:flex;align-items:center;gap:8px}
-.btn-sm{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.55);padding:5px 11px;border-radius:6px;font-size:.75rem;cursor:pointer}
-.btn-home{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:6px 14px;border-radius:6px;font-size:.78rem;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px}
-.btn-home:hover{background:rgba(255,255,255,.15)}
-.avatar-circle{width:32px;height:32px;border-radius:50%;background:rgba(255,200,80,.2);border:2px solid rgba(255,200,80,.4);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:600;overflow:hidden}
-.avatar-circle img{width:100%;height:100%;object-fit:cover}
-.page-wrap{max-width:1000px;margin:0 auto;padding:2rem 1.25rem 4rem}
-.page-title{font-size:1.4rem;font-weight:700;margin-bottom:.3rem}
-.page-sub{font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:2rem}
-.admin-tab-bar{display:flex;gap:0;background:rgba(255,255,255,.06);border-radius:8px;padding:4px;margin-bottom:2rem;flex-wrap:wrap}
-.admin-tab{flex:1;text-align:center;padding:9px 0;font-size:.82rem;cursor:pointer;border-radius:6px;color:rgba(255,255,255,.4);transition:all .2s;white-space:nowrap;min-width:80px}
-.admin-tab.active{background:#fff;color:#0d1f3c;font-weight:600}
-.section-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem}
-.section-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:8px}
-.section-head h2{font-size:1rem;font-weight:600}
-.section-head p{font-size:.8rem;color:rgba(255,255,255,.4);margin-top:2px}
-.filter-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:1.2rem}
-.chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);padding:6px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;transition:all .2s}
-.chip.active{background:#fff;color:#0d1f3c;border-color:#fff;font-weight:600}
-.member-list{display:flex;flex-direction:column;gap:.6rem}
-.member-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
-.member-row:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.07)}
-.member-av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:600;overflow:hidden;flex-shrink:0}
-.member-av img{width:100%;height:100%;object-fit:cover}
-.member-info{flex:1;min-width:0}
-.member-name{font-size:.92rem;font-weight:600}
-.member-meta{font-size:.76rem;color:rgba(255,255,255,.4);margin-top:2px}
-.member-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
-.badge{font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
-.badge-pending{background:rgba(255,180,50,.12);border:1px solid rgba(255,180,50,.3);color:rgba(255,200,80,.9)}
-.badge-member{background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);color:rgba(130,230,130,.9)}
-.badge-staff{background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9)}
-.badge-none{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4)}
-.badge-apply-token{background:rgba(100,200,255,.1);border:1px solid rgba(100,200,255,.25);color:rgba(150,220,255,.9);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
-.badge-cancel-token{background:rgba(255,180,80,.1);border:1px solid rgba(255,180,80,.25);color:rgba(255,210,100,.9);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
-.member-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
-.btn-approve{background:#fff;color:#0d1f3c;border:none;padding:6px 13px;border-radius:5px;font-size:.76rem;font-weight:600;cursor:pointer;white-space:nowrap}
-.btn-approve:hover{opacity:.85}
-.btn-reject{background:transparent;border:1px solid rgba(255,100,100,.35);color:rgba(255,130,130,.8);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
-.btn-cancel-wait{background:transparent;border:1px solid rgba(255,150,50,.3);color:rgba(255,180,80,.8);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
-.btn-staff{background:rgba(100,180,255,.1);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
-.btn-revoke{background:rgba(255,150,50,.1);border:1px solid rgba(255,150,50,.3);color:rgba(255,180,80,.9);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
-.btn-csv{background:#fff;color:#0d1f3c;border:none;padding:7px 15px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer}
-.btn-csv:hover{opacity:.85}
-.applicant-table{width:100%;border-collapse:collapse;font-size:.83rem}
-.applicant-table th{text-align:left;padding:9px 12px;color:rgba(255,255,255,.4);font-weight:500;border-bottom:1px solid rgba(255,255,255,.08);font-size:.75rem;letter-spacing:.05em;text-transform:uppercase}
-.applicant-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.85);vertical-align:middle}
-.applicant-table tr:last-child td{border-bottom:none}
-.applicant-table tr:hover td{background:rgba(255,255,255,.03)}
-/* 리치 에디터 */
-.rich-editor-wrap{border:1px solid rgba(255,255,255,.12);border-radius:10px;overflow:hidden;margin-bottom:.8rem}
-.rich-toolbar{background:rgba(255,255,255,.05);padding:6px 10px;display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08)}
-.rich-toolbar button{background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);padding:4px 9px;border-radius:4px;font-size:.78rem;cursor:pointer;transition:all .15s}
-.rich-toolbar button:hover{background:rgba(255,255,255,.1);color:#fff}
-.rich-toolbar input[type=color]{width:28px;height:28px;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px;cursor:pointer;background:transparent}
-.rich-toolbar select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;padding:3px 6px;border-radius:4px;font-size:.78rem;outline:none}
-.rich-toolbar select option{background:#0d1f3c}
-.rich-editor{min-height:100px;padding:12px;outline:none;font-size:.88rem;line-height:1.7;color:#fff}
-/* 개인정보 동의 plain textarea */
-.plain-editor{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px;color:#fff;font-size:.88rem;line-height:1.7;outline:none;resize:vertical;min-height:100px;font-family:inherit}
-.plain-editor:focus{border-color:rgba(255,255,255,.3)}
-.btn-save{background:#fff;color:#0d1f3c;border:none;padding:8px 18px;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer}
-.btn-save:hover{opacity:.85}
-.q-group-title{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.06em;text-transform:uppercase;margin:1.4rem 0 .7rem;padding-bottom:.4rem;border-bottom:1px solid rgba(255,255,255,.08)}
-.question-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:.9rem;margin-bottom:.5rem;display:flex;align-items:flex-start;gap:10px}
-.q-preview{flex:1}
-.q-preview-text{font-size:.85rem;color:rgba(255,255,255,.85);line-height:1.5;white-space:pre-wrap;margin-bottom:4px}
-.q-preview-img{max-width:100%;max-height:200px;border-radius:5px;object-fit:cover;margin-top:5px;display:block}
-.q-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
-.q-meta-tag{font-size:.7rem;padding:2px 7px;border-radius:10px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.4)}
-.q-btns{display:flex;gap:5px;flex-shrink:0}
-.btn-q-edit,.btn-q-del{background:none;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:3px 8px;font-size:.72rem;cursor:pointer;transition:all .15s}
-.btn-q-edit{color:rgba(255,255,255,.45)}.btn-q-edit:hover{color:#fff;border-color:rgba(255,255,255,.3)}
-.btn-q-del{color:rgba(255,100,100,.5)}.btn-q-del:hover{color:rgba(255,130,130,.9);border-color:rgba(255,100,100,.4)}
-.btn-add-q{background:transparent;border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.45);padding:9px;border-radius:8px;width:100%;cursor:pointer;font-size:.83rem;transition:all .2s;margin-top:.3rem}
-.btn-add-q:hover{border-color:rgba(255,255,255,.4);color:#fff}
-.basic-field-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 14px;margin-bottom:.5rem}
-.basic-field-label{font-size:.85rem;color:rgba(255,255,255,.7);flex:1}
-.basic-field-sub{font-size:.75rem;color:rgba(255,255,255,.35);margin-top:2px}
-.toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0}
-.toggle-switch input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.15);border-radius:20px;transition:.3s}
-.toggle-slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
-.toggle-switch input:checked+.toggle-slider{background:rgba(100,200,120,.6)}
-.toggle-switch input:checked+.toggle-slider:before{transform:translateX(16px)}
-/* 토큰 관리 행 */
-.token-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;margin-bottom:.5rem;flex-wrap:wrap}
-.token-row label{font-size:.83rem;color:rgba(255,255,255,.6);flex:1;min-width:120px}
-.token-current{font-size:1rem;font-weight:700;color:#fff;min-width:2em;text-align:center}
-.btn-token-minus{background:rgba(255,100,100,.15);border:1px solid rgba(255,100,100,.3);color:rgba(255,150,150,.9);width:28px;height:28px;border-radius:5px;font-size:1rem;cursor:pointer;font-weight:700;flex-shrink:0}
-.btn-token-plus{background:rgba(100,220,100,.12);border:1px solid rgba(100,220,100,.3);color:rgba(130,230,130,.9);width:28px;height:28px;border-radius:5px;font-size:1rem;cursor:pointer;font-weight:700;flex-shrink:0}
-.btn-token-reset{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:5px 10px;border-radius:5px;font-size:.75rem;cursor:pointer;flex-shrink:0}
-.profile-section{margin-bottom:1.2rem}
-.profile-section-title{font-size:.75rem;color:rgba(255,255,255,.35);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem;font-weight:600}
-.profile-row{display:flex;gap:8px;margin-bottom:.4rem;font-size:.85rem}
-.profile-label{color:rgba(255,255,255,.4);min-width:90px;flex-shrink:0}
-.profile-val{color:rgba(255,255,255,.85)}
-.profile-answer{background:rgba(255,255,255,.05);border-radius:7px;padding:.8rem;font-size:.84rem;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:.6rem;white-space:pre-wrap}
-.profile-q{font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.3rem}
-.applied-chip{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;font-size:.78rem;color:rgba(255,255,255,.7);margin:3px}
-.profile-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,.08)}
-.empty{text-align:center;padding:2.5rem;color:rgba(255,255,255,.22);font-size:.88rem}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;color:#0d1f3c;padding:11px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
-.modal-overlay.open{display:flex}
-.modal{background:#0d1f3c;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:1.8rem;width:100%;max-width:580px;max-height:90vh;overflow-y:auto}
-.modal h2{font-size:1.1rem;font-weight:600;margin-bottom:1.2rem}
-.form-group{margin-bottom:.9rem}
-.form-group label{display:block;font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:5px}
-.form-group input[type=text],.form-group input[type=number],.form-group input[type=color],.form-group textarea,.form-group select{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:9px 11px;color:#fff;font-size:.85rem;outline:none;font-family:inherit}
-.form-group textarea{resize:vertical;min-height:70px}
-.form-group input:focus,.form-group textarea:focus{border-color:rgba(255,255,255,.35)}
-.form-group select option{background:#0d1f3c}
-.form-group input[type=color]{height:40px;padding:4px;cursor:pointer}
-.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.modal-btns{display:flex;gap:10px;margin-top:1.2rem}
-.btn-modal-cancel{flex:1;background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:10px;border-radius:7px;cursor:pointer;font-size:.85rem}
-.btn-modal-ok{flex:2;background:#fff;color:#0d1f3c;border:none;padding:10px;border-radius:7px;font-weight:600;cursor:pointer;font-size:.85rem}
-.divider{height:1px;background:rgba(255,255,255,.08);margin:.8rem 0}
-.option-list{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
-.option-row{display:flex;gap:6px;align-items:center}
-.option-row input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 10px;color:#fff;font-size:.83rem;outline:none}
-.btn-del-option{background:none;border:none;color:rgba(255,100,100,.5);cursor:pointer;font-size:1rem;padding:0 4px}
-.btn-add-option{background:transparent;border:1px dashed rgba(255,255,255,.18);color:rgba(255,255,255,.4);padding:6px 12px;border-radius:6px;font-size:.78rem;cursor:pointer;width:100%}
-.btn-add-option:hover{border-color:rgba(255,255,255,.35);color:#fff}
-.btn-add-etc{background:rgba(255,180,80,.1);border:1px dashed rgba(255,180,80,.3);color:rgba(255,200,100,.8);padding:6px 12px;border-radius:6px;font-size:.78rem;cursor:pointer;width:100%;margin-top:4px}
-.btn-add-etc:hover{border-color:rgba(255,180,80,.6);color:rgba(255,220,120,.9)}
-.img-preview{max-width:100%;max-height:120px;border-radius:6px;margin-top:6px;object-fit:cover}
-.access-denied{max-width:400px;margin:8rem auto;text-align:center;padding:0 1.5rem}
-.access-denied .icon{font-size:3rem;margin-bottom:1rem}
-.access-denied h2{font-size:1.3rem;font-weight:700;margin-bottom:.6rem}
-.access-denied p{color:rgba(255,255,255,.45);font-size:.88rem;line-height:1.7}
-.notice-preview{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:1rem;margin-top:.6rem;font-size:.83rem;color:rgba(255,255,255,.6);min-height:40px}
-.member-select-list{display:flex;flex-direction:column;gap:.4rem;max-height:320px;overflow-y:auto;margin-bottom:1rem}
-.member-select-row{display:flex;align-items:center;gap:10px;padding:.6rem .8rem;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s}
-.member-select-row:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
-.member-select-row.selected{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3)}
-.member-select-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;overflow:hidden;flex-shrink:0}
-.member-select-av img{width:100%;height:100%;object-fit:cover}
-.member-select-info{flex:1;min-width:0}
-.member-select-name{font-size:.86rem;font-weight:600}
-.member-select-email{font-size:.72rem;color:rgba(255,255,255,.35);margin-top:1px}
-.member-select-check{width:18px;height:18px;accent-color:#fff;flex-shrink:0}
-.member-search-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:8px 11px;color:#fff;font-size:.84rem;outline:none;margin-bottom:.7rem}
-.member-search-input:focus{border-color:rgba(255,255,255,.3)}
-</style>
-</head>
-<body>
-<nav>
-  <div class="logo">THE MORI APPLY <span>관리자</span></div>
-  <div class="nav-right" id="navRight"><a class="btn-home" href="index.html">← 메인으로</a></div>
-</nav>
+<!-- admin.html의 설정 탭(tabSettings)을 아래 내용으로 교체하세요 -->
+<!-- 나머지 admin.html 코드는 이전 버전(admin_v4)과 동일합니다 -->
+<!-- 교체 범위: <div id="tabSettings" style="display:none"> 부터 닫는 </div>까지 -->
 
-<div id="screenDenied" style="display:none">
-  <div class="access-denied">
-    <div class="icon">🔒</div><h2>접근 권한이 없어요</h2>
-    <p>관리자 계정으로 로그인해야 접근할 수 있어요.</p><br>
-    <a class="btn-home" href="index.html" style="justify-content:center">메인으로 돌아가기</a>
+<div id="tabSettings" style="display:none">
+
+  <!-- 1. 독서모임 취소 시간 제한 -->
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <h2>⏰ 독서모임 취소 시간 제한</h2>
+        <p>모임 N시간 전부터 신청 취소를 막아요 (독서모임만 적용)</p>
+      </div>
+      <label class="toggle-switch" style="margin-top:4px">
+        <input type="checkbox" id="cancelLockToggle" onchange="saveCancelLockSetting()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="quota-row">
+      <label>취소 불가 기준 시간 <span style="color:rgba(255,255,255,.3);font-size:.75rem">(모임 시작 N시간 전부터)</span></label>
+      <input class="quota-input-sm" id="cancelLockHoursInput" type="number" min="1" max="168" value="72">
+      <span style="color:rgba(255,255,255,.35);font-size:.83rem">시간 전</span>
+      <button class="btn-quota-save" onclick="saveCancelLockSetting()">저장</button>
+    </div>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.3);margin-top:.3rem">예: 72 → 모임 3일 전부터 취소 불가</div>
   </div>
-</div>
 
-<div id="adminMain" style="display:none">
-  <div class="page-wrap">
-    <div class="page-title">관리자 페이지</div>
-    <div class="page-sub" id="adminSubtitle"></div>
-    <div class="admin-tab-bar">
-      <div class="admin-tab active" onclick="switchAdminTab('members',this)">멤버 관리</div>
-      <div class="admin-tab" onclick="switchAdminTab('meetings',this)">모임 신청자</div>
-      <div class="admin-tab" onclick="switchAdminTab('settings',this)">설정</div>
-      <div class="admin-tab" onclick="switchAdminTab('form',this)">신청서 편집</div>
+  <!-- 2. 최소인원 폐강 설정 -->
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <h2>👥 최소인원 폐강 기능</h2>
+        <p>최소인원 미달 시 이틀 전에 모임을 폐강할 수 있어요 (독서모임만)</p>
+      </div>
+      <label class="toggle-switch" style="margin-top:4px">
+        <input type="checkbox" id="minMemberToggle" onchange="saveMinMemberSetting()">
+        <span class="toggle-slider"></span>
+      </label>
     </div>
-
-    <!-- 멤버 관리 -->
-    <div id="tabMembers">
-      <div class="section-card">
-        <div class="section-head">
-          <div><h2>멤버 관리</h2><p>신청서를 제출한 멤버를 승인하고 권한을 관리해요</p></div>
-          <button class="btn-csv" onclick="exportMembersCSV()">멤버 CSV 내보내기</button>
-        </div>
-        <div class="filter-chips">
-          <div class="chip active" onclick="filterMembers('pending',this)">⏳ 대기중</div>
-          <div class="chip" onclick="filterMembers('member',this)">✅ 참여자</div>
-          <div class="chip" onclick="filterMembers('staff',this)">⭐ 모임장</div>
-          <div class="chip" onclick="filterMembers('none',this)">⚠️ 미분류</div>
-          <div class="chip" onclick="filterMembers('all',this)">전체</div>
-        </div>
-        <div class="member-list" id="memberList"><div class="empty">불러오는 중...</div></div>
-      </div>
+    <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:1rem;line-height:1.6">
+      기능이 켜져 있으면 아래 독서모임 목록에서 폐강 버튼을 누를 수 있어요.<br>
+      폐강 시 모임장과 모임원에게 인앱 알림이 발송돼요.
     </div>
+    <!-- 폐강 대상 모임 목록 -->
+    <div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.7rem">폐강 관리</div>
+    <div id="closeableMeetingList"><div class="empty">불러오는 중...</div></div>
+  </div>
 
-    <!-- 모임 신청자 -->
-    <div id="tabMeetings" style="display:none">
-      <div class="section-card">
-        <div class="section-head">
-          <div><h2>모임 신청자 명단</h2></div>
-          <button class="btn-csv" onclick="exportCSV()">CSV 내보내기</button>
-        </div>
-        <div class="filter-chips" id="meetingChips"></div>
-        <div id="applicantTableWrap"><div class="empty">모임을 선택하면 신청자 명단이 표시돼요</div></div>
+  <!-- 3. 찜 여석 알림 -->
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <h2>💺 찜 모임 여석 알림</h2>
+        <p>찜한 모임에 자리가 났을 때 멤버에게 인앱 알림을 보내요</p>
       </div>
-    </div>
-
-    <!-- 설정 -->
-    <div id="tabSettings" style="display:none">
-      <div class="section-card">
-        <div class="section-head"><div><h2>📢 신청페이지 공지사항</h2><p>모임 신청 페이지 상단에 표시돼요</p></div></div>
-        <div id="noticeEditorWrap"></div>
-        <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
-          <button class="btn-save" onclick="saveNoticeBoard()">저장</button>
-          <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearNoticeBoard()">공지 삭제</button>
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
-        <div class="notice-preview" id="noticeBoardPreview"></div>
-      </div>
-      <div class="section-card">
-        <div class="section-head"><div><h2>⏳ 신청서 검토화면 공지사항</h2><p>대기중인 멤버에게 보이는 안내 메시지예요</p></div></div>
-        <div id="waitingNoticeEditorWrap"></div>
-        <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
-          <button class="btn-save" onclick="saveWaitingNotice()">저장</button>
-          <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearWaitingNotice()">공지 삭제</button>
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
-        <div class="notice-preview" id="waitingNoticePreview"></div>
-      </div>
-    </div>
-
-    <!-- 신청서 편집 -->
-    <div id="tabForm" style="display:none">
-      <div class="section-card">
-        <div class="section-head"><div><h2>신청서 안내문</h2></div></div>
-        <div id="noticeEditorFormWrap"></div>
-        <button class="btn-save" style="margin-top:.8rem" onclick="saveNotice()">저장</button>
-      </div>
-      <div class="section-card">
-        <div class="section-head"><div><h2>개인정보 동의 문구</h2><p>일반 텍스트로 입력해주세요 (HTML 태그 없이)</p></div></div>
-        <!-- plain textarea — HTML 태그 노출 방지 -->
-        <textarea class="plain-editor" id="privacyPlainEditor" rows="6" placeholder="개인정보 동의 문구를 입력해주세요&#10;예) 수집 항목: 성명, 연락처, 생년월일&#10;수집 목적: 모임 운영 및 회원 관리&#10;보유 기간: 탈퇴 시까지"></textarea>
-        <button class="btn-save" style="margin-top:.8rem" onclick="savePrivacy()">저장</button>
-      </div>
-      <div class="section-card">
-        <div class="section-head"><div><h2>기본 정보 항목 설정</h2><p>신청서에 표시할 기본 항목을 on/off 할 수 있어요</p></div>
-          <button class="btn-save" onclick="saveBasicFields()">저장</button>
-        </div>
-        <div class="basic-field-row"><div><div class="basic-field-label">성함</div><div class="basic-field-sub">실명 입력 (필수 고정)</div></div><label class="toggle-switch"><input type="checkbox" checked disabled><span class="toggle-slider"></span></label></div>
-        <div class="basic-field-row"><div><div class="basic-field-label">성별</div></div><label class="toggle-switch"><input type="checkbox" id="bf-gender" checked><span class="toggle-slider"></span></label></div>
-        <div class="basic-field-row"><div><div class="basic-field-label">생년월일</div></div><label class="toggle-switch"><input type="checkbox" id="bf-birth" checked><span class="toggle-slider"></span></label></div>
-        <div class="basic-field-row"><div><div class="basic-field-label">연락처</div></div><label class="toggle-switch"><input type="checkbox" id="bf-phone" checked><span class="toggle-slider"></span></label></div>
-        <div class="basic-field-row"><div><div class="basic-field-label">멤버 구분</div><div class="basic-field-sub">신규멤버 / 기존멤버 선택</div></div><label class="toggle-switch"><input type="checkbox" id="bf-memberType" checked><span class="toggle-slider"></span></label></div>
-        <div id="genderOptionsWrap" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07)">
-          <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">성별 선택지</div>
-          <div class="option-list" id="genderOptionList"></div>
-          <button class="btn-add-option" onclick="addGenderOption()">+ 선택지 추가</button>
-        </div>
-        <div id="memberTypeOptionsWrap" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07)">
-          <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.6rem">멤버 구분 선택지</div>
-          <div class="option-list" id="memberTypeOptionList"></div>
-          <button class="btn-add-option" onclick="addMemberTypeOption()">+ 선택지 추가</button>
-        </div>
-      </div>
-      <div class="section-card">
-        <div class="section-head"><div><h2>추가 질문 관리</h2></div></div>
-        <div class="q-group-title">🆕 신규멤버 질문</div>
-        <div id="newMemberQEditor"></div>
-        <button class="btn-add-q" onclick="openAddQuestionModal('new')">+ 신규멤버 질문 추가</button>
-        <div class="q-group-title" style="margin-top:1.5rem">🔄 기존멤버 질문</div>
-        <div id="existingMemberQEditor"></div>
-        <button class="btn-add-q" onclick="openAddQuestionModal('existing')">+ 기존멤버 질문 추가</button>
-        <div class="q-group-title" style="margin-top:1.5rem">📋 공통 질문 (신규+기존 모두)</div>
-        <div id="commonQEditor"></div>
-        <button class="btn-add-q" onclick="openAddQuestionModal('common')">+ 공통 질문 추가</button>
-      </div>
+      <label class="toggle-switch" style="margin-top:4px">
+        <input type="checkbox" id="wishNotifToggle" onchange="saveWishNotifSetting()">
+        <span class="toggle-slider"></span>
+      </label>
     </div>
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
-
-<!-- 질문 모달 -->
-<div class="modal-overlay" id="questionModal">
-  <div class="modal">
-    <h2 id="qModalTitle">질문 추가</h2>
-    <div class="form-group"><label>질문 내용 *</label><textarea id="q-text" rows="3" placeholder="질문을 입력해주세요"></textarea></div>
-    <div class="form-row-2">
-      <div class="form-group"><label>텍스트 크기</label>
-        <select id="q-fontsize"><option value="0.75rem">매우 작게</option><option value="0.85rem">작게</option><option value="0.9rem" selected>보통</option><option value="1rem">크게</option><option value="1.15rem">매우 크게</option><option value="1.3rem">제목</option></select>
-      </div>
-      <div class="form-group"><label>텍스트 색상</label><input type="color" id="q-color" value="#ffffff"></div>
+  <!-- 4. 공지사항 -->
+  <div class="section-card">
+    <div class="section-head"><div><h2>📢 신청페이지 공지사항</h2><p>모임 신청 페이지 상단에 표시돼요</p></div></div>
+    <div id="noticeEditorWrap"></div>
+    <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
+      <button class="btn-save" onclick="saveNoticeBoard()">저장</button>
+      <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearNoticeBoard()">공지 삭제</button>
     </div>
-    <div class="form-group">
-      <label>질문 이미지 (선택)</label>
-      <input type="file" id="q-image" accept="image/*" onchange="previewQImage(this)" style="background:transparent;border:1px dashed rgba(255,255,255,.2);padding:8px;cursor:pointer;width:100%;border-radius:6px;color:rgba(255,255,255,.6)">
-      <img id="q-image-preview" class="img-preview" style="display:none">
-      <input type="hidden" id="q-image-data">
-      <button id="q-image-clear" onclick="clearQImage()" style="display:none;margin-top:4px;background:transparent;border:1px solid rgba(255,100,100,.3);color:rgba(255,130,130,.7);padding:4px 10px;border-radius:5px;font-size:.75rem;cursor:pointer">이미지 제거</button>
-    </div>
-    <div class="divider"></div>
-    <div class="form-group"><label>답변 형식</label>
-      <select id="q-type" onchange="toggleAnswerOptions()">
-        <option value="textarea">장문 텍스트</option><option value="text">단문 텍스트</option>
-        <option value="single">객관식 (단일 선택)</option><option value="multi">객관식 (복수 선택)</option>
-      </select>
-    </div>
-    <div id="optionsSection" style="display:none">
-      <div style="font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:.5rem">선택지 입력</div>
-      <div class="option-list" id="optionList"></div>
-      <button class="btn-add-option" onclick="addOption()">+ 선택지 추가</button>
-      <button class="btn-add-etc" onclick="addEtcOption()" id="addEtcBtn">+ 기타 (직접 입력) 추가</button>
-    </div>
-    <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:.8rem">
-      <input type="checkbox" id="q-required" style="width:17px;height:17px;accent-color:#fff">
-      <label style="font-size:.85rem;color:rgba(255,255,255,.6)">필수 질문</label>
-    </div>
-    <div class="modal-btns">
-      <button class="btn-modal-cancel" onclick="closeQuestionModal()">취소</button>
-      <button class="btn-modal-ok" id="qModalOkBtn" onclick="submitQuestion()">추가</button>
-    </div>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
+    <div class="notice-preview" id="noticeBoardPreview"></div>
   </div>
-</div>
 
-<!-- 멤버 프로필 모달 -->
-<div class="modal-overlay" id="profileModal">
-  <div class="modal" style="max-width:600px">
-    <h2 id="profileModalTitle">멤버 프로필</h2>
-    <div id="profileModalContent"></div>
-    <div class="modal-btns" style="margin-top:1rem">
-      <button class="btn-modal-cancel" onclick="closeProfileModal()">닫기</button>
+  <div class="section-card">
+    <div class="section-head"><div><h2>⏳ 신청서 검토화면 공지사항</h2></div></div>
+    <div id="waitingNoticeEditorWrap"></div>
+    <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
+      <button class="btn-save" onclick="saveWaitingNotice()">저장</button>
+      <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearWaitingNotice()">공지 삭제</button>
     </div>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
+    <div class="notice-preview" id="waitingNoticePreview"></div>
   </div>
+
 </div>
 
-<!-- 멤버 선택 추가 모달 -->
-<div class="modal-overlay" id="addMemberModal">
-  <div class="modal" style="max-width:500px">
-    <h2 id="addMemberModalTitle">멤버 추가</h2>
-    <p style="font-size:.82rem;color:rgba(255,255,255,.4);margin-bottom:1rem">참여자 또는 모임장 멤버를 선택해 추가할 수 있어요</p>
-    <input class="member-search-input" id="memberSearchInput" type="text" placeholder="이름 또는 이메일 검색" oninput="filterMemberSelectList()">
-    <div class="member-select-list" id="memberSelectList"></div>
-    <div id="addMemberSelectedInfo" style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:.8rem"></div>
-    <div class="modal-btns">
-      <button class="btn-modal-cancel" onclick="closeAddMemberModal()">취소</button>
-      <button class="btn-modal-ok" onclick="confirmAddSelectedMembers()">추가하기</button>
-    </div>
-  </div>
-</div>
-
+<!-- ====================================================
+     admin.html <script> 블록 안에 아래 함수들을 추가하세요
+     (기존 siteConfig 로드/저장 함수들과 함께)
+     ==================================================== -->
 <script>
-firebase.initializeApp({apiKey:"AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",authDomain:"the-mori-apply.firebaseapp.com",projectId:"the-mori-apply",storageBucket:"the-mori-apply.firebasestorage.app",messagingSenderId:"306904700616",appId:"1:306904700616:web:2217470905df10786837fd"});
-const auth=firebase.auth(), db=firebase.firestore();
-const ADMIN_EMAIL='nohjunhyouk@gmail.com';
-const DEFAULT_APPLY_TOKEN=4;
-const DEFAULT_CANCEL_TOKEN=2;
-let user=null, meetings=[], allMembers=[];
-let formConfig={notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};
-let siteConfig={noticeBoard:'',waitingNotice:''};
-let memberFilter='pending', adminSelected=null, editingQId=null, editingQGroup=null;
-let addMemberContext=null, selectedMemberEmails=new Set();
-
-/* ── RICH TEXT EDITOR ─────────────────────────────────── */
-function createRichEditor(id,initialHTML=''){
-  return `<div class="rich-editor-wrap" id="wrap-${id}">
-    <div class="rich-toolbar">
-      <select onchange="execCmd('fontSize',this.value,this);this.value=''"><option value="">크기</option><option value="1">매우 작게</option><option value="2">작게</option><option value="3">보통</option><option value="4">크게</option><option value="5">매우 크게</option><option value="6">제목</option></select>
-      <input type="color" value="#ffffff" oninput="execCmd('foreColor',this.value,this)">
-      <button onclick="execCmd('bold',null,this)"><b>B</b></button>
-      <button onclick="execCmd('italic',null,this)"><i>I</i></button>
-      <button onclick="execCmd('underline',null,this)"><u>U</u></button>
-      <button onclick="execCmd('justifyLeft',null,this)">◀</button>
-      <button onclick="execCmd('justifyCenter',null,this)">■</button>
-      <button onclick="execCmd('justifyRight',null,this)">▶</button>
-      <button onclick="execCmd('insertUnorderedList',null,this)">≡</button>
-    </div>
-    <div class="rich-editor" id="${id}" contenteditable="true" oninput="updatePreview('${id}')">${initialHTML}</div>
-  </div>`;
-}
-function execCmd(cmd,val,el){const e=el.closest('.rich-editor-wrap').querySelector('.rich-editor');e.focus();document.execCommand(cmd,false,val);}
-function getRichContent(id){const el=document.getElementById(id);return el?el.innerHTML:'';}
-function updatePreview(id){
-  if(id==='noticeEditorBoard') document.getElementById('noticeBoardPreview').innerHTML=getRichContent(id);
-  if(id==='waitingNoticeEditor') document.getElementById('waitingNoticePreview').innerHTML=getRichContent(id);
-}
-
-/* ── AUTH ─────────────────────────────────────────────── */
-auth.onAuthStateChanged(async fb=>{
-  if(!fb||fb.email!==ADMIN_EMAIL){document.getElementById('screenDenied').style.display='block';document.getElementById('adminMain').style.display='none';return;}
-  user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
-  document.getElementById('screenDenied').style.display='none';document.getElementById('adminMain').style.display='block';
-  document.getElementById('adminSubtitle').textContent=`${user.name} 님으로 로그인됨`;
-  const av=user.photo?`<img src="${user.photo}" alt="">`:user.initial;
-  document.getElementById('navRight').innerHTML=`<a class="btn-home" href="index.html">← 메인으로</a><div class="avatar-circle">${av}</div><button class="btn-sm" onclick="auth.signOut().then(()=>location.href='index.html')">로그아웃</button>`;
-  await loadSiteConfig();
-  await loadFormConfig();
-  listenMeetings();
-  await loadAllMembers();
-  renderMemberList();
-  initEditors();
-});
-
-function initEditors(){
-  document.getElementById('noticeEditorWrap').innerHTML=createRichEditor('noticeEditorBoard',siteConfig.noticeBoard||'');
-  document.getElementById('waitingNoticeEditorWrap').innerHTML=createRichEditor('waitingNoticeEditor',siteConfig.waitingNotice||'');
-  document.getElementById('noticeBoardPreview').innerHTML=siteConfig.noticeBoard||'';
-  document.getElementById('waitingNoticePreview').innerHTML=siteConfig.waitingNotice||'';
-  document.getElementById('noticeEditorFormWrap').innerHTML=createRichEditor('noticeEditorForm',formConfig.notice||'');
-  // 개인정보: HTML 태그 제거 후 plain text로 표시
-  document.getElementById('privacyPlainEditor').value=stripHtml(formConfig.privacy||'');
-  renderBasicFieldsEditor();
-}
-
-function stripHtml(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent||d.innerText||'';}
-
-/* ── SITE CONFIG ──────────────────────────────────────── */
+// ── 설정 로드 (loadSiteConfig에 아래 항목 추가) ──────────
+// 기존 loadSiteConfig() 함수를 아래로 교체하세요:
 async function loadSiteConfig(){
   const doc=await db.collection('settings').doc('config').get();
-  if(doc.exists){const d=doc.data();siteConfig={noticeBoard:d.noticeBoard||'',waitingNotice:d.waitingNotice||''};}
-}
-async function saveNoticeBoard(){siteConfig.noticeBoard=getRichContent('noticeEditorBoard');await db.collection('settings').doc('config').set({noticeBoard:siteConfig.noticeBoard},{merge:true});document.getElementById('noticeBoardPreview').innerHTML=siteConfig.noticeBoard;showToast('신청페이지 공지사항이 저장되었어요 ✅');}
-async function clearNoticeBoard(){siteConfig.noticeBoard='';await db.collection('settings').doc('config').set({noticeBoard:''},{merge:true});document.getElementById('noticeEditorBoard').innerHTML='';document.getElementById('noticeBoardPreview').innerHTML='';showToast('공지사항이 삭제되었어요');}
-async function saveWaitingNotice(){siteConfig.waitingNotice=getRichContent('waitingNoticeEditor');await db.collection('settings').doc('config').set({waitingNotice:siteConfig.waitingNotice},{merge:true});document.getElementById('waitingNoticePreview').innerHTML=siteConfig.waitingNotice;showToast('검토화면 공지사항이 저장되었어요 ✅');}
-async function clearWaitingNotice(){siteConfig.waitingNotice='';await db.collection('settings').doc('config').set({waitingNotice:''},{merge:true});document.getElementById('waitingNoticeEditor').innerHTML='';document.getElementById('waitingNoticePreview').innerHTML='';showToast('공지사항이 삭제되었어요');}
-
-/* ── FORM CONFIG ──────────────────────────────────────── */
-async function loadFormConfig(){
-  const doc=await db.collection('settings').doc('formConfig').get();
-  if(doc.exists){const d=doc.data();formConfig={notice:d.notice||'',privacy:d.privacy||'',commonQuestions:d.commonQuestions||[],newQuestions:d.newQuestions||d.questions||[],existingQuestions:d.existingQuestions||[],basicFields:d.basicFields||{gender:true,birth:true,phone:true,memberType:true},genderOptions:d.genderOptions||['남성','여성','기타'],memberTypeOptions:d.memberTypeOptions||['신규멤버','기존멤버']};}
-  else{formConfig={notice:'',privacy:'수집하는 개인정보 항목: 성명, 연락처, 생년월일\n수집 목적: 모임 운영 및 회원 관리\n보유 기간: 탈퇴 시까지',commonQuestions:[],newQuestions:[{id:'q1',text:'자기소개를 해주세요',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q2',text:'모리를 알게 된 경로',type:'text',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q3',text:'모리를 신청한 이유',type:'textarea',required:true,fontSize:'0.9rem',color:'#ffffff'},{id:'q4',text:'본인의 삶에 영향을 미친 책',type:'textarea',required:false,fontSize:'0.9rem',color:'#ffffff'}],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};}
-  renderQuestionEditor();
-}
-async function saveFormConfig(){await db.collection('settings').doc('formConfig').set(formConfig);}
-async function saveNotice(){formConfig.notice=getRichContent('noticeEditorForm');await saveFormConfig();showToast('안내문이 저장되었어요 ✅');}
-// 개인정보: plain text로 저장 (HTML 태그 없음)
-async function savePrivacy(){
-  formConfig.privacy=document.getElementById('privacyPlainEditor').value;
-  await saveFormConfig();showToast('개인정보 동의 문구가 저장되었어요 ✅');
-}
-
-/* ── 기본정보 필드 편집 ───────────────────────────────── */
-function renderBasicFieldsEditor(){
-  const bf=formConfig.basicFields||{};
-  document.getElementById('bf-gender').checked=bf.gender!==false;
-  document.getElementById('bf-birth').checked=bf.birth!==false;
-  document.getElementById('bf-phone').checked=bf.phone!==false;
-  document.getElementById('bf-memberType').checked=bf.memberType!==false;
-  const gl=document.getElementById('genderOptionList');gl.innerHTML='';
-  (formConfig.genderOptions||['남성','여성','기타']).forEach(v=>addOptionToList(gl,v));
-  const ml=document.getElementById('memberTypeOptionList');ml.innerHTML='';
-  (formConfig.memberTypeOptions||['신규멤버','기존멤버']).forEach(v=>addOptionToList(ml,v));
-}
-function addOptionToList(listEl,val){const div=document.createElement('div');div.className='option-row';div.innerHTML=`<input type="text" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;listEl.appendChild(div);}
-function addGenderOption(){addOptionToList(document.getElementById('genderOptionList'),'');}
-function addMemberTypeOption(){addOptionToList(document.getElementById('memberTypeOptionList'),'');}
-async function saveBasicFields(){
-  formConfig.basicFields={gender:document.getElementById('bf-gender').checked,birth:document.getElementById('bf-birth').checked,phone:document.getElementById('bf-phone').checked,memberType:document.getElementById('bf-memberType').checked};
-  formConfig.genderOptions=[...document.querySelectorAll('#genderOptionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);
-  formConfig.memberTypeOptions=[...document.querySelectorAll('#memberTypeOptionList .option-row input')].map(i=>i.value.trim()).filter(Boolean);
-  if(!formConfig.genderOptions.length)formConfig.genderOptions=['남성','여성','기타'];
-  if(!formConfig.memberTypeOptions.length)formConfig.memberTypeOptions=['신규멤버','기존멤버'];
-  await saveFormConfig();showToast('기본 정보 설정이 저장되었어요 ✅');
-}
-
-/* ── QUESTION EDITOR ──────────────────────────────────── */
-function renderQuestionEditor(){
-  ['new','existing','common'].forEach(group=>{
-    const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
-    const elId={new:'newMemberQEditor',existing:'existingMemberQEditor',common:'commonQEditor'};
-    const el=document.getElementById(elId[group]);if(!el)return;
-    const list=formConfig[keyMap[group]]||[];
-    el.innerHTML=list.length?list.map(q=>{
-      const typeLabel={textarea:'장문',text:'단문',single:'단일선택',multi:'복수선택'}[q.type]||'장문';
-      const hasEtc=q.options&&q.options.includes('__etc__');
-      return `<div class="question-item"><div class="q-preview"><div class="q-preview-text" style="font-size:${q.fontSize||'0.9rem'};color:${q.color||'#fff'}">${q.text}${q.required?' <span style="color:rgba(255,150,150,.8);font-size:.75rem">*필수</span>':''}</div>${q.imageData?`<img class="q-preview-img" src="${q.imageData}">`:''}
-        <div class="q-meta"><span class="q-meta-tag">${typeLabel}</span>${q.options?.length?`<span class="q-meta-tag">${q.options.filter(o=>o!=='__etc__').length}개 선택지${hasEtc?' + 기타':''}</span>`:''}</div></div>
-        <div class="q-btns"><button class="btn-q-edit" onclick="openEditQuestionModal('${q.id}','${group}')">수정</button><button class="btn-q-del" onclick="deleteQuestion('${q.id}','${group}')">삭제</button></div></div>`;
-    }).join(''):`<div style="color:rgba(255,255,255,.25);font-size:.82rem;padding:.5rem 0">등록된 질문이 없어요</div>`;
-  });
-}
-function toggleAnswerOptions(){const t=document.getElementById('q-type').value;document.getElementById('optionsSection').style.display=(t==='single'||t==='multi')?'block':'none';}
-function previewQImage(input){if(!input.files||!input.files[0])return;const r=new FileReader();r.onload=e=>{document.getElementById('q-image-data').value=e.target.result;const p=document.getElementById('q-image-preview');p.src=e.target.result;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';};r.readAsDataURL(input.files[0]);}
-function clearQImage(){document.getElementById('q-image-data').value='';document.getElementById('q-image-preview').style.display='none';document.getElementById('q-image-clear').style.display='none';document.getElementById('q-image').value='';}
-function addOption(val=''){const list=document.getElementById('optionList');const div=document.createElement('div');div.className='option-row';div.innerHTML=`<input type="text" placeholder="선택지 입력" value="${val}"><button class="btn-del-option" onclick="this.parentElement.remove()">✕</button>`;list.appendChild(div);checkEtcBtn();}
-function addEtcOption(){if(getOptions().includes('__etc__')){showToast('기타는 한 번만 추가할 수 있어요');return;}const list=document.getElementById('optionList');const div=document.createElement('div');div.className='option-row';div.innerHTML=`<input type="text" value="기타 (직접 입력)" readonly style="color:rgba(255,200,100,.8);background:rgba(255,200,80,.07)"><input type="hidden" value="__etc__"><button class="btn-del-option" onclick="this.parentElement.remove();checkEtcBtn()">✕</button>`;list.appendChild(div);checkEtcBtn();}
-function checkEtcBtn(){const btn=document.getElementById('addEtcBtn');if(btn)btn.style.opacity=getOptions().includes('__etc__')?'0.4':'1';}
-function getOptions(){return[...document.querySelectorAll('#optionList .option-row')].map(row=>{const h=row.querySelector('input[type=hidden]');return h?h.value:(row.querySelector('input[type=text]')?.value.trim()||'');}).filter(Boolean);}
-function openAddQuestionModal(group){editingQId=null;editingQGroup=group;const gLabel={new:'신규멤버',existing:'기존멤버',common:'공통'}[group];document.getElementById('qModalTitle').textContent=`${gLabel} 질문 추가`;document.getElementById('qModalOkBtn').textContent='추가';document.getElementById('q-text').value='';document.getElementById('q-type').value='textarea';document.getElementById('q-required').checked=false;document.getElementById('q-fontsize').value='0.9rem';document.getElementById('q-color').value='#ffffff';clearQImage();document.getElementById('optionList').innerHTML='';document.getElementById('optionsSection').style.display='none';checkEtcBtn();document.getElementById('questionModal').classList.add('open');}
-function openEditQuestionModal(id,group){const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};const q=formConfig[keyMap[group]]?.find(x=>x.id===id);if(!q)return;editingQId=id;editingQGroup=group;document.getElementById('qModalTitle').textContent='질문 수정';document.getElementById('qModalOkBtn').textContent='저장';document.getElementById('q-text').value=q.text;document.getElementById('q-type').value=q.type;document.getElementById('q-required').checked=q.required;document.getElementById('q-fontsize').value=q.fontSize||'0.9rem';document.getElementById('q-color').value=q.color||'#ffffff';document.getElementById('q-image-data').value=q.imageData||'';const p=document.getElementById('q-image-preview');if(q.imageData){p.src=q.imageData;p.style.display='block';document.getElementById('q-image-clear').style.display='inline-block';}else{p.style.display='none';document.getElementById('q-image-clear').style.display='none';}document.getElementById('optionList').innerHTML='';if(q.options?.length){q.options.forEach(o=>{if(o==='__etc__')addEtcOption();else addOption(o);});document.getElementById('optionsSection').style.display='block';}else document.getElementById('optionsSection').style.display='none';toggleAnswerOptions();checkEtcBtn();document.getElementById('questionModal').classList.add('open');}
-function closeQuestionModal(){document.getElementById('questionModal').classList.remove('open');editingQId=null;editingQGroup=null;}
-async function submitQuestion(){
-  const text=document.getElementById('q-text').value.trim();if(!text){showToast('질문 내용을 입력해주세요');return;}
-  const type=document.getElementById('q-type').value,required=document.getElementById('q-required').checked;
-  const fontSize=document.getElementById('q-fontsize').value,color=document.getElementById('q-color').value;
-  const imageData=document.getElementById('q-image-data').value||null;
-  const options=(type==='single'||type==='multi')?getOptions():[];
-  if((type==='single'||type==='multi')&&options.length<1){showToast('선택지를 1개 이상 입력해주세요');return;}
-  const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};
-  const key=keyMap[editingQGroup];
-  const qObj={id:editingQId||'q'+Date.now(),text,type,required,fontSize,color,imageData,options};
-  if(editingQId)formConfig[key]=formConfig[key].map(q=>q.id===editingQId?qObj:q);
-  else formConfig[key].push(qObj);
-  await saveFormConfig();closeQuestionModal();renderQuestionEditor();
-  showToast(editingQId?'질문이 수정되었어요':'질문이 추가되었어요');
-}
-async function deleteQuestion(id,group){if(!confirm('이 질문을 삭제할까요?'))return;const keyMap={new:'newQuestions',existing:'existingQuestions',common:'commonQuestions'};formConfig[keyMap[group]]=formConfig[keyMap[group]].filter(q=>q.id!==id);await saveFormConfig();renderQuestionEditor();showToast('질문이 삭제되었어요');}
-
-/* ── MEMBERS ──────────────────────────────────────────── */
-async function loadAllMembers(){const snap=await db.collection('users').get();allMembers=snap.docs.map(d=>({...d.data()}));}
-
-async function renderMemberList(){
-  const g=document.getElementById('memberList');g.innerHTML=`<div class="empty">불러오는 중...</div>`;
-  await loadAllMembers();
-  let list=allMembers;
-  if(memberFilter==='none') list=allMembers.filter(u=>!u.role);
-  else if(memberFilter!=='all') list=allMembers.filter(u=>u.role===memberFilter);
-  if(!list.length){g.innerHTML=`<div class="empty">해당하는 멤버가 없어요</div>`;return;}
-  const statusMap={pending:'badge-pending',member:'badge-member',staff:'badge-staff'};
-  const statusLabel={pending:'대기중',member:'참여자',staff:'모임장'};
-  g.innerHTML=list.map(u=>{
-    const av=u.photo?`<img src="${u.photo}" alt="">`:u.name?.[0]||'?';
-    const roleBadge=u.role?`<span class="badge ${statusMap[u.role]||'badge-none'}">${statusLabel[u.role]||u.role}</span>`:`<span class="badge badge-none">미분류</span>`;
-    const aToken=u.applyToken!==undefined?u.applyToken:DEFAULT_APPLY_TOKEN;
-    const cToken=u.cancelToken!==undefined?u.cancelToken:DEFAULT_CANCEL_TOKEN;
-    const tokenBadges=(u.role==='member'||u.role==='staff')?`<span class="badge badge-apply-token">🎟 신청 ${aToken}회</span><span class="badge badge-cancel-token">↩ 취소 ${cToken}회</span>`:'';
-    let actions='';
-    if(!u.role||u.role==='pending'||u.role==='cancelled'){actions=`<button class="btn-approve" onclick="event.stopPropagation();approveMember('${u.email}')">✅ 승인</button><button class="btn-cancel-wait" onclick="event.stopPropagation();cancelWaiting('${u.email}','${u.name||''}')">대기취소</button><button class="btn-reject" onclick="event.stopPropagation();rejectMember('${u.email}','${u.name||''}')">거절</button>`;}
-    else if(u.role==='member'){actions=`<button class="btn-staff" onclick="event.stopPropagation();setRole('${u.email}','staff')">모임장 부여</button><button class="btn-cancel-wait" onclick="event.stopPropagation();setRole('${u.email}','pending')">대기로 변경</button>`;}
-    else if(u.role==='staff'){actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">모임장 회수</button>`;}
-    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}</div><div class="member-badges">${roleBadge}${tokenBadges}</div></div><div class="member-actions">${actions}</div></div>`;
-  }).join('');
-}
-
-function filterMembers(f,el){memberFilter=f;document.querySelectorAll('.filter-chips .chip').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderMemberList();}
-
-async function approveMember(email){
-  await db.collection('users').doc(email).update({role:'member'});
-  const doc=await db.collection('users').doc(email).get();
   if(doc.exists){
     const d=doc.data();
-    const updates={};
-    if(d.applyToken===undefined)  updates.applyToken=DEFAULT_APPLY_TOKEN;
-    if(d.cancelToken===undefined) updates.cancelToken=DEFAULT_CANCEL_TOKEN;
-    if(Object.keys(updates).length) await db.collection('users').doc(email).update(updates);
+    siteConfig={noticeBoard:d.noticeBoard||'',waitingNotice:d.waitingNotice||''};
+    // 취소 잠금
+    document.getElementById('cancelLockToggle').checked=d.cancelLockEnabled||false;
+    document.getElementById('cancelLockHoursInput').value=d.cancelLockHours||72;
+    // 최소인원 폐강
+    document.getElementById('minMemberToggle').checked=d.minMemberAutoCloseEnabled||false;
+    // 찜 알림
+    document.getElementById('wishNotifToggle').checked=d.wishNotifEnabled!==false;
   }
-  showToast('승인되었어요 ✅');renderMemberList();
-}
-async function cancelWaiting(email,name){if(!confirm(`"${name}" 님의 대기를 취소할까요?`))return;await db.collection('users').doc(email).update({role:'cancelled'});showToast('대기가 취소되었어요');renderMemberList();}
-async function rejectMember(email,name){if(!confirm(`"${name}" 님을 거절하고 데이터를 삭제할까요?`))return;await db.collection('users').doc(email).delete();showToast('거절되었어요');renderMemberList();}
-async function setRole(email,role){await db.collection('users').doc(email).update({role});const msg={staff:'모임장 권한을 부여했어요',member:'참여자로 변경되었어요',pending:'대기 상태로 변경되었어요'};showToast(msg[role]||'변경되었어요');renderMemberList();}
-
-/* ── 토큰 조정 ───────────────────────────────────────── */
-async function adjustToken(email, field, delta){
-  const doc=await db.collection('users').doc(email).get();
-  if(!doc.exists)return;
-  const def=field==='applyToken'?DEFAULT_APPLY_TOKEN:DEFAULT_CANCEL_TOKEN;
-  const cur=doc.data()[field]!==undefined?doc.data()[field]:def;
-  const next=Math.max(0,cur+delta);
-  await db.collection('users').doc(email).update({[field]:next});
-  const displayEl=document.getElementById(`${field}Display-${email}`);
-  if(displayEl)displayEl.textContent=next;
-  showToast(`${field==='applyToken'?'신청':'취소'} 토큰 ${delta>0?'+'+delta:delta}회 → 현재 ${next}회`);
-  renderMemberList();
-}
-async function resetToken(email, field){
-  const def=field==='applyToken'?DEFAULT_APPLY_TOKEN:DEFAULT_CANCEL_TOKEN;
-  await db.collection('users').doc(email).update({[field]:def});
-  const displayEl=document.getElementById(`${field}Display-${email}`);
-  if(displayEl)displayEl.textContent=def;
-  showToast(`토큰이 기본값(${def}회)으로 초기화되었어요`);
-  renderMemberList();
+  renderCloseableMeetings();
 }
 
-/* ── 프로필 모달 ─────────────────────────────────────── */
-async function openProfileModal(email){
-  const doc=await db.collection('users').doc(email).get();if(!doc.exists)return;
-  const u=doc.data();
-  const aToken=u.applyToken!==undefined?u.applyToken:DEFAULT_APPLY_TOKEN;
-  const cToken=u.cancelToken!==undefined?u.cancelToken:DEFAULT_CANCEL_TOKEN;
-  const appliedMeetings=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id);
-  const allQ=[...(formConfig.commonQuestions||[]),...(u.memberType==='신규멤버'?formConfig.newQuestions||[]:formConfig.existingQuestions||[])];
-  const answersHTML=allQ.length&&u.answers?allQ.map(q=>{const a=u.answers[q.id];const aText=Array.isArray(a)?a.join(', '):(a||'-');return`<div><div class="profile-q">${q.text}</div><div class="profile-answer">${aText}</div></div>`;}).join(''):'';
-  const roleLabel={pending:'대기중',member:'참여자',staff:'모임장'}[u.role]||u.role||'미분류';
-
-  const tokenSection=(u.role==='member'||u.role==='staff')?`
-    <div class="profile-section">
-      <div class="profile-section-title">🎟 토큰 관리</div>
-      <div class="token-row">
-        <label>신청 토큰 <span style="color:rgba(255,255,255,.3);font-size:.75rem">(기본 ${DEFAULT_APPLY_TOKEN}회)</span></label>
-        <button class="btn-token-minus" onclick="adjustToken('${u.email}','applyToken',-1)">−</button>
-        <span class="token-current" id="applyTokenDisplay-${u.email}">${aToken}</span>
-        <button class="btn-token-plus" onclick="adjustToken('${u.email}','applyToken',+1)">+</button>
-        <button class="btn-token-reset" onclick="resetToken('${u.email}','applyToken')">초기화</button>
-      </div>
-      <div class="token-row">
-        <label>취소 토큰 <span style="color:rgba(255,255,255,.3);font-size:.75rem">(기본 ${DEFAULT_CANCEL_TOKEN}회)</span></label>
-        <button class="btn-token-minus" onclick="adjustToken('${u.email}','cancelToken',-1)">−</button>
-        <span class="token-current" id="cancelTokenDisplay-${u.email}">${cToken}</span>
-        <button class="btn-token-plus" onclick="adjustToken('${u.email}','cancelToken',+1)">+</button>
-        <button class="btn-token-reset" onclick="resetToken('${u.email}','cancelToken')">초기화</button>
-      </div>
-    </div>`:'';
-
-  document.getElementById('profileModalTitle').textContent=u.name||email;
-  document.getElementById('profileModalContent').innerHTML=`
-    <div class="profile-section">
-      <div class="profile-section-title">기본 정보</div>
-      <div class="profile-row"><span class="profile-label">이메일</span><span class="profile-val">${u.email}</span></div>
-      <div class="profile-row"><span class="profile-label">성별</span><span class="profile-val">${u.gender||'-'}</span></div>
-      <div class="profile-row"><span class="profile-label">생년월일</span><span class="profile-val">${u.birth||'-'}</span></div>
-      <div class="profile-row"><span class="profile-label">연락처</span><span class="profile-val">${u.phone||'-'}</span></div>
-      <div class="profile-row"><span class="profile-label">멤버구분</span><span class="profile-val">${u.memberType||'-'}</span></div>
-      <div class="profile-row"><span class="profile-label">권한</span><span class="profile-val">${roleLabel}</span></div>
-    </div>
-    ${answersHTML?`<div class="profile-section"><div class="profile-section-title">신청서 답변</div>${answersHTML}</div>`:''}
-    <div class="profile-section">
-      <div class="profile-section-title">신청한 모임</div>
-      ${appliedMeetings.length?appliedMeetings.map(t=>`<span class="applied-chip">${t}</span>`).join(''):'<span style="color:rgba(255,255,255,.3);font-size:.83rem">신청한 모임 없음</span>'}
-    </div>
-    ${tokenSection}
-    <div class="profile-actions">
-      ${!u.role||u.role==='pending'||u.role==='cancelled'?`<button class="btn-approve" onclick="approveMember('${u.email}');closeProfileModal()">✅ 승인</button><button class="btn-cancel-wait" onclick="cancelWaiting('${u.email}','${u.name||''}');closeProfileModal()">대기취소</button><button class="btn-reject" onclick="rejectMember('${u.email}','${u.name||''}');closeProfileModal()">거절</button>`:''}
-      ${u.role==='member'?`<button class="btn-staff" onclick="setRole('${u.email}','staff');closeProfileModal()">모임장 부여</button>`:''}
-      ${u.role==='staff'?`<button class="btn-revoke" onclick="setRole('${u.email}','member');closeProfileModal()">모임장 회수</button>`:''}
-    </div>`;
-  document.getElementById('profileModal').classList.add('open');
-}
-function closeProfileModal(){document.getElementById('profileModal').classList.remove('open');}
-
-/* ── CSV ──────────────────────────────────────────────── */
-async function exportMembersCSV(){
-  const snap=await db.collection('users').get();
-  const allQ=[...(formConfig.commonQuestions||[]),...(formConfig.newQuestions||[]),...(formConfig.existingQuestions||[])];
-  const headers=['이름','이메일','성별','생년월일','연락처','멤버구분','권한','신청토큰','취소토큰',...allQ.map(q=>q.text),'신청한 모임'];
-  const rows=[headers];
-  const roleLabel={pending:'대기중',member:'참여자',staff:'모임장'};
-  snap.docs.forEach(d=>{
-    const u=d.data();
-    const aToken=u.applyToken!==undefined?u.applyToken:DEFAULT_APPLY_TOKEN;
-    const cToken=u.cancelToken!==undefined?u.cancelToken:DEFAULT_CANCEL_TOKEN;
-    const answers=allQ.map(q=>{const a=u.answers?.[q.id];return Array.isArray(a)?a.join(', '):(a||'-');});
-    const appliedTitles=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id).join(', ');
-    rows.push([u.name||'',u.email||'',u.gender||'',u.birth||'',u.phone||'',u.memberType||'',roleLabel[u.role]||u.role||'',aToken,cToken,...answers,appliedTitles]);
-  });
-  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_멤버목록.csv';a.click();showToast('멤버 CSV 다운로드 완료 ✅');
+// ── 취소 잠금 저장 ────────────────────────────────────
+async function saveCancelLockSetting(){
+  const enabled=document.getElementById('cancelLockToggle').checked;
+  const hours=parseInt(document.getElementById('cancelLockHoursInput').value)||72;
+  await db.collection('settings').doc('config').set({cancelLockEnabled:enabled,cancelLockHours:hours},{merge:true});
+  showToast(enabled?`모임 ${hours}시간 전 취소 잠금 활성화 ✅`:'취소 잠금 비활성화');
 }
 
-/* ── MEETINGS ─────────────────────────────────────────── */
-function listenMeetings(){db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()}));renderMeetingChips();});}
-function renderMeetingChips(){document.getElementById('meetingChips').innerHTML=meetings.map(m=>`<div class="chip${adminSelected===m.id?' active':''}" onclick="selectMeeting('${m.id}')">${m.title}</div>`).join('');}
-function selectMeeting(id){adminSelected=id;renderMeetingChips();renderApplicantTable();}
-async function renderApplicantTable(){
-  const wrap=document.getElementById('applicantTableWrap');
-  if(!adminSelected){wrap.innerHTML=`<div class="empty">모임을 선택하면 신청자 명단이 표시돼요</div>`;return;}
-  wrap.innerHTML=`<div class="empty">불러오는 중...</div>`;
-  const snap=await db.collection('meetings').doc(adminSelected).collection('applicants').orderBy('time').get();
-  const m=meetings.find(x=>x.id===adminSelected);
-  if(snap.empty){wrap.innerHTML=`<div class="empty">"${m?.title}" 신청자가 없어요</div>`;return;}
-  wrap.innerHTML=`<table class="applicant-table"><thead><tr><th>#</th><th>이름</th><th>이메일</th><th>신청시각</th></tr></thead><tbody>${snap.docs.map((d,i)=>{const a=d.data();return`<tr><td>${i+1}</td><td>${a.name}</td><td>${a.email}</td><td>${a.time}</td></tr>`;}).join('')}</tbody></table>`;
-}
-async function exportCSV(){
-  const rows=[['모임','책제목','저자','이름','이메일','신청시각']];
-  for(const m of meetings){const snap=await db.collection('meetings').doc(m.id).collection('applicants').get();snap.docs.forEach(d=>{const a=d.data();rows.push([m.title,m.title,m.author,a.name,a.email,a.time]);});}
-  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='THE_MORI_신청자명단.csv';a.click();showToast('CSV 다운로드 완료 ✅');
+// ── 최소인원 폐강 저장 ────────────────────────────────
+async function saveMinMemberSetting(){
+  const enabled=document.getElementById('minMemberToggle').checked;
+  await db.collection('settings').doc('config').set({minMemberAutoCloseEnabled:enabled},{merge:true});
+  showToast(enabled?'최소인원 폐강 기능 활성화 ✅':'최소인원 폐강 기능 비활성화');
 }
 
-/* ── 멤버 선택 추가 모달 ──────────────────────────────── */
-async function openAddMemberModal(col,id,title){
-  selectedMemberEmails=new Set();
-  const snap=await db.collection(col).doc(id).collection('applicants').get();
-  const existingEmails=new Set(snap.docs.map(d=>d.id));
-  addMemberContext={col,id,title};
-  document.getElementById('addMemberModalTitle').textContent=`멤버 추가 — ${title}`;
-  document.getElementById('memberSearchInput').value='';
-  document.getElementById('addMemberSelectedInfo').textContent='';
-  const eligible=allMembers.filter(u=>(u.role==='member'||u.role==='staff')&&!existingEmails.has(u.email));
-  renderMemberSelectList(eligible);
-  document.getElementById('addMemberModal').classList.add('open');
+// ── 찜 알림 저장 ──────────────────────────────────────
+async function saveWishNotifSetting(){
+  const enabled=document.getElementById('wishNotifToggle').checked;
+  await db.collection('settings').doc('config').set({wishNotifEnabled:enabled},{merge:true});
+  showToast(enabled?'찜 여석 알림 활성화 ✅':'찜 여석 알림 비활성화');
 }
-function renderMemberSelectList(list){
-  const el=document.getElementById('memberSelectList');
-  if(!list.length){el.innerHTML=`<div style="color:rgba(255,255,255,.25);font-size:.83rem;padding:1rem 0;text-align:center">추가 가능한 멤버가 없어요</div>`;return;}
-  const roleLabel={member:'참여자',staff:'모임장'};
-  el.innerHTML=list.map(u=>{
-    const av=u.photo?`<img src="${u.photo}" alt="">`:u.name?.[0]||'?';
-    const sel=selectedMemberEmails.has(u.email);
-    return `<div class="member-select-row${sel?' selected':''}" onclick="toggleMemberSelect('${u.email}')">
-      <div class="member-select-av">${av}</div>
-      <div class="member-select-info"><div class="member-select-name">${u.name||'이름 없음'} <span style="font-size:.7rem;color:rgba(255,255,255,.35)">${roleLabel[u.role]||''}</span></div><div class="member-select-email">${u.email}</div></div>
-      <input type="checkbox" class="member-select-check" ${sel?'checked':''} readonly>
+
+// ── 폐강 대상 모임 렌더 ───────────────────────────────
+async function renderCloseableMeetings(){
+  const el=document.getElementById('closeableMeetingList');if(!el)return;
+  if(!meetings.length){el.innerHTML='<div class="empty">등록된 독서모임이 없어요</div>';return;}
+  const now=new Date();
+  el.innerHTML=meetings.map(m=>{
+    const meetingDt=new Date(`${m.date}T${m.time||'00:00'}`);
+    const daysLeft=Math.ceil((meetingDt-now)/86400000);
+    const isMinFail=m.minMembers&&m.applied<m.minMembers;
+    const statusColor=m.closed?'rgba(255,100,100,.7)':isMinFail?'rgba(255,200,80,.8)':'rgba(100,220,100,.8)';
+    const statusText=m.closed?'폐강됨':isMinFail?`미달 (${m.applied}/${m.minMembers}명)`:`정상 (${m.applied}/${m.max}명)`;
+    return`<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.85rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px"><div style="font-size:.88rem;font-weight:600">${m.title}</div><div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${m.date} · ${daysLeft>0?daysLeft+'일 후':'오늘/지남'}</div></div>
+      <span style="font-size:.78rem;color:${statusColor};font-weight:600">${statusText}</span>
+      ${!m.closed?`<button onclick="closeMeeting('${m.id}','${encodeURIComponent(m.title)}')" style="background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.35);color:rgba(255,130,130,.9);padding:5px 12px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap">폐강 처리</button>`:`<span style="font-size:.75rem;color:rgba(255,100,100,.6)">폐강 완료</span>`}
     </div>`;
   }).join('');
 }
-function toggleMemberSelect(email){if(selectedMemberEmails.has(email))selectedMemberEmails.delete(email);else selectedMemberEmails.add(email);document.getElementById('addMemberSelectedInfo').textContent=selectedMemberEmails.size?`${selectedMemberEmails.size}명 선택됨`:'';filterMemberSelectList();}
-function filterMemberSelectList(){const q=document.getElementById('memberSearchInput').value.trim().toLowerCase();const eligible=allMembers.filter(u=>(u.role==='member'||u.role==='staff')&&(!q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));renderMemberSelectList(eligible);}
-async function confirmAddSelectedMembers(){
-  if(!addMemberContext||selectedMemberEmails.size===0){showToast('추가할 멤버를 선택해주세요');return;}
-  const {col,id}=addMemberContext;let added=0;
-  for(const email of selectedMemberEmails){const u=allMembers.find(x=>x.email===email);if(!u)continue;await db.collection(col).doc(id).collection('applicants').doc(email).set({name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''});await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});const field=col==='meetings'?'applied':'appliedSmall';await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});added++;}
-  showToast(`${added}명이 추가되었어요 ✅`);closeAddMemberModal();if(col==='meetings')renderApplicantTable();
-}
-function closeAddMemberModal(){document.getElementById('addMemberModal').classList.remove('open');addMemberContext=null;selectedMemberEmails=new Set();}
 
-/* ── TABS ─────────────────────────────────────────────── */
-function switchAdminTab(t,el){
-  document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
-  ['tabMembers','tabMeetings','tabSettings','tabForm'].forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById({members:'tabMembers',meetings:'tabMeetings',settings:'tabSettings',form:'tabForm'}[t]).style.display='block';
-  if(t==='meetings')renderMeetingChips();
-  if(t==='form')renderBasicFieldsEditor();
+// ── 폐강 처리 ─────────────────────────────────────────
+async function closeMeeting(id, encodedTitle){
+  const title=decodeURIComponent(encodedTitle);
+  if(!confirm(`"${title}" 모임을 폐강 처리할까요?\n모임장과 모임원에게 알림이 발송돼요.`))return;
+  // 폐강 처리
+  await db.collection('meetings').doc(id).update({closed:true});
+  // 신청자 목록 가져와서 알림 전송
+  const snap=await db.collection('meetings').doc(id).collection('applicants').get();
+  const m=meetings.find(x=>x.id===id);
+  const promises=[];
+  snap.docs.forEach(d=>{
+    const email=d.id;
+    promises.push(addAdminNotification(email,`📢 "${title}" 모임이 최소인원 미달로 폐강되었어요. 신청이 자동 취소됩니다.`));
+    // 신청 데이터 정리
+    promises.push(db.collection('users').doc(email).set({applied:firebase.firestore.FieldValue.arrayRemove(id)},{merge:true}));
+    promises.push(d.ref.delete());
+  });
+  // 모임장 알림
+  if(m?.hostEmail){
+    promises.push(addAdminNotification(m.hostEmail,`📢 담당하신 "${title}" 모임이 최소인원 미달로 폐강 처리되었어요.`));
+  }
+  await Promise.all(promises);
+  await db.collection('meetings').doc(id).update({applied:0});
+  showToast(`"${title}" 모임이 폐강 처리되었어요 ✅`);
+  renderCloseableMeetings();
 }
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+
+// 알림 기록 헬퍼 (admin에서 사용)
+async function addAdminNotification(toEmail, message){
+  try{
+    await db.collection('notifications').doc(toEmail).collection('items').add({
+      message,read:false,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }catch(e){console.error('알림 저장 실패',e);}
+}
 </script>
-</body>
-</html>
