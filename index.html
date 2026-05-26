@@ -616,6 +616,35 @@ async function registerFCMToken(){
     const permission = await Notification.requestPermission();
     if(permission !== 'granted'){return;}
     const messaging = firebase.messaging();
+
+    // 서비스워커를 올바른 경로로 직접 등록
+    const swReg = await navigator.serviceWorker.register(
+      '/the-mori-apply/firebase-messaging-sw.js'
+    );
+
+    const token = await messaging.getToken({
+      vapidKey: 'BHcnb76zL0vwnDVUIcKrQcw63vYY8xZ98PzjLVWaqTIvRZTVEgYQ_BC83ogKRYOOazqL-kS-hBest8io3W5uYyo',
+      serviceWorkerRegistration: swReg
+    });
+
+    if(token && user){
+      await db.collection('users').doc(user.email).set(
+        {fcmToken: token},
+        {merge: true}
+      );
+      console.log('FCM 토큰 저장 완료');
+    }
+  } catch(e){
+    console.log('FCM 등록 실패:', e);
+  }
+}
+
+async function registerFCMToken(){
+  try {
+    if(!('Notification' in window)){return;}
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted'){return;}
+    const messaging = firebase.messaging();
     const token = await messaging.getToken({
       vapidKey: 'BHcnb76zL0vwnDVUIcKrQcw63vYY8xZ98PzjLVWaqTIvRZTVEgYQ_BC83ogKRYOOazqL-kS-hBest8io3W5uYyo'
     });
