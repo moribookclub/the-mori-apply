@@ -257,7 +257,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 <div class="notif-panel" id="notifPanel">
   <div class="notif-panel-header">
     <h3>🔔 알림</h3>
-    <button class="btn-notif-clear" onclick="clearAllNotifs()">모두 읽음</button>
+    <button class="btn-notif-clear" onclick="clearAllNotifs()">전체 삭제</button>
   </div>
   <div class="notif-list" id="notifList"><div class="notif-empty">알림이 없어요</div></div>
 </div>
@@ -312,7 +312,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
   <div class="tab-bar" id="mainTabBar">
     <div class="tab active" onclick="switchTab('all',this)">독서모임</div>
     <div class="tab" onclick="switchTab('small',this)">소모임</div>
-    <div class="tab" onclick="switchTab('applied',this)">신청</div>
+    <div class="tab" onclick="switchTab('applied',this)">신청한 모임</div>
     <div class="tab" onclick="switchTab('wish',this)">찜</div>
   </div>
   <div id="tabAll">
@@ -325,9 +325,9 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
   </div>
   <div id="tabApplied" style="display:none">
     <div class="my-section">
-      <div class="section-label">📚 독서모임 신청</div>
+      <div class="section-label">📚 신청한 독서모임</div>
       <div class="grid" id="myMeetingGrid"></div>
-      <div class="section-label" style="margin-top:1.5rem">🎯 소모임 신청</div>
+      <div class="section-label" style="margin-top:1.5rem">🎯 신청한 소모임</div>
       <div class="grid" id="mySmallGrid"></div>
     </div>
   </div>
@@ -657,16 +657,39 @@ function listenNotifications(){
 function renderNotifPanel(){
   const el=document.getElementById('notifList');if(!el)return;
   if(!notifications.length){el.innerHTML='<div class="notif-empty">알림이 없어요</div>';return;}
-  el.innerHTML=notifications.map(n=>`<div class="notif-item${n.read?'':' unread'}" onclick="markNotifRead('${n.id}')"><div>${n.message}</div><div class="notif-item-time">${formatTime(n.createdAt?.toDate?.())}</div></div>`).join('');
+  el.innerHTML=notifications.map(n=>`
+    <div class="notif-item${n.read?'':' unread'}" style="position:relative;padding-right:2rem">
+      <div onclick="markNotifRead('${n.id}')" style="cursor:pointer">
+        <div>${n.message}</div>
+        <div class="notif-item-time">${formatTime(n.createdAt?.toDate?.())}</div>
+      </div>
+      <button onclick="deleteNotif('${n.id}')" title="삭제"
+        style="position:absolute;top:6px;right:6px;background:none;border:none;
+               color:rgba(255,255,255,.25);font-size:.9rem;cursor:pointer;
+               line-height:1;padding:2px 4px;border-radius:4px;transition:color .15s"
+        onmouseover="this.style.color='rgba(255,100,100,.7)'"
+        onmouseout="this.style.color='rgba(255,255,255,.25)'">✕</button>
+    </div>`).join('');
 }
 
 async function markNotifRead(id){
   await db.collection('notifications').doc(user.email).collection('items').doc(id).update({read:true});
 }
+
+// 개별 삭제
+async function deleteNotif(id){
+  await db.collection('notifications').doc(user.email).collection('items').doc(id).delete();
+  // onSnapshot이 자동으로 notifications 배열을 업데이트해 줌
+}
+
+// 전체 삭제 (읽은 것만 → 전체로 변경)
 async function clearAllNotifs(){
   const batch=db.batch();
-  notifications.forEach(n=>{batch.update(db.collection('notifications').doc(user.email).collection('items').doc(n.id),{read:true});});
+  notifications.forEach(n=>{
+    batch.delete(db.collection('notifications').doc(user.email).collection('items').doc(n.id));
+  });
   await batch.commit();
+  showToast('알림을 모두 삭제했어요');
 }
 
 function toggleNotifPanel(){
@@ -884,7 +907,11 @@ async function doCancelMeeting(id){
   applied.delete(id);
   await aRef.delete();
   await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
-  if(!isAdmin()){cancelToken=Math.max(0,cancelToken-1);await db.collection('users').doc(user.email).update({cancelToken});}
+  if(!isAdmin()){
+    cancelToken=Math.max(0,cancelToken-1);
+    applyToken=applyToken+1;  // 취소 시 신청 토큰 복구
+    await db.collection('users').doc(user.email).update({cancelToken, applyToken});
+  }
   // 모임장 알림
   if(m?.hostEmail&&m.hostEmail!==user.email){
     db.collection('users').doc(m.hostEmail).get().then(doc=>{
