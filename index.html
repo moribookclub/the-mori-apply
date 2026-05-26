@@ -616,16 +616,10 @@ async function registerFCMToken(){
     const permission = await Notification.requestPermission();
     if(permission !== 'granted'){return;}
 
-    // 서비스워커 먼저 등록
-    const swReg = await navigator.serviceWorker.register(
-      '/the-mori-apply/firebase-messaging-sw.js',
-      {scope: '/the-mori-apply/'}
-    );
-
-    // 서비스워커 활성화 대기
-    await navigator.serviceWorker.ready;
-
     const messaging = firebase.messaging();
+
+    // sw.js에 FCM 처리를 포함시켜서 기존 서비스워커 재사용
+    const swReg = await navigator.serviceWorker.getRegistration();
 
     const token = await messaging.getToken({
       vapidKey: 'BHcnb76zL0vwnDVUIcKrQcw63vYY8xZ98PzjLVWaqTIvRZTVEgYQ_BC83ogKRYOOazqL-kS-hBest8io3W5uYyo',
@@ -643,7 +637,6 @@ async function registerFCMToken(){
     console.log('FCM 등록 실패:', e);
   }
 }
-
 async function loadSiteSettings(){
   const doc=await db.collection('settings').doc('config').get();
   if(doc.exists){
