@@ -217,29 +217,89 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     </div>
 
     <!-- 설정 -->
-    <div id="tabSettings" style="display:none">
-      <div class="section-card">
-        <div class="section-head"><div><h2>📢 신청페이지 공지사항</h2><p>모임 신청 페이지 상단에 표시돼요</p></div></div>
-        <div id="noticeEditorWrap"></div>
-        <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
-          <button class="btn-save" onclick="saveNoticeBoard()">저장</button>
-          <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearNoticeBoard()">공지 삭제</button>
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
-        <div class="notice-preview" id="noticeBoardPreview"></div>
-      </div>
-      <div class="section-card">
-        <div class="section-head"><div><h2>⏳ 신청서 검토화면 공지사항</h2><p>대기중인 멤버에게 보이는 안내 메시지예요</p></div></div>
-        <div id="waitingNoticeEditorWrap"></div>
-        <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
-          <button class="btn-save" onclick="saveWaitingNotice()">저장</button>
-          <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearWaitingNotice()">공지 삭제</button>
-        </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
-        <div class="notice-preview" id="waitingNoticePreview"></div>
-      </div>
-    </div>
 
+<div id="tabSettings" style="display:none">
+
+  <!-- 1. 독서모임 취소 시간 제한 -->
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <h2>⏰ 독서모임 취소 시간 제한</h2>
+        <p>모임 N시간 전부터 신청 취소를 막아요 (독서모임만 적용)</p>
+      </div>
+      <label class="toggle-switch" style="margin-top:4px">
+        <input type="checkbox" id="cancelLockToggle" onchange="saveCancelLockSetting()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="quota-row">
+      <label>취소 불가 기준 시간 <span style="color:rgba(255,255,255,.3);font-size:.75rem">(모임 시작 N시간 전부터)</span></label>
+      <input class="quota-input-sm" id="cancelLockHoursInput" type="number" min="1" max="168" value="72">
+      <span style="color:rgba(255,255,255,.35);font-size:.83rem">시간 전</span>
+      <button class="btn-quota-save" onclick="saveCancelLockSetting()">저장</button>
+    </div>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.3);margin-top:.3rem">예: 72 → 모임 3일 전부터 취소 불가</div>
+  </div>
+
+  <!-- 2. 최소인원 폐강 설정 -->
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <h2>👥 최소인원 폐강 기능</h2>
+        <p>최소인원 미달 시 이틀 전에 모임을 폐강할 수 있어요 (독서모임만)</p>
+      </div>
+      <label class="toggle-switch" style="margin-top:4px">
+        <input type="checkbox" id="minMemberToggle" onchange="saveMinMemberSetting()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:1rem;line-height:1.6">
+      기능이 켜져 있으면 아래 독서모임 목록에서 폐강 버튼을 누를 수 있어요.<br>
+      폐강 시 모임장과 모임원에게 인앱 알림이 발송돼요.
+    </div>
+    <!-- 폐강 대상 모임 목록 -->
+    <div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.7rem">폐강 관리</div>
+    <div id="closeableMeetingList"><div class="empty">불러오는 중...</div></div>
+  </div>
+
+  <!-- 3. 찜 여석 알림 -->
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <h2>💺 찜 모임 여석 알림</h2>
+        <p>찜한 모임에 자리가 났을 때 멤버에게 인앱 알림을 보내요</p>
+      </div>
+      <label class="toggle-switch" style="margin-top:4px">
+        <input type="checkbox" id="wishNotifToggle" onchange="saveWishNotifSetting()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 4. 공지사항 -->
+  <div class="section-card">
+    <div class="section-head"><div><h2>📢 신청페이지 공지사항</h2><p>모임 신청 페이지 상단에 표시돼요</p></div></div>
+    <div id="noticeEditorWrap"></div>
+    <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
+      <button class="btn-save" onclick="saveNoticeBoard()">저장</button>
+      <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearNoticeBoard()">공지 삭제</button>
+    </div>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
+    <div class="notice-preview" id="noticeBoardPreview"></div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-head"><div><h2>⏳ 신청서 검토화면 공지사항</h2></div></div>
+    <div id="waitingNoticeEditorWrap"></div>
+    <div style="display:flex;gap:8px;margin-top:.8rem;flex-wrap:wrap">
+      <button class="btn-save" onclick="saveWaitingNotice()">저장</button>
+      <button style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:8px 16px;border-radius:6px;font-size:.82rem;cursor:pointer" onclick="clearWaitingNotice()">공지 삭제</button>
+    </div>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
+    <div class="notice-preview" id="waitingNoticePreview"></div>
+  </div>
+
+</div>
     <!-- 신청서 편집 -->
     <div id="tabForm" style="display:none">
       <div class="section-card">
@@ -425,10 +485,6 @@ function initEditors(){
 function stripHtml(html){const d=document.createElement('div');d.innerHTML=html;return d.textContent||d.innerText||'';}
 
 /* ── SITE CONFIG ──────────────────────────────────────── */
-async function loadSiteConfig(){
-  const doc=await db.collection('settings').doc('config').get();
-  if(doc.exists){const d=doc.data();siteConfig={noticeBoard:d.noticeBoard||'',waitingNotice:d.waitingNotice||''};}
-}
 async function saveNoticeBoard(){siteConfig.noticeBoard=getRichContent('noticeEditorBoard');await db.collection('settings').doc('config').set({noticeBoard:siteConfig.noticeBoard},{merge:true});document.getElementById('noticeBoardPreview').innerHTML=siteConfig.noticeBoard;showToast('신청페이지 공지사항이 저장되었어요 ✅');}
 async function clearNoticeBoard(){siteConfig.noticeBoard='';await db.collection('settings').doc('config').set({noticeBoard:''},{merge:true});document.getElementById('noticeEditorBoard').innerHTML='';document.getElementById('noticeBoardPreview').innerHTML='';showToast('공지사항이 삭제되었어요');}
 async function saveWaitingNotice(){siteConfig.waitingNotice=getRichContent('waitingNoticeEditor');await db.collection('settings').doc('config').set({waitingNotice:siteConfig.waitingNotice},{merge:true});document.getElementById('waitingNoticePreview').innerHTML=siteConfig.waitingNotice;showToast('검토화면 공지사항이 저장되었어요 ✅');}
@@ -720,9 +776,118 @@ function switchAdminTab(t,el){
   ['tabMembers','tabMeetings','tabSettings','tabForm'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById({members:'tabMembers',meetings:'tabMeetings',settings:'tabSettings',form:'tabForm'}[t]).style.display='block';
   if(t==='meetings')renderMeetingChips();
+  if(t==='settings') renderCloseableMeetings();
   if(t==='form')renderBasicFieldsEditor();
 }
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ── 사이트 설정 로드 (기존 loadSiteConfig 함수 전체를 이걸로 교체) ──────────
+async function loadSiteConfig(){
+  const doc=await db.collection('settings').doc('config').get();
+  if(doc.exists){
+    const d=doc.data();
+    siteConfig={noticeBoard:d.noticeBoard||'',waitingNotice:d.waitingNotice||''};
+    const cancelLockEl=document.getElementById('cancelLockToggle');
+    const cancelHoursEl=document.getElementById('cancelLockHoursInput');
+    const minMemberEl=document.getElementById('minMemberToggle');
+    const wishNotifEl=document.getElementById('wishNotifToggle');
+    if(cancelLockEl) cancelLockEl.checked=d.cancelLockEnabled||false;
+    if(cancelHoursEl) cancelHoursEl.value=d.cancelLockHours||72;
+    if(minMemberEl) minMemberEl.checked=d.minMemberAutoCloseEnabled||false;
+    if(wishNotifEl) wishNotifEl.checked=d.wishNotifEnabled!==false;
+  }
+  const qi=document.getElementById('globalQuotaInput');
+  if(qi) qi.value=siteConfig.globalQuota||2;
+}
+
+// ── 취소 잠금 저장 ────────────────────────────────────────────────────────────
+async function saveCancelLockSetting(){
+  const enabled=document.getElementById('cancelLockToggle').checked;
+  const hours=parseInt(document.getElementById('cancelLockHoursInput').value)||72;
+  await db.collection('settings').doc('config').set({cancelLockEnabled:enabled,cancelLockHours:hours},{merge:true});
+  showToast(enabled?`모임 ${hours}시간 전 취소 잠금 활성화 ✅`:'취소 잠금 비활성화');
+}
+
+// ── 최소인원 폐강 on/off 저장 ─────────────────────────────────────────────────
+async function saveMinMemberSetting(){
+  const enabled=document.getElementById('minMemberToggle').checked;
+  await db.collection('settings').doc('config').set({minMemberAutoCloseEnabled:enabled},{merge:true});
+  showToast(enabled?'최소인원 폐강 기능 활성화 ✅':'최소인원 폐강 기능 비활성화');
+}
+
+// ── 찜 여석 알림 on/off 저장 ──────────────────────────────────────────────────
+async function saveWishNotifSetting(){
+  const enabled=document.getElementById('wishNotifToggle').checked;
+  await db.collection('settings').doc('config').set({wishNotifEnabled:enabled},{merge:true});
+  showToast(enabled?'찜 여석 알림 활성화 ✅':'찜 여석 알림 비활성화');
+}
+
+// ── 폐강 대상 모임 목록 렌더 ──────────────────────────────────────────────────
+async function renderCloseableMeetings(){
+  const el=document.getElementById('closeableMeetingList');
+  if(!el) return;
+  if(!meetings.length){el.innerHTML='<div class="empty">등록된 독서모임이 없어요</div>';return;}
+  const now=new Date();
+  el.innerHTML=meetings.map(m=>{
+    const meetingDt=new Date(`${m.date}T${m.time||'00:00'}`);
+    const daysLeft=Math.ceil((meetingDt-now)/86400000);
+    const isMinFail=m.minMembers&&m.applied<m.minMembers;
+    const statusColor=m.closed?'rgba(255,100,100,.7)':isMinFail?'rgba(255,200,80,.8)':'rgba(100,220,100,.8)';
+    const statusText=m.closed?'폐강됨':isMinFail?`미달 (${m.applied}/${m.minMembers}명)`:`정상 (${m.applied}/${m.max}명)`;
+    return`<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.85rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px">
+        <div style="font-size:.88rem;font-weight:600">${m.title}</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${m.date} · ${daysLeft>0?daysLeft+'일 후':'오늘/지남'}</div>
+      </div>
+      <span style="font-size:.78rem;color:${statusColor};font-weight:600">${statusText}</span>
+      ${!m.closed
+        ?`<button onclick="closeMeeting('${m.id}','${encodeURIComponent(m.title)}')" style="background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.35);color:rgba(255,130,130,.9);padding:5px 12px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap">폐강 처리</button>`
+        :`<span style="font-size:.75rem;color:rgba(255,100,100,.6)">폐강 완료</span>`
+      }
+    </div>`;
+  }).join('');
+}
+
+// ── 폐강 처리 ─────────────────────────────────────────────────────────────────
+async function closeMeeting(id, encodedTitle){
+  const title=decodeURIComponent(encodedTitle);
+  if(!confirm(`"${title}" 모임을 폐강 처리할까요?\n모임장과 모임원에게 알림이 발송돼요.`)) return;
+
+  await db.collection('meetings').doc(id).update({closed:true});
+
+  const snap=await db.collection('meetings').doc(id).collection('applicants').get();
+  const m=meetings.find(x=>x.id===id);
+  const promises=[];
+
+  snap.docs.forEach(d=>{
+    const email=d.id;
+    promises.push(addAdminNotification(email,`📢 "${title}" 모임이 최소인원 미달로 폐강되었어요. 신청이 자동 취소됩니다.`));
+    promises.push(db.collection('users').doc(email).set({applied:firebase.firestore.FieldValue.arrayRemove(id)},{merge:true}));
+    promises.push(d.ref.delete());
+  });
+
+  if(m?.hostEmail){
+    promises.push(addAdminNotification(m.hostEmail,`📢 담당하신 "${title}" 모임이 최소인원 미달로 폐강 처리되었어요.`));
+  }
+
+  await Promise.all(promises);
+  await db.collection('meetings').doc(id).update({applied:0});
+  showToast(`"${title}" 모임이 폐강 처리되었어요 ✅`);
+  renderCloseableMeetings();
+}
+
+// ── 알림 기록 헬퍼 ────────────────────────────────────────────────────────────
+async function addAdminNotification(toEmail, message){
+  try {
+    await db.collection('notifications').doc(toEmail).collection('items').add({
+      message,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) {
+    console.error('알림 저장 실패', e);
+  }
+}  
 </script>
 </body>
 </html>
