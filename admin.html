@@ -594,7 +594,7 @@ async function renderMemberList(){
     if(!u.role||u.role==='pending'||u.role==='cancelled'){actions=`<button class="btn-approve" onclick="event.stopPropagation();approveMember('${u.email}')">✅ 승인</button><button class="btn-cancel-wait" onclick="event.stopPropagation();cancelWaiting('${u.email}','${u.name||''}')">대기취소</button><button class="btn-reject" onclick="event.stopPropagation();rejectMember('${u.email}','${u.name||''}')">거절</button>`;}
     else if(u.role==='member'){actions=`<button class="btn-staff" onclick="event.stopPropagation();setRole('${u.email}','staff')">모임장 부여</button><button class="btn-cancel-wait" onclick="event.stopPropagation();setRole('${u.email}','pending')">대기로 변경</button>`;}
     else if(u.role==='staff'){actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">모임장 회수</button>`;}
-    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}</div><div class="member-badges">${roleBadge}${tokenBadges}</div></div><div class="member-actions">${actions}</div></div>`;
+    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${u.appliedAt ? ' · 제출 ' + u.appliedAt.toDate().toLocaleString('ko-KR') : ''}</div><div class="member-badges">${roleBadge}${tokenBadges}</div></div><div class="member-actions">${actions}</div></div>`;
   }).join('');
 }
 
