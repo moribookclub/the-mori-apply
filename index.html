@@ -630,7 +630,6 @@ function initMain(){
   listenMeetings();
   listenSmallGroups();
   listenNotifications();
-  loadNotices();
   loadSiteSettings();
   registerFCMToken();
 }
@@ -685,18 +684,26 @@ messaging2.onTokenRefresh(async () => {
     console.log('FCM 등록 실패:', e);
   }
 }
-async function loadSiteSettings(){
-  const doc=await db.collection('settings').doc('config').get();
-  if(doc.exists){
-    const d=doc.data();
-    siteSettings={
-      cancelLockEnabled:d.cancelLockEnabled||false,
-      cancelLockHours:d.cancelLockHours||72,
-      minMemberAutoCloseEnabled:d.minMemberAutoCloseEnabled||false,
-      wishNotifEnabled: d.wishNotifEnabled!==false,
-globalApplyOpen: d.globalApplyOpen!==false
-  };
-  }
+function loadSiteSettings(){
+  // 실시간 리스너로 변경 (onSnapshot)
+  db.collection('settings').doc('config').onSnapshot(d=>{
+    if(!d.exists) return;
+    const data = d.data();
+    siteSettings = {
+      cancelLockEnabled: data.cancelLockEnabled||false,
+      cancelLockHours: data.cancelLockHours||72,
+      minMemberAutoCloseEnabled: data.minMemberAutoCloseEnabled||false,
+      wishNotifEnabled: data.wishNotifEnabled!==false,
+      globalApplyOpen: data.globalApplyOpen!==false
+    };
+    const nb=document.getElementById('noticeBanner'),nc=document.getElementById('noticeBannerContent');
+    if(nb&&nc){
+      if(data.noticeBoard){nb.style.display='block';nc.innerHTML=data.noticeBoard;}
+      else nb.style.display='none';
+    }
+    // 설정 바뀌면 카드 즉시 재렌더
+    renderAll();
+  });
 }
 
 function loadNotices(){
