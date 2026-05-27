@@ -32,6 +32,11 @@ self.addEventListener('install', e => {
   );
 });
 
+// 메시지 받으면 즉시 활성화
+self.addEventListener('message', e => {
+  if(e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
