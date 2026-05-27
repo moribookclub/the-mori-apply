@@ -639,17 +639,61 @@ async function resetToken(email, field){
 }
 
 /* ── 프로필 모달 ─────────────────────────────────────── */
-async function openProfileModal(email){
-  const doc=await db.collection('users').doc(email).get();if(!doc.exists)return;
-  const u=doc.data();
-  const aToken=u.applyToken!==undefined?u.applyToken:DEFAULT_APPLY_TOKEN;
-  const cToken=u.cancelToken!==undefined?u.cancelToken:DEFAULT_CANCEL_TOKEN;
-  const appliedMeetings=(u.applied||[]).map(id=>meetings.find(m=>m.id===id)?.title||id);
-  const allQ=[...(formConfig.commonQuestions||[]),...(u.memberType==='신규멤버'?formConfig.newQuestions||[]:formConfig.existingQuestions||[])];
-  const answersHTML=allQ.length&&u.answers?allQ.map(q=>{const a=u.answers[q.id];const aText=Array.isArray(a)?a.join(', '):(a||'-');return`<div><div class="profile-q">${q.text}</div><div class="profile-answer">${aText}</div></div>`;}).join(''):'';
-  const roleLabel={pending:'대기중',member:'참여자',staff:'모임장'}[u.role]||u.role||'미분류';
 
-  const tokenSection=(u.role==='member'||u.role==='staff')?`
+async function openProfileModal(email){
+  const doc = await db.collection('users').doc(email).get();
+  if(!doc.exists) return;
+  const u = doc.data();
+  const aToken = u.applyToken !== undefined ? u.applyToken : DEFAULT_APPLY_TOKEN;
+  const cToken = u.cancelToken !== undefined ? u.cancelToken : DEFAULT_CANCEL_TOKEN;
+
+  // ── 신청한 모임: applied 배열 ID → 실제 모임명 변환
+  // meetings 배열에 없는 건 이미 삭제된 모임 → 제외
+  const appliedTitles = (u.applied || [])
+    .map(id => {
+      const m = meetings.find(x => x.id === id);
+      return m ? m.title : null; // 없으면 null
+    })
+    .filter(Boolean); // null 제거 (삭제/취소된 모임 제외)
+
+  // ── 신청/취소 히스토리 로드
+  const historySnap = await db.collection('users').doc(email)
+    .collection('history')
+    .orderBy('time', 'desc')
+    .limit(30)
+    .get();
+
+  const historyHTML = historySnap.empty
+    ? '<div style="color:rgba(255,255,255,.3);font-size:.83rem">이력이 없어요</div>'
+    : historySnap.docs.map(d => {
+        const h = d.data();
+        const timeStr = h.time?.toDate
+          ? h.time.toDate().toLocaleString('ko-KR')
+          : (h.time || '');
+        const isApply = h.type === 'apply';
+        const color = isApply ? 'rgba(100,220,100,.8)' : 'rgba(255,130,130,.8)';
+        const icon = isApply ? '📚 신청' : '❌ 취소';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem">
+          <span style="color:${color};font-weight:600;flex-shrink:0;margin-right:8px">${icon}</span>
+          <span style="flex:1;color:rgba(255,255,255,.8)">${h.meetingTitle || '-'}</span>
+          <span style="color:rgba(255,255,255,.3);font-size:.73rem;flex-shrink:0;margin-left:8px">${timeStr}</span>
+        </div>`;
+      }).join('');
+
+  // ── 질문/답변
+  const allQ = [...(formConfig.commonQuestions||[]),...(u.memberType==='신규멤버'?formConfig.newQuestions||[]:formConfig.existingQuestions||[])];
+  const answersHTML = allQ.length && u.answers
+    ? allQ.map(q => {
+        const a = u.answers[q.id];
+        const aText = Array.isArray(a) ? a.join(', ') : (a||'-');
+        return `<div><div class="profile-q">${q.text}</div><div class="profile-answer">${aText}</div></div>`;
+      }).join('')
+    : '';
+
+  const roleLabel = {pending:'대기중',member:'참여자',staff:'모임장'}[u.role] || u.role || '미분류';
+
+  // ── 토큰 관리 섹션
+  const tokenSection = (u.role==='member'||u.role==='staff') ? `
     <div class="profile-section">
       <div class="profile-section-title">🎟 토큰 관리</div>
       <div class="token-row">
@@ -666,10 +710,10 @@ async function openProfileModal(email){
         <button class="btn-token-plus" onclick="adjustToken('${u.email}','cancelToken',+1)">+</button>
         <button class="btn-token-reset" onclick="resetToken('${u.email}','cancelToken')">초기화</button>
       </div>
-    </div>`:'';
+    </div>` : '';
 
-  document.getElementById('profileModalTitle').textContent=u.name||email;
-  document.getElementById('profileModalContent').innerHTML=`
+  document.getElementById('profileModalTitle').textContent = u.name || email;
+  document.getElementById('profileModalContent').innerHTML = `
     <div class="profile-section">
       <div class="profile-section-title">기본 정보</div>
       <div class="profile-row"><span class="profile-label">이메일</span><span class="profile-val">${u.email}</span></div>
@@ -679,16 +723,26 @@ async function openProfileModal(email){
       <div class="profile-row"><span class="profile-label">멤버구분</span><span class="profile-val">${u.memberType||'-'}</span></div>
       <div class="profile-row"><span class="profile-label">권한</span><span class="profile-val">${roleLabel}</span></div>
     </div>
-    ${answersHTML?`<div class="profile-section"><div class="profile-section-title">신청서 답변</div>${answersHTML}</div>`:''}
+    ${answersHTML ? `<div class="profile-section"><div class="profile-section-title">신청서 답변</div>${answersHTML}</div>` : ''}
     <div class="profile-section">
-      <div class="profile-section-title">신청한 모임</div>
-      ${appliedMeetings.length?appliedMeetings.map(t=>`<span class="applied-chip">${t}</span>`).join(''):'<span style="color:rgba(255,255,255,.3);font-size:.83rem">신청한 모임 없음</span>'}
+      <div class="profile-section-title">현재 신청한 모임</div>
+      ${appliedTitles.length
+        ? appliedTitles.map(t => `<span class="applied-chip">${t}</span>`).join('')
+        : '<span style="color:rgba(255,255,255,.3);font-size:.83rem">신청한 모임 없음</span>'
+      }
+    </div>
+    <div class="profile-section">
+      <div class="profile-section-title">📋 신청 / 취소 이력</div>
+      <div style="max-height:200px;overflow-y:auto">${historyHTML}</div>
     </div>
     ${tokenSection}
     <div class="profile-actions">
-      ${!u.role||u.role==='pending'||u.role==='cancelled'?`<button class="btn-approve" onclick="approveMember('${u.email}');closeProfileModal()">✅ 승인</button><button class="btn-cancel-wait" onclick="cancelWaiting('${u.email}','${u.name||''}');closeProfileModal()">대기취소</button><button class="btn-reject" onclick="rejectMember('${u.email}','${u.name||''}');closeProfileModal()">거절</button>`:''}
-      ${u.role==='member'?`<button class="btn-staff" onclick="setRole('${u.email}','staff');closeProfileModal()">모임장 부여</button>`:''}
-      ${u.role==='staff'?`<button class="btn-revoke" onclick="setRole('${u.email}','member');closeProfileModal()">모임장 회수</button>`:''}
+      ${!u.role||u.role==='pending'||u.role==='cancelled'
+        ? `<button class="btn-approve" onclick="approveMember('${u.email}');closeProfileModal()">✅ 승인</button>
+           <button class="btn-cancel-wait" onclick="cancelWaiting('${u.email}','${u.name||''}');closeProfileModal()">대기취소</button>
+           <button class="btn-reject" onclick="rejectMember('${u.email}','${u.name||''}');closeProfileModal()">거절</button>` : ''}
+      ${u.role==='member' ? `<button class="btn-staff" onclick="setRole('${u.email}','staff');closeProfileModal()">모임장 부여</button>` : ''}
+      ${u.role==='staff' ? `<button class="btn-revoke" onclick="setRole('${u.email}','member');closeProfileModal()">모임장 회수</button>` : ''}
     </div>`;
   document.getElementById('profileModal').classList.add('open');
 }
@@ -849,31 +903,73 @@ async function renderCloseableMeetings(){
 }
 
 // ── 폐강 처리 ─────────────────────────────────────────────────────────────────
+
 async function closeMeeting(id, encodedTitle){
-  const title=decodeURIComponent(encodedTitle);
-  if(!confirm(`"${title}" 모임을 폐강 처리할까요?\n모임장과 모임원에게 알림이 발송돼요.`)) return;
+  const title = decodeURIComponent(encodedTitle);
+  if(!confirm(`"${title}" 모임을 폐강 처리할까요?\n모임장과 모임원에게 알림이 발송되고\n신청 토큰이 복구돼요.`)) return;
 
-  await db.collection('meetings').doc(id).update({closed:true});
+  await db.collection('meetings').doc(id).update({closed: true});
 
-  const snap=await db.collection('meetings').doc(id).collection('applicants').get();
-  const m=meetings.find(x=>x.id===id);
-  const promises=[];
+  const snap = await db.collection('meetings').doc(id).collection('applicants').get();
+  const m = meetings.find(x => x.id === id);
+  const promises = [];
 
-  snap.docs.forEach(d=>{
-    const email=d.id;
-    promises.push(addAdminNotification(email,`📢 "${title}" 모임이 최소인원 미달로 폐강되었어요. 신청이 자동 취소됩니다.`));
-    promises.push(db.collection('users').doc(email).set({applied:firebase.firestore.FieldValue.arrayRemove(id)},{merge:true}));
+  snap.docs.forEach(d => {
+    const email = d.id;
+
+    // 1. 인앱 알림 발송
+    promises.push(addAdminNotification(email,
+      `📢 "${title}" 모임이 최소인원 미달로 폐강되었어요. 신청이 자동 취소되고 신청 토큰이 복구됩니다.`
+    ));
+
+    // 2. users.applied 배열에서 제거
+    promises.push(
+      db.collection('users').doc(email).set(
+        {applied: firebase.firestore.FieldValue.arrayRemove(id)},
+        {merge: true}
+      )
+    );
+
+    // 3. applyToken 복구 (+1)
+    promises.push(
+      db.collection('users').doc(email).get().then(uDoc => {
+        if(!uDoc.exists) return;
+        const cur = uDoc.data().applyToken !== undefined
+          ? uDoc.data().applyToken
+          : DEFAULT_APPLY_TOKEN;
+        return db.collection('users').doc(email).update({
+          applyToken: cur + 1
+        });
+      })
+    );
+
+    // 4. 취소 히스토리 기록
+    promises.push(
+      db.collection('users').doc(email).collection('history').add({
+        type: 'cancel',
+        meetingTitle: title,
+        reason: '폐강',
+        time: firebase.firestore.FieldValue.serverTimestamp()
+      })
+    );
+
+    // 5. 신청자 문서 삭제
     promises.push(d.ref.delete());
   });
 
+  // 모임장 알림
   if(m?.hostEmail){
-    promises.push(addAdminNotification(m.hostEmail,`📢 담당하신 "${title}" 모임이 최소인원 미달로 폐강 처리되었어요.`));
+    promises.push(addAdminNotification(m.hostEmail,
+      `📢 담당하신 "${title}" 모임이 최소인원 미달로 폐강 처리되었어요.`
+    ));
   }
 
   await Promise.all(promises);
-  await db.collection('meetings').doc(id).update({applied:0});
+  await db.collection('meetings').doc(id).update({applied: 0});
+
   showToast(`"${title}" 모임이 폐강 처리되었어요 ✅`);
   renderCloseableMeetings();
+  renderMemberList();
 }
 
 // ── 알림 기록 헬퍼 ────────────────────────────────────────────────────────────
