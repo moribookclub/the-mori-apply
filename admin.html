@@ -861,9 +861,40 @@ function switchAdminTab(t,el){
   renderMeetingApplyControlList();
   if(t==='form')renderBasicFieldsEditor();
 }
-  async function saveGlobalApplySetting(){...}
-function renderMeetingApplyControlList(){...}
-async function saveMeetingApplySetting(meetingId, isOpen){...}
+async function saveGlobalApplySetting(){
+  const enabled=document.getElementById('globalApplyToggle').checked;
+  await db.collection('settings').doc('config').set({globalApplyOpen:enabled},{merge:true});
+  showToast(enabled?'전체 신청이 열렸어요 ✅':'전체 신청이 닫혔어요 🔒');
+  renderMeetingApplyControlList();
+}
+
+function renderMeetingApplyControlList(){
+  const el=document.getElementById('meetingApplyControlList');
+  if(!el)return;
+  if(!meetings.length){el.innerHTML='<div class="empty">등록된 독서모임이 없어요</div>';return;}
+  el.innerHTML=meetings.map(m=>{
+    const isOpen=m.applyOpen!==false;
+    return`<div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.8rem 1rem;margin-bottom:.5rem;flex-wrap:wrap">
+      <div style="flex:1;min-width:140px">
+        <div style="font-size:.88rem;font-weight:600">${m.title}</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${m.date} · ${m.applied}/${m.max}명</div>
+      </div>
+      <span style="font-size:.75rem;color:${isOpen?'rgba(100,220,100,.8)':'rgba(255,130,130,.8)'};font-weight:600">${isOpen?'신청 가능':'신청 마감'}</span>
+      <label class="toggle-switch">
+        <input type="checkbox" ${isOpen?'checked':''} onchange="saveMeetingApplySetting('${m.id}',this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`;
+  }).join('');
+}
+
+async function saveMeetingApplySetting(meetingId,isOpen){
+  await db.collection('meetings').doc(meetingId).update({applyOpen:isOpen});
+  showToast(isOpen?'신청이 열렸어요 ✅':'신청이 닫혔어요 🔒');
+  const m=meetings.find(x=>x.id===meetingId);
+  if(m)m.applyOpen=isOpen;
+  renderMeetingApplyControlList();
+}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ── 사이트 설정 로드 (기존 loadSiteConfig 함수 전체를 이걸로 교체) ──────────
