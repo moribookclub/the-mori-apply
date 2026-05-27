@@ -862,9 +862,23 @@ function switchAdminTab(t,el){
   if(t==='form')renderBasicFieldsEditor();
 }
 async function saveGlobalApplySetting(){
-  const enabled=document.getElementById('globalApplyToggle').checked;
-  await db.collection('settings').doc('config').set({globalApplyOpen:enabled},{merge:true});
-  showToast(enabled?'전체 신청이 열렸어요 ✅':'전체 신청이 닫혔어요 🔒');
+  const enabled = document.getElementById('globalApplyToggle').checked;
+
+  // 전체 설정 저장
+  await db.collection('settings').doc('config').set(
+    {globalApplyOpen: enabled},
+    {merge: true}
+  );
+
+  // 개별 모임도 전부 동일하게 업데이트
+  const batch = db.batch();
+  meetings.forEach(m => {
+    batch.update(db.collection('meetings').doc(m.id), {applyOpen: enabled});
+    m.applyOpen = enabled; // 로컬도 업데이트
+  });
+  await batch.commit();
+
+  showToast(enabled ? '전체 신청이 열렸어요 ✅' : '전체 신청이 닫혔어요 🔒');
   renderMeetingApplyControlList();
 }
 
