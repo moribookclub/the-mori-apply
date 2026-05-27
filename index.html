@@ -494,29 +494,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-    // 새 서비스워커가 설치되면 바로 활성화
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      newWorker.addEventListener('statechange', () => {
-        // 새 서비스워커가 대기 중이면
-        if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
-          // 자동으로 새로고침
-          newWorker.postMessage({type: 'SKIP_WAITING'});
-        }
-      });
-    });
-
-
-  // 서비스워커 교체 완료되면 페이지 자동 새로고침
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if(!refreshing){
-      refreshing = true;
-      window.location.reload();
-    }
-  });
-}
-
 firebase.initializeApp({
   apiKey:"AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",
   authDomain:"the-mori-apply.firebaseapp.com",
