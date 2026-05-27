@@ -23,7 +23,7 @@ messaging.onBackgroundMessage(payload => {
   });
 });
 
-const CACHE = 'mori-apply-v8';
+const CACHE = 'mori-apply-v9';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
