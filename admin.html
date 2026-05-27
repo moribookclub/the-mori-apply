@@ -220,6 +220,33 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 
 <div id="tabSettings" style="display:none">
 
+<!-- 수강신청 전체 ON/OFF -->
+<div class="section-card">
+  <div class="section-head">
+    <div>
+      <h2>🔐 수강신청 열기 / 닫기</h2>
+      <p>전체 또는 개별 모임의 신청을 열고 닫을 수 있어요</p>
+    </div>
+  </div>
+
+  <!-- 전체 ON/OFF -->
+  <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem">
+    <div>
+      <div style="font-size:.92rem;font-weight:600">전체 신청 ON/OFF</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:3px">끄면 모든 독서모임 신청이 막혀요</div>
+    </div>
+    <label class="toggle-switch" style="transform:scale(1.3)">
+      <input type="checkbox" id="globalApplyToggle" checked onchange="saveGlobalApplySetting()">
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <!-- 개별 모임 ON/OFF 목록 -->
+  <div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.7rem">개별 모임 신청 설정</div>
+  <div id="meetingApplyControlList"><div class="empty">불러오는 중...</div></div>
+</div>
+
+  
   <!-- 1. 독서모임 취소 시간 제한 -->
   <div class="section-card">
     <div class="section-head">
@@ -831,8 +858,12 @@ function switchAdminTab(t,el){
   document.getElementById({members:'tabMembers',meetings:'tabMeetings',settings:'tabSettings',form:'tabForm'}[t]).style.display='block';
   if(t==='meetings')renderMeetingChips();
   if(t==='settings') renderCloseableMeetings();
+  renderMeetingApplyControlList();
   if(t==='form')renderBasicFieldsEditor();
 }
+  async function saveGlobalApplySetting(){...}
+function renderMeetingApplyControlList(){...}
+async function saveMeetingApplySetting(meetingId, isOpen){...}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ── 사이트 설정 로드 (기존 loadSiteConfig 함수 전체를 이걸로 교체) ──────────
@@ -849,6 +880,8 @@ async function loadSiteConfig(){
     if(cancelHoursEl) cancelHoursEl.value=d.cancelLockHours||72;
     if(minMemberEl) minMemberEl.checked=d.minMemberAutoCloseEnabled||false;
     if(wishNotifEl) wishNotifEl.checked=d.wishNotifEnabled!==false;
+    const globalApplyEl=document.getElementById('globalApplyToggle');
+if(globalApplyEl) globalApplyEl.checked=d.globalApplyOpen!==false;
   }
   const qi=document.getElementById('globalQuotaInput');
   if(qi) qi.value=siteConfig.globalQuota||2;
