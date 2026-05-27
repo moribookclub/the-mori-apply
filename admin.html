@@ -870,16 +870,12 @@ async function saveGlobalApplySetting(){
     {merge: true}
   );
 
-  // 개별 모임도 전부 동일하게 업데이트
-  const batch = db.batch();
-  meetings.forEach(m => {
-    batch.update(db.collection('meetings').doc(m.id), {applyOpen: enabled});
-    m.applyOpen = enabled; // 로컬도 업데이트
-  });
-  await batch.commit();
+  // 개별 모임 순차적으로 업데이트 (batch 대신)
+  for(const m of meetings){
+    await db.collection('meetings').doc(m.id).update({applyOpen: enabled});
+  }
 
   showToast(enabled ? '전체 신청이 열렸어요 ✅' : '전체 신청이 닫혔어요 🔒');
-  renderMeetingApplyControlList();
 }
 
 function renderMeetingApplyControlList(){
