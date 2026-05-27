@@ -614,7 +614,7 @@ function updateProfileTab(){
     nEl.innerHTML=[
       {key:'wishRestock',label:'찜 모임 여석 알림',sub:'찜한 모임에 자리가 나면 알려드려요'},
       {key:'hostApply',label:'내 모임 신청 알림',sub:'내가 담당한 모임에 누군가 신청하면 알려드려요'},
-      {key:'hostCancel',label:'내 모임 취소 알림',sub:'내가 담당한 모임 신청이 취소되면 알려드려요'},
+      {key:'hostCancel',label:'내 모임 취소 알림',sub:'내가 담당한 모임을 누군가 취소하면 알려드려요'},
     ].map(n=>`<div class="notif-toggle-row"><div><div class="notif-toggle-label">${n.label}</div><div class="notif-toggle-sub">${n.sub}</div></div><label class="toggle-switch"><input type="checkbox" ${notifSettings[n.key]?'checked':''} onchange="saveNotifSetting('${n.key}',this.checked)"><span class="toggle-slider"></span></label></div>`).join('');
   }
 }
