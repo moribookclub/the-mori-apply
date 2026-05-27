@@ -1169,7 +1169,7 @@ function meetingCardHTML(m){
   const iAmHost=isHostOf(m);
   const locked=!isAdmin()&&isApplied&&isCancelLocked(m);
   const isQuotaFull=!isAdmin()&&!isApplied&&!iAmHost&&applyToken<=0;
-  const isApplyClosed=!isAdmin()&&!isApplied&&!iAmHost&&(m.applyOpen===false||!siteSettings.globalApplyOpen);
+  const isApplyClosed=!isAdmin()&&!isApplied&&!iAmHost&&(m.applyOpen===false);
   const pct=Math.round((m.applied/m.max)*100);
   const dateStr=new Date(m.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
   let badge,btnCls,btnTxt,clickable=false;
