@@ -915,6 +915,12 @@ async function applyMeeting(id){
     });
   }
   showToast('신청 완료! 모임에서 만나요 📚');
+db.collection('users').doc(user.email).collection('history').add({
+  type: 'apply',
+  meetingTitle: m.title,
+  meetingId: id,
+  time: firebase.firestore.FieldValue.serverTimestamp()
+});
   await saveUserData();updateNav();renderAll();
 }
 
@@ -977,7 +983,16 @@ async function doCancelMeeting(id){
       }
     });
   }
-  showToast('신청이 취소되었어요');
+  showToast('신청이 취소되었어요'); 
+const canceledMeeting = meetings.find(x => x.id === id);
+if(canceledMeeting){
+  db.collection('users').doc(user.email).collection('history').add({
+    type: 'cancel',
+    meetingTitle: canceledMeeting.title,
+    meetingId: id,
+    time: firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
   await saveUserData();updateNav();renderAll();
 }
 
