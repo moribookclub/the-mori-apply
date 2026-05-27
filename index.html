@@ -654,13 +654,33 @@ async function registerFCMToken(){
       serviceWorkerRegistration: swReg
     });
 
-    if(token && user){
+   if(token && user){
+  await db.collection('users').doc(user.email).set(
+    {fcmToken: token},
+    {merge: true}
+  );
+  console.log('FCM 토큰 저장 완료');
+}
+
+// 토큰 자동 갱신 감지
+const messaging2 = firebase.messaging();
+messaging2.onTokenRefresh(async () => {
+  try {
+    const newToken = await messaging2.getToken({
+      vapidKey: 'BHcnb76zL0vwnDVUIcKrQcw63vYY8xZ98PzjLVWaqTIvRZTVEgYQ_BC83ogKRYOOazqL-kS-hBest8io3W5uYyo',
+      serviceWorkerRegistration: await navigator.serviceWorker.register('/the-mori-apply/sw.js')
+    });
+    if(newToken && user){
       await db.collection('users').doc(user.email).set(
-        {fcmToken: token},
+        {fcmToken: newToken},
         {merge: true}
       );
-      console.log('FCM 토큰 저장 완료');
+      console.log('FCM 토큰 자동 갱신 완료');
     }
+  } catch(e){
+    console.log('FCM 토큰 갱신 실패:', e);
+  }
+});
   } catch(e){
     console.log('FCM 등록 실패:', e);
   }
