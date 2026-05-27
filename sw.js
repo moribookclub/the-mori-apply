@@ -15,14 +15,6 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(payload => {
-  const { title, body } = payload.notification;
-  self.registration.showNotification(title, {
-    body: body,
-    icon: '/the-mori-apply/icon-192.png'
-  });
-});
-
 const CACHE = 'mori-apply-v9';
 const ASSETS = [
   '/the-mori-apply/',
