@@ -471,6 +471,28 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/the-mori-apply/sw.js').then(reg => {
 
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+          newWorker.postMessage({type: 'SKIP_WAITING'});
+        }
+      });
+    });
+
+  });
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(!refreshing){
+      refreshing = true;
+      // 페이지 새로고침 전에 토큰 재등록
+      if(user) registerFCMToken().then(() => window.location.reload());
+      else window.location.reload();
+    }
+  });
+}
+
     // 새 서비스워커가 설치되면 바로 활성화
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing;
