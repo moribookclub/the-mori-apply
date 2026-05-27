@@ -1,5 +1,5 @@
 
-const CACHE = 'mori-apply-v6';
+const CACHE = 'mori-apply-v7';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
