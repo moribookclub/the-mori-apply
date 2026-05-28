@@ -15,6 +15,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <style>
+  @keyframes spin{to{transform:rotate(360deg)}}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Apple SD Gothic Neo',sans-serif;background:#0a1628;color:#fff;min-height:100vh}
 
@@ -263,7 +264,18 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
   <div class="notif-list" id="notifList"><div class="notif-empty">알림이 없어요</div></div>
 </div>
 
-<div id="screenLogin" class="screen active">
+<!-- 로딩 화면 -->
+<div id="screenLoading" class="screen active">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1.5rem">
+    <div style="font-size:1.4rem;font-weight:700;letter-spacing:.1em">THE MORI APPLY</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:.8rem">
+      <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.15);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite"></div>
+      <div style="font-size:.88rem;color:rgba(255,255,255,.5)">자동 로그인 중이에요...</div>
+    </div>
+  </div>
+</div>
+  
+<div id="screenLogin" class="screen">
   <div class="hero"><h1>THE MORI APPLY</h1><p>독서모임 신청 페이지</p></div>
   <div style="text-align:center;padding:2rem 1rem">
     <p style="color:rgba(255,255,255,.45);font-size:.88rem;margin-bottom:1.3rem">Google 계정으로 로그인해 주세요</p>
@@ -530,6 +542,7 @@ function canManage() { return userRole==='admin'||userRole==='staff'; }
 /* ── AUTH ── */
 auth.onAuthStateChanged(fb => {
   [unsubMeetings,unsubSmall,unsubNotif].forEach(u=>{if(u)u();});
+  // 로딩 화면 숨기기 (Firebase가 상태 확인 완료)
   unsubMeetings=unsubSmall=unsubNotif=null;
   if(!fb){user=null;userRole=null;applied=new Set();wishlisted=new Set();appliedSmall=new Set();wishlistedSmall=new Set();showScreen('login');updateNav();return;}
   user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:(fb.displayName||'?')[0]};
@@ -562,7 +575,7 @@ function logout(){auth.signOut();}
 
 function showScreen(s){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
-  const map={login:'screenLogin',form:'screenForm',waiting:'screenWaiting',main:'screenMain'};
+  const map={loading:'screenLoading',login:'screenLogin',form:'screenForm',waiting:'screenWaiting',main:'screenMain'};
   const el=document.getElementById(map[s]);if(el)el.classList.add('active');
 }
 
