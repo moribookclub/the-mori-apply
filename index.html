@@ -961,7 +961,10 @@ async function applyMeeting(id){
   if(!isAdmin()&&applyToken<=0){showToast('신청 가능 횟수가 모두 소진되었어요');return;}
   const mRef=db.collection('meetings').doc(id),aRef=mRef.collection('applicants').doc(user.email);
   applied.add(id);
-  await aRef.set({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});
+  // Firestore에서 실명 가져오기
+const userDoc = await db.collection('users').doc(user.email).get();
+const realName = userDoc.exists ? (userDoc.data().name || user.name) : user.name;
+await aRef.set({name:user.name, realName:realName, email:user.email, time:new Date().toLocaleString('ko-KR'), photo:user.photo||''});
   await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
   if(!isAdmin()){applyToken=Math.max(0,applyToken-1);await db.collection('users').doc(user.email).update({applyToken});}
   // 모임장 알림
@@ -1131,7 +1134,7 @@ async function toggleBody(el){
   const snap=await db.collection(col).doc(id).collection('applicants').orderBy('time').get();
   let html='';
   if(snap.empty){html='<div style="color:rgba(255,255,255,.25);font-size:.8rem;padding:.3rem 0">신청자가 없어요</div>';}
-  else{snap.docs.forEach(d=>{const a=d.data();const av=a.photo?`<img src="${a.photo}" alt="">`:((a.name||'?')[0]);html+=`<div class="applicant-row"><div class="applicant-av">${av}</div><div class="applicant-info"><div class="applicant-name">${a.name||''}</div><div class="applicant-email">${a.email}</div></div><button class="btn-remove-member" data-col="${col}" data-id="${id}" data-email="${encodeURIComponent(a.email||'')}" data-name="${encodeURIComponent(a.name||'')}" onclick="removeMemberBtn(this)">제거</button></div>`;});}
+  else{snap.docs.forEach(d=>{const a=d.data();const av=a.photo?`<img src="${a.photo}" alt="">`:((a.name||'?')[0]);html+=`<div class="applicant-row"><div class="applicant-av">${av}</div><div class="applicant-info"><div class="applicant-name">${a.realName||a.name||''} <span style="font-size:.72rem;color:rgba(255,255,255,.35);font-weight:400">${a.realName?'('+a.name+')':''}</span></div><div class="applicant-email">${a.email}</div></div><button class="btn-remove-member" data-col="${col}" data-id="${id}" data-email="${encodeURIComponent(a.email||'')}" data-name="${encodeURIComponent(a.name||'')}" onclick="removeMemberBtn(this)">제거</button></div>`;});}
   html+=`<div style="margin-top:.7rem"><button data-col="${col}" data-id="${id}" data-title="${encodeURIComponent(title)}" onclick="openAddMemberModalBtn(this)" style="width:100%;background:rgba(255,255,255,.07);border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:7px;border-radius:8px;font-size:.8rem;cursor:pointer">+ 멤버 추가</button></div>`;
   body.innerHTML=html;
 }
