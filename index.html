@@ -676,7 +676,44 @@ async function registerFCMToken(){
     console.log('FCM 등록 실패:', e);
   }
 }
+  async function checkAutoClose(){
+  if(!siteSettings.minMemberAutoCloseEnabled) return;
+  const now = new Date();
+  for(const m of meetings){
+    if(m.closed) continue;
+    if(!m.minMembers) continue;
+    if(m.applied >= m.minMembers) continue;
+    const meetingDt = new Date(`${m.date}T${m.time||'00:00'}`);
+    const hoursLeft = (meetingDt - now) / 3600000;
+    if(hoursLeft > 0 && hoursLeft <= 48){
+      // 자동 폐강
+      await db.collection('meetings').doc(m.id).update({closed: true});
+      // 신청자 알림 + 토큰 복구
+      const snap = await db.collection('meetings').doc(m.id).collection('applicants').get();
+      for(const a of snap.docs){
+        const email = a.id;
+        await addNotification(email, `📢 "${m.title}" 모임이 최소인원 미달로 폐강되었어요. 신청 토큰이 복구됩니다.`);
+        const uDoc = await db.collection('users').doc(email).get();
+        if(uDoc.exists){
+          const cur = uDoc.data().applyToken !== undefined ? uDoc.data().applyToken : 4;
+          await db.collection('users').doc(email).update({
+            applyToken: cur + 1,
+            applied: firebase.firestore.FieldValue.arrayRemove(m.id)
+          });
+        }
+        await a.ref.delete();
+      }
+      if(m.hostEmail){
+        await addNotification(m.hostEmail, `📢 담당하신 "${m.title}" 모임이 최소인원 미달로 자동 폐강되었어요.`);
+      }
+      await db.collection('meetings').doc(m.id).update({applied: 0});
+      showToast(`"${m.title}" 모임이 자동 폐강되었어요`);
+    }
+  }
+}
 function loadSiteSettings(){
+  // 48시간 내 최소인원 미달 모임 자동 폐강 체크
+
   // 실시간 리스너로 변경 (onSnapshot)
   db.collection('settings').doc('config').onSnapshot(d=>{
     if(!d.exists) return;
@@ -900,6 +937,7 @@ function listenMeetings(){
   unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
     const prev=new Map(meetings.map(m=>[m.id,m.applied]));
     meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
+    checkAutoClose();
     // 찜 여석 알림
     if(siteSettings.wishNotifEnabled&&notifSettings.wishRestock){
       meetings.forEach(m=>{
