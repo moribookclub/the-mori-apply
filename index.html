@@ -538,7 +538,7 @@ auth.onAuthStateChanged(fb => {
     db.collection('users').doc(fb.email).get().then(doc=>{
       if(doc.exists){const d=doc.data();applied=new Set(d.applied||[]);wishlisted=new Set(d.wishlisted||[]);appliedSmall=new Set(d.appliedSmall||[]);wishlistedSmall=new Set(d.wishlistedSmall||[]);applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;notifSettings=Object.assign({wishRestock:true,hostApply:true,hostCancel:true},d.notifSettings||{});}
     else{db.collection('users').doc(fb.email).set({name:fb.displayName,email:fb.email,photo:fb.photoURL||'',applied:[],wishlisted:[],appliedSmall:[],wishlistedSmall:[],applyToken:DEFAULT_APPLY_TOKEN,cancelToken:DEFAULT_CANCEL_TOKEN,notifSettings},{merge:true});}
-      loadFormConfig().then(()=>{initMain();updateNav();});
+      loadFormConfig().then(() => { initMain(); updateNav(); registerFCMToken(); });
     });
     return;
   }
@@ -551,7 +551,7 @@ auth.onAuthStateChanged(fb => {
     notifSettings=Object.assign({wishRestock:true,hostApply:true,hostCancel:true},d.notifSettings||{});
     if(userRole==='member'||userRole==='staff'){
       applied=new Set(d.applied||[]);wishlisted=new Set(d.wishlisted||[]);appliedSmall=new Set(d.appliedSmall||[]);wishlistedSmall=new Set(d.wishlistedSmall||[]);
-      loadFormConfig().then(()=>{initMain();updateNav();});
+      loadFormConfig().then(() => { initMain(); updateNav(); registerFCMToken(); });
     } else if(userRole==='pending'){showScreen('waiting');updateNav();loadWaitingNotice();}
     else{loadFormConfig().then(()=>{showScreen('form');updateNav();});}
   }).catch(e=>{console.error(e);showToast('데이터 로드 오류. 새로고침해주세요.');});
@@ -630,7 +630,6 @@ function initMain(){
   listenSmallGroups();
   listenNotifications();
   loadSiteSettings();
-  registerFCMToken();
 }
 
 async function registerFCMToken(){
