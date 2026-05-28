@@ -450,6 +450,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 firebase.initializeApp({apiKey:"AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",authDomain:"the-mori-apply.firebaseapp.com",projectId:"the-mori-apply",storageBucket:"the-mori-apply.firebasestorage.app",messagingSenderId:"306904700616",appId:"1:306904700616:web:2217470905df10786837fd"});
 const auth=firebase.auth(), db=firebase.firestore();
 const ADMIN_EMAIL='nohjunhyouk@gmail.com';
+const ADMIN_EMAILS=['nohjunhyouk@gmail.com','minzzang741@gmail.com'];
 const DEFAULT_APPLY_TOKEN=4;
 const DEFAULT_CANCEL_TOKEN=2;
 let user=null, meetings=[], allMembers=[];
@@ -484,7 +485,7 @@ function updatePreview(id){
 
 /* ── AUTH ─────────────────────────────────────────────── */
 auth.onAuthStateChanged(async fb=>{
-  if(!fb||fb.email!==ADMIN_EMAIL){document.getElementById('screenDenied').style.display='block';document.getElementById('adminMain').style.display='none';return;}
+  if(!fb||!ADMIN_EMAILS.includes(fb.email)){document.getElementById('screenDenied').style.display='block';document.getElementById('adminMain').style.display='none';return;}
   user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:fb.displayName?.[0]||'?'};
   document.getElementById('screenDenied').style.display='none';document.getElementById('adminMain').style.display='block';
   document.getElementById('adminSubtitle').textContent=`${user.name} 님으로 로그인됨`;
