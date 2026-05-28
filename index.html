@@ -517,6 +517,7 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 const ADMIN_EMAIL = 'nohjunhyouk@gmail.com';
+const ADMIN_EMAILS = ['nohjunhyouk@gmail.com', 'minzzang741@gmail.com'];
 const DEFAULT_APPLY_TOKEN  = 4;
 const DEFAULT_CANCEL_TOKEN = 2;
 
@@ -535,7 +536,7 @@ let eligibleMembers=[];
 let notifSettings = {wishRestock:true, hostApply:true, hostCancel:true};
 let notifications = [];
 
-function isAdmin()   { return userRole==='admin'; }
+function isAdmin() { return userRole === 'admin' || (user && ADMIN_EMAILS.includes(user.email)); }
 function isStaff()   { return userRole==='staff'; }
 function canManage() { return userRole==='admin'||userRole==='staff'; }
 
@@ -546,7 +547,7 @@ auth.onAuthStateChanged(fb => {
   unsubMeetings=unsubSmall=unsubNotif=null;
   if(!fb){user=null;userRole=null;applied=new Set();wishlisted=new Set();appliedSmall=new Set();wishlistedSmall=new Set();showScreen('login');updateNav();return;}
   user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:(fb.displayName||'?')[0]};
-  if(fb.email===ADMIN_EMAIL){
+  if (ADMIN_EMAILS.includes(fb.email)) {
     userRole='admin';
     db.collection('users').doc(fb.email).get().then(doc=>{
       if(doc.exists){const d=doc.data();applied=new Set(d.applied||[]);wishlisted=new Set(d.wishlisted||[]);appliedSmall=new Set(d.appliedSmall||[]);wishlistedSmall=new Set(d.wishlistedSmall||[]);applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;notifSettings=Object.assign({wishRestock:true,hostApply:true,hostCancel:true},d.notifSettings||{});}
