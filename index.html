@@ -744,10 +744,13 @@ function loadNotices(){
     if(nb&&nc){if(data.noticeBoard){nb.style.display='block';nc.innerHTML=data.noticeBoard;}else nb.style.display='none';}
   });
 }
-function loadWaitingNotice(){
+function loadWaitingNotice() {
+  // 기존 박스 있으면 제거 후 새로 만들기
+  const existing = document.getElementById('waitingNoticeBox');
+  if(existing) existing.remove();
+  
   db.collection('settings').doc('config').get().then(d=>{
     if(d.exists&&d.data().waitingNotice){
-      if(document.getElementById('waitingNoticeBox'))return;
       const wrap=document.createElement('div');wrap.id='waitingNoticeBox';wrap.style.cssText='max-width:500px;margin:1rem auto 0;padding:0 1.5rem';
       wrap.innerHTML=`<div style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.2);border-radius:10px;padding:.9rem 1.1rem;font-size:.83rem;color:rgba(255,220,100,.85);line-height:1.7">${d.data().waitingNotice}</div>`;
       document.querySelector('.waiting-screen').appendChild(wrap);
@@ -908,8 +911,9 @@ async function submitApplication(){
   if(!collectQ(typeQs,prefix))return;
   if(!collectQ(formConfig.commonQuestions||[],'cq-'))return;
   await db.collection('users').doc(user.email).set({name,email:user.email,photo:user.photo||'',gender:gender||'',birth,phone,memberType:memberType||'',answers,role:'pending',applyToken:DEFAULT_APPLY_TOKEN,cancelToken:DEFAULT_CANCEL_TOKEN,notifSettings,appliedAt:firebase.firestore.FieldValue.serverTimestamp()});
-  userRole='pending';showScreen('waiting');updateNav();
+  userRole='pending'; showScreen('waiting'); updateNav();
   showToast('신청서가 제출되었어요! 승인을 기다려주세요 📬');
+  loadWaitingNotice();
 }
 
 async function saveUserData(){
