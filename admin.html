@@ -194,12 +194,12 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
           <button class="btn-csv" onclick="exportMembersCSV()">멤버 CSV 내보내기</button>
         </div>
         <div class="filter-chips">
-          <div class="chip active" onclick="filterMembers('pending',this)">⏳ 대기중</div>
-          <div class="chip" onclick="filterMembers('member',this)">✅ 참여자</div>
-          <div class="chip" onclick="filterMembers('staff',this)">⭐ 모임장</div>
-          <div class="chip" onclick="filterMembers('none',this)">⚠️ 미분류</div>
-          <div class="chip" onclick="filterMembers('all',this)">전체</div>
-        </div>
+  <div class="chip active" onclick="filterMembers('pending',this)">⏳ 대기중 <span id="count-pending"></span></div>
+  <div class="chip" onclick="filterMembers('member',this)">✅ 참여자 <span id="count-member"></span></div>
+  <div class="chip" onclick="filterMembers('staff',this)">⭐ 모임장 <span id="count-staff"></span></div>
+  <div class="chip" onclick="filterMembers('none',this)">⚠️ 미분류 <span id="count-none"></span></div>
+  <div class="chip" onclick="filterMembers('all',this)">전체 <span id="count-all"></span></div>
+</div>
         <div class="member-list" id="memberList"><div class="empty">불러오는 중...</div></div>
       </div>
     </div>
@@ -606,6 +606,24 @@ async function loadAllMembers(){const snap=await db.collection('users').get();al
 async function renderMemberList(){
   const g=document.getElementById('memberList');g.innerHTML=`<div class="empty">불러오는 중...</div>`;
   await loadAllMembers();
+  // 각 카테고리 인원 수 표시
+const countPending = allMembers.filter(u=>u.role==='pending').length;
+const countMember  = allMembers.filter(u=>u.role==='member').length;
+const countStaff   = allMembers.filter(u=>u.role==='staff').length;
+const countNone    = allMembers.filter(u=>!u.role||u.role==='cancelled').length;
+const countAll     = allMembers.length;
+
+const setPending = document.getElementById('count-pending');
+const setMember  = document.getElementById('count-member');
+const setStaff   = document.getElementById('count-staff');
+const setNone    = document.getElementById('count-none');
+const setAll     = document.getElementById('count-all');
+
+if(setPending) setPending.textContent = `(${countPending})`;
+if(setMember)  setMember.textContent  = `(${countMember})`;
+if(setStaff)   setStaff.textContent   = `(${countStaff})`;
+if(setNone)    setNone.textContent    = `(${countNone})`;
+if(setAll)     setAll.textContent     = `(${countAll})`;
   let list=allMembers;
   if(memberFilter==='none') list=allMembers.filter(u=>!u.role);
   else if(memberFilter!=='all') list=allMembers.filter(u=>u.role===memberFilter);
