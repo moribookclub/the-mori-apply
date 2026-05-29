@@ -242,8 +242,14 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   </div>
 
   <!-- 개별 모임 ON/OFF 목록 -->
-  <div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.7rem">개별 모임 신청 설정</div>
+<!-- 개별 모임 ON/OFF 목록 토글 -->
+<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:.7rem 0;border-top:1px solid rgba(255,255,255,.07)" onclick="toggleSection('meetingApplySection','meetingApplySectionIcon')">
+  <div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.06em;text-transform:uppercase">개별 모임 신청 설정</div>
+  <span id="meetingApplySectionIcon" style="color:rgba(255,255,255,.35);font-size:.8rem">▼</span>
+</div>
+<div id="meetingApplySection" style="display:none">
   <div id="meetingApplyControlList"><div class="empty">불러오는 중...</div></div>
+</div>
 </div>
 
   
@@ -284,9 +290,14 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
       기능이 켜져 있으면 아래 독서모임 목록에서 폐강 버튼을 누를 수 있어요.<br>
       폐강 시 모임장과 모임원에게 인앱 알림이 발송돼요.
     </div>
-    <!-- 폐강 대상 모임 목록 -->
-    <div style="font-size:.78rem;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.7rem">폐강 관리</div>
-    <div id="closeableMeetingList"><div class="empty">불러오는 중...</div></div>
+<!-- 폐강 관리 토글 -->
+<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:.7rem 0;border-top:1px solid rgba(255,255,255,.07)" onclick="toggleSection('closeableSection','closeableSectionIcon')">
+  <div style="font-size:.82rem;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.06em;text-transform:uppercase">폐강 관리</div>
+  <span id="closeableSectionIcon" style="color:rgba(255,255,255,.35);font-size:.8rem">▼</span>
+</div>
+<div id="closeableSection" style="display:none">
+  <div id="closeableMeetingList"><div class="empty">불러오는 중...</div></div>
+</div>
   </div>
 
   <!-- 3. 찜 여석 알림 -->
@@ -923,6 +934,18 @@ async function saveMeetingApplySetting(meetingId,isOpen){
   const m=meetings.find(x=>x.id===meetingId);
   if(m)m.applyOpen=isOpen;
   renderMeetingApplyControlList();
+}
+  function toggleSection(sectionId, iconId){
+  const section = document.getElementById(sectionId);
+  const icon = document.getElementById(iconId);
+  if(!section || !icon) return;
+  if(section.style.display === 'none'){
+    section.style.display = 'block';
+    icon.textContent = '▲';
+  } else {
+    section.style.display = 'none';
+    icon.textContent = '▼';
+  }
 }
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 
