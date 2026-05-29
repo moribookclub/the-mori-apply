@@ -636,8 +636,15 @@ if(setStaff)   setStaff.textContent   = `(${countStaff})`;
 if(setNone)    setNone.textContent    = `(${countNone})`;
 if(setAll)     setAll.textContent     = `(${countAll})`;
   let list=allMembers;
-  if(memberFilter==='none') list=allMembers.filter(u=>!u.role);
-  else if(memberFilter!=='all') list=allMembers.filter(u=>u.role===memberFilter);
+if(memberFilter==='none') list=allMembers.filter(u=>!u.role||u.role==='cancelled');
+else if(memberFilter!=='all') list=allMembers.filter(u=>u.role===memberFilter);
+
+// 신청서 제출 시간 순으로 정렬
+list=list.slice().sort((a,b)=>{
+  const aTime = a.appliedAt?.toMillis?.() || 0;
+  const bTime = b.appliedAt?.toMillis?.() || 0;
+  return aTime - bTime;
+});
   if(!list.length){g.innerHTML=`<div class="empty">해당하는 멤버가 없어요</div>`;return;}
   const statusMap={pending:'badge-pending',member:'badge-member',staff:'badge-staff'};
   const statusLabel={pending:'대기중',member:'참여자',staff:'모임장'};
