@@ -193,6 +193,12 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
           <div><h2>멤버 관리</h2><p>신청서를 제출한 멤버를 승인하고 권한을 관리해요</p></div>
           <button class="btn-csv" onclick="exportMembersCSV()">멤버 CSV 내보내기</button>
         </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:.8rem">
+  <span style="font-size:.78rem;color:rgba(255,255,255,.4)">정렬:</span>
+  <button id="sortBtn" onclick="toggleSort()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:4px 12px;border-radius:20px;font-size:.76rem;cursor:pointer">
+    🕐 오래된순
+  </button>
+</div>
         <div class="filter-chips">
   <div class="chip active" onclick="filterMembers('pending',this)">⏳ 대기중 <span id="count-pending"></span></div>
   <div class="chip" onclick="filterMembers('member',this)">✅ 참여자 <span id="count-member"></span></div>
@@ -643,7 +649,7 @@ else if(memberFilter!=='all') list=allMembers.filter(u=>u.role===memberFilter);
 list=list.slice().sort((a,b)=>{
   const aTime = a.appliedAt?.toMillis?.() || 0;
   const bTime = b.appliedAt?.toMillis?.() || 0;
-  return aTime - bTime;
+  return sortAsc ? aTime - bTime : bTime - aTime;
 });
   if(!list.length){g.innerHTML=`<div class="empty">해당하는 멤버가 없어요</div>`;return;}
   const statusMap={pending:'badge-pending',member:'badge-member',staff:'badge-staff'};
@@ -954,6 +960,14 @@ async function saveMeetingApplySetting(meetingId,isOpen){
     icon.textContent = '▼';
   }
 }
+let sortAsc = true; // true: 오래된순, false: 최신순
+
+function toggleSort(){
+  sortAsc = !sortAsc;
+  const btn = document.getElementById('sortBtn');
+  if(btn) btn.textContent = sortAsc ? '🕐 오래된순' : '🕒 최신순';
+  renderMemberList();
+}  
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ── 사이트 설정 로드 (기존 loadSiteConfig 함수 전체를 이걸로 교체) ──────────
