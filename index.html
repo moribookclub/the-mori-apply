@@ -1140,7 +1140,31 @@ async function toggleBody(el){
   let html='';
   if(snap.empty){html='<div style="color:rgba(255,255,255,.25);font-size:.8rem;padding:.3rem 0">신청자가 없어요</div>';}
   else{snap.docs.forEach(d=>{const a=d.data();const av=a.photo?`<img src="${a.photo}" alt="">`:((a.name||'?')[0]);html+=`<div class="applicant-row"><div class="applicant-av">${av}</div><div class="applicant-info"><div class="applicant-name">${a.realName||a.name||''} <span style="font-size:.72rem;color:rgba(255,255,255,.35);font-weight:400">${a.realName?'('+a.name+')':''}</span></div><div class="applicant-email">${a.email}</div></div><button class="btn-remove-member" data-col="${col}" data-id="${id}" data-email="${encodeURIComponent(a.email||'')}" data-name="${encodeURIComponent(a.name||'')}" onclick="removeMemberBtn(this)">제거</button></div>`;});}
-  html+=`<div style="margin-top:.7rem"><button data-col="${col}" data-id="${id}" data-title="${encodeURIComponent(title)}" onclick="openAddMemberModalBtn(this)" style="width:100%;background:rgba(255,255,255,.07);border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:7px;border-radius:8px;font-size:.8rem;cursor:pointer">+ 멤버 추가</button></div>`;
+  // 해당 모임 applyOpen 상태 가져오기
+const meetingData = col==='meetings'
+  ? meetings.find(x=>x.id===id)
+  : smallGroups.find(x=>x.id===id);
+const isApplyOpen = meetingData?.applyOpen !== false;
+
+html+=`<div style="margin-top:.8rem;display:flex;flex-direction:column;gap:8px">
+  <!-- 신청 ON/OFF 토글 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.7rem 1rem">
+    <div>
+      <div style="font-size:.84rem;font-weight:600">신청 ${isApplyOpen?'받는 중':'마감됨'}</div>
+      <div style="font-size:.72rem;color:rgba(255,255,255,.35);margin-top:2px">${isApplyOpen?'토글을 끄면 신청이 마감돼요':'토글을 켜면 신청을 받아요'}</div>
+    </div>
+    <label style="position:relative;width:36px;height:20px;flex-shrink:0">
+      <input type="checkbox" ${isApplyOpen?'checked':''} 
+        onchange="toggleMeetingApply('${col}','${id}',this.checked)"
+        style="opacity:0;width:0;height:0">
+      <span style="position:absolute;cursor:pointer;inset:0;background:${isApplyOpen?'rgba(100,200,120,.6)':'rgba(255,255,255,.15)'};border-radius:20px;transition:.3s">
+        <span style="position:absolute;content:'';height:14px;width:14px;left:${isApplyOpen?'19':'3'}px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;display:block"></span>
+      </span>
+    </label>
+  </div>
+  <!-- 멤버 추가 버튼 -->
+  <button data-col="${col}" data-id="${id}" data-title="${encodeURIComponent(title)}" onclick="openAddMemberModalBtn(this)" style="width:100%;background:rgba(255,255,255,.07);border:1px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:8px;border-radius:8px;font-size:.83rem;cursor:pointer">+ 멤버 추가</button>
+</div>`;
   body.innerHTML=html;
 }
 async function openAddMemberModalBtn(btn){await openAddMemberModal(btn.dataset.col,btn.dataset.id,decodeURIComponent(btn.dataset.title));}
@@ -1340,7 +1364,14 @@ async function deleteItem(id,type){
   if(aSet.has(id)){aSet.delete(id);await saveUserData();updateNav();}
   showToast('삭제되었어요');
 }
-
+async function toggleMeetingApply(col, id, isOpen){
+  await db.collection(col).doc(id).update({applyOpen: isOpen});
+  showToast(isOpen ? '신청이 열렸어요 ✅' : '신청이 마감됐어요 🔒');
+  // 모임 목록 새로고침 (토글 UI 업데이트)
+  const h = document.querySelector(`.manage-meeting-header[data-col="${col}"][data-id="${id}"]`);
+  const body = document.getElementById(`body-${col}-${id}`);
+  if(h && body){ body.classList.remove('open'); await toggleBody(h); }
+}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 </script>
 </body>
