@@ -1188,7 +1188,7 @@ async function openAddMemberModal(col,id,title){
   const snap=await db.collection(col).doc(id).collection('applicants').get();
   const existingSet=new Set(snap.docs.map(d=>d.id));
   const uSnap=await db.collection('users').get();
-  const eligible=uSnap.docs.map(d=>d.data()).filter(u=>(u.role==='member'||u.role==='staff')&&!existingSet.has(u.email));
+  const eligible=uSnap.docs.map(d=>d.data()).filter(u=>(u.role==='member'||u.role==='staff'||u.role==='smallstaff')&&!existingSet.has(u.email));
   addMemberTarget={col,id,title,eligible};
   document.getElementById('addMemberModalTitle').textContent='멤버 추가 — '+title;
   document.getElementById('memberSearchInput').value='';
