@@ -536,8 +536,10 @@ let notifSettings = {wishRestock:true, hostApply:true, hostCancel:true};
 let notifications = [];
 
 function isAdmin() { return userRole === 'admin' || (user && ADMIN_EMAILS.includes(user.email)); }
-function isStaff()   { return userRole==='staff'; }
-function canManage() { return userRole==='admin'||userRole==='staff'; }
+function isStaff()      { return userRole === 'staff'; }
+function isSmallStaff() { return userRole === 'smallstaff'; }
+function canManage()    { return userRole === 'admin' || userRole === 'staff' || userRole === 'smallstaff'; }
+function canViewApplicants() { return userRole === 'admin' || userRole === 'staff'; }
 
 /* ── AUTH ── */
 auth.onAuthStateChanged(fb => {
@@ -562,7 +564,7 @@ auth.onAuthStateChanged(fb => {
     applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
     cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
     notifSettings=Object.assign({wishRestock:true,hostApply:true,hostCancel:true},d.notifSettings||{});
-    if(userRole==='member'||userRole==='staff'){
+    if(userRole==='member'||userRole==='staff'||userRole==='smallstaff'){
       applied=new Set(d.applied||[]);wishlisted=new Set(d.wishlisted||[]);appliedSmall=new Set(d.appliedSmall||[]);wishlistedSmall=new Set(d.wishlistedSmall||[]);
       loadFormConfig().then(() => { initMain(); updateNav(); registerFCMToken(); });
     } else if(userRole==='pending'){showScreen('waiting');updateNav();loadWaitingNotice();}
@@ -585,7 +587,8 @@ function updateNav(){
   if(!user){nr.innerHTML=`<button class="btn-glogin" onclick="googleLogin()"><svg viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Google로 로그인</button>`;return;}
   const admin=isAdmin();
   const av=user.photo?`<img src="${user.photo}" alt="">`:user.initial;
-  const roleBadge=admin?`<span class="role-badge role-admin">관리자</span>`:(userRole==='staff')?`<span class="role-badge role-staff">모임장</span>`:'';
+  const roleBadge=admin?`<span class="role-badge role-admin">관리자</span>`:(userRole==='staff')?`<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(100,180,255,.15);border:1px solid rgba(100,180,255,.3);color:rgba(150,210,255,.9)">스탭</span>`
+:(userRole==='smallstaff')?`<span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;background:rgba(140,100,255,.15);border:1px solid rgba(140,100,255,.3);color:rgba(180,150,255,.9)">소모임장</span>`:'';
   const adminBtn=admin?`<a href="admin.html" style="display:inline-block;background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9);padding:4px 10px;border-radius:6px;font-size:.72rem;font-weight:600;text-decoration:none;white-space:nowrap">관리자</a>`:'';
   const notifBtn=`<button class="notif-btn" onclick="toggleNotifPanel()" title="알림"><span>🔔</span><span class="notif-dot" id="notifDot"></span></button>`;
   nr.innerHTML=`${roleBadge}${adminBtn}${notifBtn}<div class="avatar-circle" onclick="switchTab('profile',null)" title="프로필">${av}</div><button class="btn-sm" onclick="logout()">로그아웃</button>`;
@@ -1245,10 +1248,11 @@ function meetingCardHTML(m){
   else if(isQuotaFull){badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='quota-full';btnTxt='토큰소진';}
   else if(isApplyClosed){badge=`<span class="card-badge badge-closed">신청마감</span>`;btnCls='full';btnTxt='신청마감';}
   else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;}
-  const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}','meeting')">삭제</button></div>`:'';
+  const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}','meeting')">삭제</button></div>`:''; 
+  const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('meetings','${m.id}','${encodeURIComponent(m.title)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:'';
   const hostBadge=iAmHost?`<span class="badge-host">내 모임</span>`:'';
   const closedBadge=m.closed?`<span class="card-badge badge-closed" style="background:rgba(255,80,80,.15);color:rgba(255,130,130,.8)">폐강</span>`:'';
-  return`<div class="card${isWish?' wishlisted':''}${m.closed?' opacity-60':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}${hostBadge}${closedBadge}</div><div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div>${m.minMembers?`<div class="info-row"><span class="info-label">최소</span><span class="info-val" style="color:rgba(255,200,100,.8)">${m.minMembers}명 이상</span></div>`:''}</div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" ${clickable?`onclick="applyMeeting('${m.id}')"`:''}>${btnTxt}</button></div></div>`;
+  return`<div class="card${isWish?' wishlisted':''}${m.closed?' opacity-60':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}${hostBadge}${closedBadge}</div><div class="card-top-right">${applicantBtn}${adminBtns}<button class="heart-btn" onclick="toggleWish('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div>${m.minMembers?`<div class="info-row"><span class="info-label">최소</span><span class="info-val" style="color:rgba(255,200,100,.8)">${m.minMembers}명 이상</span></div>`:''}</div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" ${clickable?`onclick="applyMeeting('${m.id}')"`:''}>${btnTxt}</button></div></div>`;
 }
 
 function smallCardHTML(m){
@@ -1261,9 +1265,10 @@ function smallCardHTML(m){
   else if(isApplied){badge=`<span class="card-badge badge-mine">신청완료</span>`;btnCls='applied';btnTxt='신청취소';clickable=true;}
   else if(isFull){badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';}
   else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;}
-  const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditSmallModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.name}','small')">삭제</button></div>`:'';
+  const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditSmallModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.name}','small')">삭제</button></div>`:''; 
+  const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('smallGroups','${m.id}','${encodeURIComponent(m.name)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:'';
   const hostBadge=iAmHost?`<span class="badge-host">내 모임</span>`:'';
-  return`<div class="card${isWish?' wishlisted':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}<span class="badge-small">소모임</span>${hostBadge}</div><div class="card-top-right">${adminBtns}<button class="heart-btn" onclick="toggleWishSmall('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div><div class="book-info"><div class="book-title">${m.name}</div></div><div class="meeting-meta-header"><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div></div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" ${clickable?`onclick="applySmall('${m.id}')"`:''}>${btnTxt}</button></div></div>`;
+  return`<div class="card${isWish?' wishlisted':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}<span class="badge-small">소모임</span>${hostBadge}</div><div class="card-top-right">${applicantBtn}${adminBtns}<button class="heart-btn" onclick="toggleWishSmall('${m.id}')">${isWish?'❤️':'🤍'}</button></div></div><div class="book-info"><div class="book-title">${m.name}</div></div><div class="meeting-meta-header"><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div></div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" ${clickable?`onclick="applySmall('${m.id}')"`:''}>${btnTxt}</button></div></div>`;
 }
 
 /* ── TABS ── */
@@ -1372,8 +1377,59 @@ async function toggleMeetingApply(col, id, isOpen){
   const body = document.getElementById(`body-${col}-${id}`);
   if(h && body){ body.classList.remove('open'); await toggleBody(h); }
 }
+  async function openApplicantModal(col, id, encodedTitle){
+  const title = decodeURIComponent(encodedTitle);
+  document.getElementById('applicantModalTitle').textContent = `👥 ${title}`;
+  document.getElementById('applicantModalContent').innerHTML = '<div class="empty">불러오는 중...</div>';
+  document.getElementById('applicantModal').classList.add('open');
+
+  // 신청자 목록
+  const snap = await db.collection(col).doc(id).collection('applicants').orderBy('time').get();
+
+  // 찜한 인원 수
+  const allUsers = await db.collection('users').get();
+  const wishField = col === 'meetings' ? 'wishlisted' : 'wishlistedSmall';
+  const wishCount = allUsers.docs.filter(d => (d.data()[wishField]||[]).includes(id)).length;
+
+  let html = `<div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.8rem">
+    신청 <strong style="color:#fff">${snap.size}</strong>명 &nbsp;·&nbsp; 찜 <strong style="color:#fff">${wishCount}</strong>명
+  </div>`;
+
+  if(snap.empty){
+    html += '<div class="empty">신청자가 없어요</div>';
+  } else {
+    html += snap.docs.map((d,i) => {
+      const a = d.data();
+      const av = a.photo ? `<img src="${a.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : (a.realName||a.name||'?')[0];
+      return `<div style="display:flex;align-items:center;gap:10px;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;overflow:hidden;flex-shrink:0">${av}</div>
+        <div style="flex:1">
+          <div style="font-size:.86rem;font-weight:600">${a.realName||a.name||''} <span style="font-size:.72rem;color:rgba(255,255,255,.35);font-weight:400">${a.realName?'('+a.name+')':''}</span></div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.35)">${a.time||''}</div>
+        </div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.4)">${i+1}번</div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('applicantModalContent').innerHTML = html;
+}
+
+function closeApplicantModal(){
+  document.getElementById('applicantModal').classList.remove('open');
+}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 </script>
+  <!-- 신청자 확인 모달 -->
+<div class="modal-overlay" id="applicantModal">
+  <div class="modal" style="max-width:480px">
+    <h2 id="applicantModalTitle">신청자 명단</h2>
+    <div id="applicantModalContent"><div class="empty">불러오는 중...</div></div>
+    <div class="modal-btns" style="margin-top:1rem">
+      <button class="btn-modal-cancel" onclick="closeApplicantModal()">닫기</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
 
