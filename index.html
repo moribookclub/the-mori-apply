@@ -500,8 +500,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if(!refreshing){
       refreshing = true;
-      if(user) registerFCMToken().then(() => window.location.reload());
-      else window.location.reload();
+      window.location.reload();
     }
   });
 }
@@ -648,16 +647,12 @@ function initMain(){
 
 async function registerFCMToken(){
   try {
-    if(!('Notification' in window)){return;}
+    if(!('Notification' in window)) return;
     const permission = await Notification.requestPermission();
-    if(permission !== 'granted'){return;}
+    if(permission !== 'granted') return;
 
-    // 기존 sw.js를 FCM 서비스워커로 직접 지정
-    const swReg = await navigator.serviceWorker.register(
-      '/the-mori-apply/sw.js'
-    );
-
-    await swReg.update();
+    // 이미 등록된 서비스워커 사용 (강제 업데이트 제거)
+    const swReg = await navigator.serviceWorker.ready;
 
     const messaging = firebase.messaging();
     const token = await messaging.getToken({
@@ -665,14 +660,19 @@ async function registerFCMToken(){
       serviceWorkerRegistration: swReg
     });
 
-   if(token && user){
-  await db.collection('users').doc(user.email).set(
-    {fcmToken: token},
-    {merge: true}
-  );
-  console.log('FCM 토큰 저장 완료');
-}
-
+    if(token && user){
+      // 기존 토큰과 같으면 저장 생략 (불필요한 Firestore 쓰기 방지)
+      const userDoc = await db.collection('users').doc(user.email).get();
+      if(userDoc.exists && userDoc.data().fcmToken === token) {
+        console.log('FCM 토큰 유지 (변경 없음)');
+        return;
+      }
+      await db.collection('users').doc(user.email).set(
+        {fcmToken: token},
+        {merge: true}
+      );
+      console.log('FCM 토큰 저장 완료');
+    }
   } catch(e){
     console.log('FCM 등록 실패:', e);
   }
