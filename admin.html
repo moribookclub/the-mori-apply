@@ -45,6 +45,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .badge-pending{background:rgba(255,180,50,.12);border:1px solid rgba(255,180,50,.3);color:rgba(255,200,80,.9)}
 .badge-member{background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);color:rgba(130,230,130,.9)}
 .badge-staff{background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.3);color:rgba(150,200,255,.9)}
+.badge-smallstaff{background:rgba(140,100,255,.12);border:1px solid rgba(140,100,255,.3);color:rgba(180,150,255,.9)}
 .badge-none{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4)}
 .badge-apply-token{background:rgba(100,200,255,.1);border:1px solid rgba(100,200,255,.25);color:rgba(150,220,255,.9);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
 .badge-cancel-token{background:rgba(255,180,80,.1);border:1px solid rgba(255,180,80,.25);color:rgba(255,210,100,.9);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
@@ -626,7 +627,7 @@ async function renderMemberList(){
   // 각 카테고리 인원 수 표시
 const countPending = allMembers.filter(u=>u.role==='pending').length;
 const countMember  = allMembers.filter(u=>u.role==='member').length;
-const countStaff   = allMembers.filter(u=>u.role==='staff').length;
+const countStaff = allMembers.filter(u=>u.role==='staff'||u.role==='smallstaff').length;
 const countNone    = allMembers.filter(u=>!u.role||u.role==='cancelled').length;
 const countAll     = allMembers.length;
 
@@ -652,8 +653,8 @@ list=list.slice().sort((a,b)=>{
   return sortAsc ? aTime - bTime : bTime - aTime;
 });
   if(!list.length){g.innerHTML=`<div class="empty">해당하는 멤버가 없어요</div>`;return;}
-  const statusMap={pending:'badge-pending',member:'badge-member',staff:'badge-staff'};
-  const statusLabel={pending:'대기중',member:'참여자',staff:'모임장'};
+  const statusMap={pending:'badge-pending',member:'badge-member',staff:'badge-staff',smallstaff:'badge-smallstaff'};
+  const statusLabel={pending:'대기중',member:'참여자',staff:'스탭',smallstaff:'소모임장'};
   g.innerHTML=list.map(u=>{
     const av=u.photo?`<img src="${u.photo}" alt="">`:u.name?.[0]||'?';
     const roleBadge=u.role?`<span class="badge ${statusMap[u.role]||'badge-none'}">${statusLabel[u.role]||u.role}</span>`:`<span class="badge badge-none">미분류</span>`;
@@ -662,8 +663,17 @@ list=list.slice().sort((a,b)=>{
     const tokenBadges=(u.role==='member'||u.role==='staff')?`<span class="badge badge-apply-token">🎟 신청 ${aToken}회</span><span class="badge badge-cancel-token">↩ 취소 ${cToken}회</span>`:'';
     let actions='';
     if(!u.role||u.role==='pending'||u.role==='cancelled'){actions=`<button class="btn-approve" onclick="event.stopPropagation();approveMember('${u.email}')">✅ 승인</button><button class="btn-cancel-wait" onclick="event.stopPropagation();cancelWaiting('${u.email}','${u.name||''}')">대기취소</button><button class="btn-reject" onclick="event.stopPropagation();rejectMember('${u.email}','${u.name||''}')">거절</button>`;}
-    else if(u.role==='member'){actions=`<button class="btn-staff" onclick="event.stopPropagation();setRole('${u.email}','staff')">모임장 부여</button><button class="btn-cancel-wait" onclick="event.stopPropagation();setRole('${u.email}','pending')">대기로 변경</button>`;}
-    else if(u.role==='staff'){actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">모임장 회수</button>`;}
+   else if(u.role==='member'){
+  actions=`<button class="btn-staff" onclick="event.stopPropagation();setRole('${u.email}','staff')">스탭 부여</button>
+  <button class="btn-staff" style="background:rgba(140,100,255,.1);border-color:rgba(140,100,255,.3);color:rgba(180,150,255,.9)" onclick="event.stopPropagation();setRole('${u.email}','smallstaff')">소모임장 부여</button>
+  <button class="btn-cancel-wait" onclick="event.stopPropagation();setRole('${u.email}','pending')">대기로 변경</button>`;
+}
+else if(u.role==='staff'){
+  actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">스탭 회수</button>`;
+}
+else if(u.role==='smallstaff'){
+  actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">소모임장 회수</button>`;
+}
     return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${u.appliedAt ? ' · 제출 ' + u.appliedAt.toDate().toLocaleString('ko-KR') : ''}</div><div class="member-badges">${roleBadge}${tokenBadges}</div></div><div class="member-actions">${actions}</div></div>`;
   }).join('');
 }
@@ -684,7 +694,7 @@ async function approveMember(email){
 }
 async function cancelWaiting(email,name){if(!confirm(`"${name}" 님의 대기를 취소할까요?`))return;await db.collection('users').doc(email).update({role:'cancelled'});showToast('대기가 취소되었어요');renderMemberList();}
 async function rejectMember(email,name){if(!confirm(`"${name}" 님을 거절하고 데이터를 삭제할까요?`))return;await db.collection('users').doc(email).delete();showToast('거절되었어요');renderMemberList();}
-async function setRole(email,role){await db.collection('users').doc(email).update({role});const msg={staff:'모임장 권한을 부여했어요',member:'참여자로 변경되었어요',pending:'대기 상태로 변경되었어요'};showToast(msg[role]||'변경되었어요');renderMemberList();}
+async function setRole(email,role){await db.collection('users').doc(email).update({role});const msg={staff:'스탭 권한을 부여했어요',smallstaff:'소모임장 권한을 부여했어요',member:'참여자로 변경되었어요',pending:'대기 상태로 변경되었어요'};showToast(msg[role]||'변경되었어요');renderMemberList();}
 
 /* ── 토큰 조정 ───────────────────────────────────────── */
 async function adjustToken(email, field, delta){
@@ -811,8 +821,11 @@ async function openProfileModal(email){
         ? `<button class="btn-approve" onclick="approveMember('${u.email}');closeProfileModal()">✅ 승인</button>
            <button class="btn-cancel-wait" onclick="cancelWaiting('${u.email}','${u.name||''}');closeProfileModal()">대기취소</button>
            <button class="btn-reject" onclick="rejectMember('${u.email}','${u.name||''}');closeProfileModal()">거절</button>` : ''}
-      ${u.role==='member' ? `<button class="btn-staff" onclick="setRole('${u.email}','staff');closeProfileModal()">모임장 부여</button>` : ''}
-      ${u.role==='staff' ? `<button class="btn-revoke" onclick="setRole('${u.email}','member');closeProfileModal()">모임장 회수</button>` : ''}
+     ${u.role==='member'?`
+  <button class="btn-staff" onclick="setRole('${u.email}','staff');closeProfileModal()">스탭 부여</button>
+  <button class="btn-staff" style="background:rgba(140,100,255,.1);border-color:rgba(140,100,255,.3);color:rgba(180,150,255,.9)" onclick="setRole('${u.email}','smallstaff');closeProfileModal()">소모임장 부여</button>`:''}
+${u.role==='staff'?`<button class="btn-revoke" onclick="setRole('${u.email}','member');closeProfileModal()">스탭 회수</button>`:''}
+${u.role==='smallstaff'?`<button class="btn-revoke" onclick="setRole('${u.email}','member');closeProfileModal()">소모임장 회수</button>`:''}
     </div>`;
   document.getElementById('profileModal').classList.add('open');
 }
