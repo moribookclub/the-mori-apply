@@ -1292,7 +1292,7 @@ async function loadEligibleMembers(){
 }
 function buildHostDropdown(selectId,currentValue=''){
   const sel=document.getElementById(selectId);if(!sel)return;
-  const roleLabel={member:'참여자',staff:'모임장',admin:'관리자'};
+  const roleLabel={member:'참여자',staff:'스탭',smallstaff:'소모임장',admin:'관리자'};
   sel.innerHTML=`<option value="">선택해주세요</option>`+eligibleMembers.map(u=>{const label=`${u.name||u.email} (${roleLabel[u.role]||u.role})`;const selected=(currentValue&&(u.name===currentValue||u.email===currentValue))?'selected':'';return`<option value="${u.name}||${u.email}" ${selected}>${label}</option>`;}).join('');
 }
 async function openAddModal(type){
