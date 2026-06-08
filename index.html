@@ -1104,7 +1104,11 @@ async function applySmall(id){
     showToast('소모임 신청이 취소되었어요');
   } else {
     if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
-    appliedSmall.add(id);await aRef.set({name:user.name,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
+    appliedSmall.add(id);
+    const uDoc=await db.collection('users').doc(user.email).get();
+const realName=uDoc.exists?(uDoc.data().name||user.name):user.name;
+await aRef.set({name:user.name,realName:realName,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});
+    await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
     if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.name}님이 신청했어요`);});}
     showToast('소모임 신청 완료! 🎯');
   }
