@@ -9,7 +9,7 @@ firebase.initializeApp({
   appId: "1:306904700616:web:2217470905df10786837fd"
 });
 const messaging = firebase.messaging();
-const CACHE = 'mori-apply-v60';
+const CACHE = 'mori-apply-v61';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
