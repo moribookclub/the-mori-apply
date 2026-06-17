@@ -329,13 +329,13 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
     <div class="tab" onclick="switchTab('wish',this)">찜</div>
   </div>
 <div id="tabAll">
-    <div id="staffBar" class="staff-bar" style="display:none"><button class="btn-admin" onclick="openAddModal('meeting')">+ 모임 추가</button></div>
-    <div style="display:flex;justify-content:center;margin-bottom:1rem;padding:0 1rem">
+    <div class="staff-bar" style="max-width:980px;margin:0 auto 1rem;padding:0 1rem;display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;gap:0">
         <button id="subTab-upcoming" onclick="switchMeetingSubTab('upcoming')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:#fff;color:#0d1f3c;font-weight:600;transition:all .2s">예정</button>
         <button id="subTab-done" onclick="switchMeetingSubTab('done')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">완료</button>
         <button id="subTab-all" onclick="switchMeetingSubTab('all')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">전체</button>
       </div>
+      <div id="staffBar" style="display:none"><button class="btn-admin" onclick="openAddModal('meeting')">+ 모임 추가</button></div>
     </div>
     <div id="cardGrid" class="grid"><div class="empty">모임 불러오는 중...</div></div>
   </div>
