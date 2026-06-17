@@ -13,6 +13,7 @@ const CACHE = 'mori-apply-v60';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
+  '/the-mori-apply/admin.html',
   '/the-mori-apply/manifest.json',
   '/the-mori-apply/icon-192.png',
   '/the-mori-apply/icon-512.png'
