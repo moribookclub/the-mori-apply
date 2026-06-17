@@ -185,6 +185,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
       <div class="admin-tab" onclick="switchAdminTab('meetings',this)">모임 신청자</div>
       <div class="admin-tab" onclick="switchAdminTab('settings',this)">설정</div>
       <div class="admin-tab" onclick="switchAdminTab('form',this)">신청서 편집</div>
+      <div class="admin-tab" onclick="switchAdminTab('history',this)">히스토리</div>
     </div>
 
     <!-- 멤버 관리 -->
@@ -345,6 +346,23 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <div class="notice-preview" id="waitingNoticePreview"></div>
   </div>
 
+</div>
+    <!-- 히스토리 -->
+<div id="tabHistory" style="display:none">
+  <div class="section-card">
+    <div class="section-head">
+      <div><h2>📋 모임 신청/취소 이력</h2><p>전체 멤버의 신청 및 취소 기록이에요</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="historyTypeFilter" onchange="loadHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none">
+          <option value="all">전체</option>
+          <option value="apply">신청만</option>
+          <option value="cancel">취소만</option>
+        </select>
+        <input id="historySearchInput" type="text" placeholder="이름 또는 모임명 검색" oninput="filterHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none;width:180px">
+      </div>
+    </div>
+    <div id="historyList"><div class="empty">불러오는 중...</div></div>
+  </div>
 </div>
     <!-- 신청서 편집 -->
     <div id="tabForm" style="display:none">
@@ -914,8 +932,9 @@ function closeAddMemberModal(){document.getElementById('addMemberModal').classLi
 /* ── TABS ─────────────────────────────────────────────── */
 function switchAdminTab(t,el){
   document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
-  ['tabMembers','tabMeetings','tabSettings','tabForm'].forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById({members:'tabMembers',meetings:'tabMeetings',settings:'tabSettings',form:'tabForm'}[t]).style.display='block';
+['tabMembers','tabMeetings','tabSettings','tabForm','tabHistory'].forEach(id=>document.getElementById(id).style.display='none');
+document.getElementById({members:'tabMembers',meetings:'tabMeetings',settings:'tabSettings',form:'tabForm',history:'tabHistory'}[t]).style.display='block';
+if(t==='history') loadHistory();
   if(t==='meetings')renderMeetingChips();
   if(t==='settings') renderCloseableMeetings();
   renderMeetingApplyControlList();
@@ -985,6 +1004,66 @@ function toggleSort(){
   if(btn) btn.textContent = sortAsc ? '🕐 오래된순' : '🕒 최신순';
   renderMemberList();
 }  
+// ── 히스토리 ──────────────────────────────────────────────
+let allHistory = [];
+
+async function loadHistory(){
+  document.getElementById('historyList').innerHTML='<div class="empty">불러오는 중...</div>';
+
+  // 모든 유저의 history 서브컬렉션 로드
+  const usersSnap = await db.collection('users').get();
+  const promises = usersSnap.docs.map(async uDoc => {
+    const u = uDoc.data();
+    const histSnap = await db.collection('users').doc(uDoc.id).collection('history')
+      .orderBy('time','desc').limit(50).get();
+    return histSnap.docs.map(d => ({
+      ...d.data(),
+      userName: u.name || uDoc.id,
+      userEmail: uDoc.id
+    }));
+  });
+
+  const results = await Promise.all(promises);
+  allHistory = results.flat().sort((a,b)=>{
+    const at = a.time?.toMillis?.() || 0;
+    const bt = b.time?.toMillis?.() || 0;
+    return bt - at; // 최신순
+  });
+
+  filterHistory();
+}
+
+function filterHistory(){
+  const type = document.getElementById('historyTypeFilter').value;
+  const q = document.getElementById('historySearchInput').value.trim().toLowerCase();
+
+  let list = allHistory;
+  if(type !== 'all') list = list.filter(h => h.type === type);
+  if(q) list = list.filter(h =>
+    (h.userName||'').toLowerCase().includes(q) ||
+    (h.meetingTitle||'').toLowerCase().includes(q)
+  );
+
+  const el = document.getElementById('historyList');
+  if(!list.length){ el.innerHTML='<div class="empty">이력이 없어요</div>'; return; }
+
+  el.innerHTML = list.map(h => {
+    const isApply = h.type === 'apply';
+    const color = isApply ? 'rgba(100,220,100,.8)' : 'rgba(255,130,130,.8)';
+    const icon = isApply ? '📚 신청' : '❌ 취소';
+    const timeStr = h.time?.toDate ? h.time.toDate().toLocaleString('ko-KR') : '-';
+    const reason = h.reason ? `<span style="font-size:.72rem;color:rgba(255,200,80,.7);margin-left:6px">(${h.reason})</span>` : '';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:.7rem .5rem;border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap">
+      <span style="font-size:.78rem;color:${color};font-weight:600;min-width:50px">${icon}</span>
+      <div style="flex:1;min-width:120px">
+        <div style="font-size:.86rem;font-weight:600">${h.meetingTitle||'-'}${reason}</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${h.userName} · ${h.userEmail}</div>
+      </div>
+      <div style="font-size:.75rem;color:rgba(255,255,255,.35);flex-shrink:0">${timeStr}</div>
+    </div>`;
+  }).join('');
+}
+  
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ── 사이트 설정 로드 (기존 loadSiteConfig 함수 전체를 이걸로 교체) ──────────
