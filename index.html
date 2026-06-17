@@ -242,6 +242,18 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
   .grid{grid-template-columns:1fr}
   .form-row{grid-template-columns:1fr}
 }
+/* ── CALENDAR ── */
+.cal-cell{min-height:70px;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);padding:5px 4px;cursor:pointer;transition:background .15s;position:relative}
+.cal-cell:hover{background:rgba(255,255,255,.04)}
+.cal-cell.today{background:rgba(255,255,255,.07)}
+.cal-cell.other-month .cal-date{color:rgba(255,255,255,.15)}
+.cal-date{font-size:.78rem;font-weight:600;margin-bottom:3px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.cal-date.today-dot{background:#fff;color:#0d1f3c}
+.cal-event{font-size:.62rem;padding:1px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.cal-event.meeting{background:rgba(255,255,255,.18);color:#fff}
+.cal-event.small{background:rgba(140,100,255,.35);color:rgba(200,180,255,.95)}
+.cal-day-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.6rem}
+.cal-day-card h3{font-size:.85rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:.8rem;letter-spacing:.05em}
 </style>
 </head>
 <body>
@@ -334,10 +346,26 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
         <button id="subTab-upcoming" onclick="switchMeetingSubTab('upcoming')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:#fff;color:#0d1f3c;font-weight:600;transition:all .2s">예정</button>
         <button id="subTab-done" onclick="switchMeetingSubTab('done')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">완료</button>
         <button id="subTab-all" onclick="switchMeetingSubTab('all')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">전체</button>
+        <button id="subTab-calendar" onclick="switchMeetingSubTab('calendar')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">📅 캘린더</button>
       </div>
       <div id="staffBar" style="display:none"><button class="btn-admin" onclick="openAddModal('meeting')">+ 모임 추가</button></div>
     </div>
     <div id="cardGrid" class="grid"><div class="empty">모임 불러오는 중...</div></div>
+    <div id="calendarView" style="display:none;max-width:980px;margin:0 auto;padding:0 1rem 5rem">
+      <div style="background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.08)">
+          <button onclick="changeCalMonth(-1)" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1rem">‹</button>
+          <div id="calMonthLabel" style="font-size:1rem;font-weight:700;letter-spacing:.05em"></div>
+          <button onclick="changeCalMonth(1)" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1rem">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,.06)">
+          ${['일','월','화','수','목','금','토'].map((d,i)=>`<div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:${i===0?'rgba(255,120,120,.7)':i===6?'rgba(100,160,255,.7)':'rgba(255,255,255,.3)'}">${d}</div>`).join('')}
+        </div>
+        <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0"></div>
+      </div>
+      <!-- 날짜 클릭시 모임 상세 -->
+      <div id="calDayDetail" style="display:none;margin-top:1rem"></div>
+    </div>
   </div>
   <div id="tabSmall" style="display:none">
     <div id="staffBarSmall" class="staff-bar" style="display:none"><button class="btn-admin" onclick="openAddModal('small')">+ 소모임 추가</button></div>
@@ -1229,9 +1257,12 @@ function closeAddMemberModal(){document.getElementById('addMemberModal').classLi
 
 /* ── RENDER ── */
 let meetingSubTab = 'upcoming';
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+
 function switchMeetingSubTab(tab){
   meetingSubTab = tab;
-  ['upcoming','done','all'].forEach(t=>{
+  ['upcoming','done','all','calendar'].forEach(t=>{
     const btn = document.getElementById('subTab-'+t);
     if(!btn) return;
     const isActive = t === tab;
@@ -1239,7 +1270,126 @@ function switchMeetingSubTab(tab){
     btn.style.color = isActive ? '#0d1f3c' : 'rgba(255,255,255,.4)';
     btn.style.fontWeight = isActive ? '600' : '400';
   });
-  renderAll();
+  const calView = document.getElementById('calendarView');
+  const cardGrid = document.getElementById('cardGrid');
+  if(tab === 'calendar'){
+    if(calView) calView.style.display = 'block';
+    if(cardGrid) cardGrid.style.display = 'none';
+    renderCalendar();
+  } else {
+    if(calView) calView.style.display = 'none';
+    if(cardGrid) cardGrid.style.display = 'grid';
+    renderAll();
+  }
+}
+
+function changeCalMonth(delta){
+  calMonth += delta;
+  if(calMonth > 11){ calMonth = 0; calYear++; }
+  if(calMonth < 0){ calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function renderCalendar(){
+  const label = document.getElementById('calMonthLabel');
+  if(label) label.textContent = `${calYear}년 ${calMonth+1}월`;
+
+  const grid = document.getElementById('calGrid');
+  if(!grid) return;
+
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  // 날짜별 이벤트 맵 생성
+  const eventMap = {};
+  const addEvent = (dateStr, item, type) => {
+    if(!eventMap[dateStr]) eventMap[dateStr] = [];
+    eventMap[dateStr].push({item, type});
+  };
+  meetings.forEach(m => addEvent(m.date, m, 'meeting'));
+  smallGroups.forEach(m => addEvent(m.date, m, 'small'));
+
+  let cells = '';
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+  for(let i = 0; i < totalCells; i++){
+    let day, month, year, isOther = false;
+    if(i < firstDay){
+      day = daysInPrev - firstDay + i + 1;
+      month = calMonth - 1;
+      year = calYear;
+      if(month < 0){ month = 11; year--; }
+      isOther = true;
+    } else if(i >= firstDay + daysInMonth){
+      day = i - firstDay - daysInMonth + 1;
+      month = calMonth + 1;
+      year = calYear;
+      if(month > 11){ month = 0; year++; }
+      isOther = true;
+    } else {
+      day = i - firstDay + 1;
+      month = calMonth;
+      year = calYear;
+    }
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===day;
+    const dayEvents = eventMap[dateStr] || [];
+    const dotClass = isToday ? 'today-dot' : '';
+    const colIdx = i % 7;
+    const dayColor = colIdx===0 ? 'color:rgba(255,120,120,.9)' : colIdx===6 ? 'color:rgba(100,160,255,.9)' : '';
+
+    const eventsHTML = dayEvents.slice(0,3).map(e =>
+      `<div class="cal-event ${e.type}" title="${e.type==='meeting'?e.item.title:e.item.name}">${e.type==='meeting'?e.item.title:e.item.name}</div>`
+    ).join('') + (dayEvents.length > 3 ? `<div style="font-size:.58rem;color:rgba(255,255,255,.3);padding-left:3px">+${dayEvents.length-3}개</div>` : '');
+
+    cells += `<div class="cal-cell${isOther?' other-month':''}${isToday?' today':''}" onclick="showCalDay('${dateStr}')">
+      <div class="cal-date ${dotClass}" style="${dayColor}">${day}</div>
+      ${eventsHTML}
+    </div>`;
+  }
+  grid.innerHTML = cells;
+}
+
+function showCalDay(dateStr){
+  const detail = document.getElementById('calDayDetail');
+  if(!detail) return;
+  const dayMeetings = meetings.filter(m => m.date === dateStr);
+  const daySmall = smallGroups.filter(m => m.date === dateStr);
+  if(!dayMeetings.length && !daySmall.length){
+    detail.style.display = 'none';
+    return;
+  }
+  const d = new Date(dateStr);
+  const dateLabel = d.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+  let html = '';
+  if(dayMeetings.length){
+    html += `<div class="cal-day-card"><h3>📚 독서모임</h3>`;
+    html += dayMeetings.map(m => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div>
+          <div style="font-size:.88rem;font-weight:600">${m.title}</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${m.time} · ${m.place} · ${m.host}</div>
+        </div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.4);flex-shrink:0;margin-left:8px">${m.applied}/${m.max}명</div>
+      </div>`).join('');
+    html += `</div>`;
+  }
+  if(daySmall.length){
+    html += `<div class="cal-day-card"><h3>🎯 소모임</h3>`;
+    html += daySmall.map(m => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div>
+          <div style="font-size:.88rem;font-weight:600">${m.name}</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${m.time} · ${m.place} · ${m.host}</div>
+        </div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.4);flex-shrink:0;margin-left:8px">${m.applied}/${m.max}명</div>
+      </div>`).join('');
+    html += `</div>`;
+  }
+  detail.innerHTML = `<div style="font-size:.82rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:.7rem;padding-left:.2rem">${dateLabel}</div>` + html;
+  detail.style.display = 'block';
 }
 function filterMeetingsBySubTab(list){
   const today = new Date(); today.setHours(0,0,0,0);
