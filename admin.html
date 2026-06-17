@@ -923,8 +923,23 @@ function toggleMemberSelect(email){if(selectedMemberEmails.has(email))selectedMe
 function filterMemberSelectList(){const q=document.getElementById('memberSearchInput').value.trim().toLowerCase();const eligible=allMembers.filter(u=>(u.role==='member'||u.role==='staff')&&(!q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));renderMemberSelectList(eligible);}
 async function confirmAddSelectedMembers(){
   if(!addMemberContext||selectedMemberEmails.size===0){showToast('추가할 멤버를 선택해주세요');return;}
-  const {col,id}=addMemberContext;let added=0;
-  for(const email of selectedMemberEmails){const u=allMembers.find(x=>x.email===email);if(!u)continue;await db.collection(col).doc(id).collection('applicants').doc(email).set({name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''});await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});const field=col==='meetings'?'applied':'appliedSmall';await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});added++;}
+  const {col,id,title}=addMemberContext;let added=0;
+  for(const email of selectedMemberEmails){
+    const u=allMembers.find(x=>x.email===email);if(!u)continue;
+    await db.collection(col).doc(id).collection('applicants').doc(email).set({name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''});
+    await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});
+    const field=col==='meetings'?'applied':'appliedSmall';
+    await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});
+    // 히스토리 기록 (관리자 추가)
+    await db.collection('users').doc(email).collection('history').add({
+      type:'apply',
+      meetingTitle: title||id,
+      meetingId: id,
+      reason: `관리자 추가 (${user.name})`,
+      time: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    added++;
+  }
   showToast(`${added}명이 추가되었어요 ✅`);closeAddMemberModal();if(col==='meetings')renderApplicantTable();
 }
 function closeAddMemberModal(){document.getElementById('addMemberModal').classList.remove('open');addMemberContext=null;selectedMemberEmails=new Set();}
@@ -1217,6 +1232,23 @@ async function addAdminNotification(toEmail, message){
     console.error('알림 저장 실패', e);
   }
 }  
+  async function removeApplicant(col, meetingId, meetingTitle, email, memberName){
+  if(!confirm(`"${memberName}" 님을 이 모임에서 제거할까요?`)) return;
+  await db.collection(col).doc(meetingId).collection('applicants').doc(email).delete();
+  await db.collection(col).doc(meetingId).update({applied: firebase.firestore.FieldValue.increment(-1)});
+  const field = col==='meetings' ? 'applied' : 'appliedSmall';
+  await db.collection('users').doc(email).set({[field]: firebase.firestore.FieldValue.arrayRemove(meetingId)},{merge:true});
+  // 히스토리 기록 (관리자 제거)
+  await db.collection('users').doc(email).collection('history').add({
+    type: 'cancel',
+    meetingTitle: meetingTitle,
+    meetingId: meetingId,
+    reason: `관리자 제거 (${user.name})`,
+    time: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  showToast(memberName+' 님이 제거되었어요');
+  renderApplicantTable();
+}
 </script>
 </body>
 </html>
