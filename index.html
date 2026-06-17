@@ -611,8 +611,8 @@ function updateNav(){
     const t=document.createElement('div');t.className='tab';t.id='tabProfileBtn';t.textContent='👤';t.onclick=function(){switchTab('profile',this);};tb.appendChild(t);
   }
   // 추가 버튼
-  const sb=document.getElementById('staffBar'),sbs=document.getElementById('staffBarSmall');
-  if(sb)sb.style.display=admin?'flex':'none';
+const sb=document.getElementById('staffBar'),sbs=document.getElementById('staffBarSmall');
+  if(sb)sb.style.display=admin?'block':'none';
   if(sbs)sbs.style.display=admin?'flex':'none';
 
   // 프로필 탭 토큰 업데이트
