@@ -328,8 +328,15 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
     <div class="tab" onclick="switchTab('applied',this)">신청한 모임</div>
     <div class="tab" onclick="switchTab('wish',this)">찜</div>
   </div>
-  <div id="tabAll">
+<div id="tabAll">
     <div id="staffBar" class="staff-bar" style="display:none"><button class="btn-admin" onclick="openAddModal('meeting')">+ 모임 추가</button></div>
+    <div style="display:flex;justify-content:center;margin-bottom:1rem;padding:0 1rem">
+      <div style="display:flex;background:rgba(255,255,255,.06);border-radius:8px;padding:3px;gap:0">
+        <button id="subTab-upcoming" onclick="switchMeetingSubTab('upcoming')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:#fff;color:#0d1f3c;font-weight:600;transition:all .2s">예정</button>
+        <button id="subTab-done" onclick="switchMeetingSubTab('done')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">완료</button>
+        <button id="subTab-all" onclick="switchMeetingSubTab('all')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">전체</button>
+      </div>
+    </div>
     <div id="cardGrid" class="grid"><div class="empty">모임 불러오는 중...</div></div>
   </div>
   <div id="tabSmall" style="display:none">
@@ -1221,8 +1228,31 @@ async function confirmAddSelectedMembers(){
 function closeAddMemberModal(){document.getElementById('addMemberModal').classList.remove('open');addMemberTarget=null;selectedEmails=new Set();}
 
 /* ── RENDER ── */
+let meetingSubTab = 'upcoming';
+function switchMeetingSubTab(tab){
+  meetingSubTab = tab;
+  ['upcoming','done','all'].forEach(t=>{
+    const btn = document.getElementById('subTab-'+t);
+    if(!btn) return;
+    const isActive = t === tab;
+    btn.style.background = isActive ? '#fff' : 'transparent';
+    btn.style.color = isActive ? '#0d1f3c' : 'rgba(255,255,255,.4)';
+    btn.style.fontWeight = isActive ? '600' : '400';
+  });
+  renderAll();
+}
+function filterMeetingsBySubTab(list){
+  const today = new Date(); today.setHours(0,0,0,0);
+  if(meetingSubTab === 'upcoming') return list.filter(m => new Date(m.date) >= today);
+  if(meetingSubTab === 'done')     return list.filter(m => new Date(m.date) < today);
+  return list;
+}
 function renderAll(){
-  const g=document.getElementById('cardGrid');if(g)g.innerHTML=meetings.length?meetings.map(meetingCardHTML).join(''):`<div class="empty">등록된 모임이 없어요</div>`;
+  const g=document.getElementById('cardGrid');
+  if(g){
+    const filtered = filterMeetingsBySubTab(meetings);
+    g.innerHTML = filtered.length ? filtered.map(meetingCardHTML).join('') : `<div class="empty">${meetingSubTab==='upcoming'?'예정된 모임이 없어요':meetingSubTab==='done'?'완료된 모임이 없어요':'등록된 모임이 없어요'}</div>`;
+  }
   const sg=document.getElementById('smallGrid');if(sg)sg.innerHTML=smallGroups.length?smallGroups.map(smallCardHTML).join(''):`<div class="empty">등록된 소모임이 없어요</div>`;
   const mmg=document.getElementById('myMeetingGrid'),msg=document.getElementById('mySmallGrid');
   if(mmg){const l=meetings.filter(m=>applied.has(m.id));mmg.innerHTML=l.length?l.map(meetingCardHTML).join(''):`<div class="empty">신청한 독서모임이 없어요</div>`;}
