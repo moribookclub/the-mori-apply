@@ -243,7 +243,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
   .form-row{grid-template-columns:1fr}
 }
 /* ── CALENDAR ── */
-.cal-cell{min-height:70px;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);padding:5px 4px;cursor:pointer;transition:background .15s;position:relative}
+.cal-cell{height:80px;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);padding:5px 4px;cursor:pointer;transition:background .15s;position:relative;overflow:hidden}
 .cal-cell:hover{background:rgba(255,255,255,.04)}
 .cal-cell.today{background:rgba(255,255,255,.07)}
 .cal-cell.other-month .cal-date{color:rgba(255,255,255,.15)}
@@ -346,7 +346,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
         <button id="subTab-upcoming" onclick="switchMeetingSubTab('upcoming')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:#fff;color:#0d1f3c;font-weight:600;transition:all .2s">예정</button>
         <button id="subTab-done" onclick="switchMeetingSubTab('done')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">완료</button>
         <button id="subTab-all" onclick="switchMeetingSubTab('all')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">전체</button>
-        <button id="subTab-calendar" onclick="switchMeetingSubTab('calendar')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">📅 캘린더</button>
+        <button id="subTab-calendar" onclick="switchMeetingSubTab('calendar')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">캘린더</button>
       </div>
       <div id="staffBar" style="display:none"><button class="btn-admin" onclick="openAddModal('meeting')">+ 모임 추가</button></div>
     </div>
@@ -358,8 +358,14 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
           <div id="calMonthLabel" style="font-size:1rem;font-weight:700;letter-spacing:.05em"></div>
           <button onclick="changeCalMonth(1)" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1rem">›</button>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,.06)">
-          ${['일','월','화','수','목','금','토'].map((d,i)=>`<div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:${i===0?'rgba(255,120,120,.7)':i===6?'rgba(100,160,255,.7)':'rgba(255,255,255,.3)'}">${d}</div>`).join('')}
+<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,.06)">
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,120,120,.7)">일</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">월</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">화</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">수</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">목</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">금</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(100,160,255,.7)">토</div>
         </div>
         <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0"></div>
       </div>
