@@ -1223,6 +1223,16 @@ async function removeMemberBtn(btn){
   await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(-1)});
   const field=col==='meetings'?'applied':'appliedSmall';
   await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayRemove(id)},{merge:true});
+  // 히스토리 기록 (관리자/스탭 제거)
+  const meetingData = col==='meetings' ? meetings.find(x=>x.id===id) : smallGroups.find(x=>x.id===id);
+  const meetingTitle = meetingData ? (meetingData.title||meetingData.name) : id;
+  await db.collection('users').doc(email).collection('history').add({
+    type: 'cancel',
+    meetingTitle: meetingTitle,
+    meetingId: id,
+    reason: `${userRole==='admin'||isAdmin()?'관리자':'스탭'} 제거 (${user.name})`,
+    time: firebase.firestore.FieldValue.serverTimestamp()
+  });
   showToast(name+' 님이 제거되었어요');
   const h=document.querySelector(`.manage-meeting-header[data-col="${col}"][data-id="${id}"]`);
   const body=document.getElementById('body-'+col+'-'+id);
@@ -1251,8 +1261,25 @@ function toggleMemberSel(rowEl){const email=decodeURIComponent(rowEl.dataset.ema
 function filterMemberSelectList(){if(!addMemberTarget?.eligible)return;const q=document.getElementById('memberSearchInput').value.trim().toLowerCase();renderMemberSelectList(addMemberTarget.eligible.filter(u=>!q||(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));}
 async function confirmAddSelectedMembers(){
   if(!addMemberTarget||selectedEmails.size===0){showToast('추가할 멤버를 선택해주세요');return;}
-  const {col,id,eligible}=addMemberTarget;let added=0;
-  for(const email of selectedEmails){const u=eligible.find(x=>x.email===email);if(!u)continue;await db.collection(col).doc(id).collection('applicants').doc(email).set({name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''});await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});const field=col==='meetings'?'applied':'appliedSmall';await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});added++;}
+  const {col,id,title,eligible}=addMemberTarget;let added=0;
+  for(const email of selectedEmails){
+    const u=eligible.find(x=>x.email===email);if(!u)continue;
+    await db.collection(col).doc(id).collection('applicants').doc(email).set({name:u.name,email,time:new Date().toLocaleString('ko-KR'),photo:u.photo||''});
+    await db.collection(col).doc(id).update({applied:firebase.firestore.FieldValue.increment(1)});
+    const field=col==='meetings'?'applied':'appliedSmall';
+    await db.collection('users').doc(email).set({[field]:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true});
+    // 히스토리 기록 (관리자/스탭 추가)
+    const meetingData = col==='meetings' ? meetings.find(x=>x.id===id) : smallGroups.find(x=>x.id===id);
+    const meetingTitle = meetingData ? (meetingData.title||meetingData.name) : (title||id);
+    await db.collection('users').doc(email).collection('history').add({
+      type: 'apply',
+      meetingTitle: meetingTitle,
+      meetingId: id,
+      reason: `${isAdmin()?'관리자':'스탭'} 추가 (${user.name})`,
+      time: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    added++;
+  }
   showToast(added+'명이 추가되었어요 ✅');
   closeAddMemberModal();
   const h=document.querySelector(`.manage-meeting-header[data-col="${col}"][data-id="${id}"]`);
