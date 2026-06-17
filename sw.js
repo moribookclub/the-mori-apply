@@ -15,7 +15,7 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-const CACHE = 'mori-apply-v55';
+const CACHE = 'mori-apply-v56';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
