@@ -1771,6 +1771,9 @@ async function promoteWaitlist(meetingId){
     await cancelWaitlist(meetingId,email);
     await db.collection('users').doc(email).update({waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
     addNotification(email,`❌ "${m.title}" 모임 여석이 생겼지만 신청 횟수가 없어 대기가 취소되었어요`);
+    if(m.hostEmail){
+      addNotification(m.hostEmail,`⚠️ "${m.title}" 모임 여석이 생겼지만 대기자 ${fd.realName||fd.name}님의 신청 횟수가 없어 다음 대기자로 넘어갔어요`);
+    }
     await promoteWaitlist(meetingId); // 재귀로 다음 대기자 시도
     return;
   }
@@ -1792,8 +1795,16 @@ async function promoteWaitlist(meetingId){
     applied:firebase.firestore.FieldValue.arrayUnion(meetingId),
     waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)
   });
-  // 알림
+  // 승격된 유저 알림
   addNotification(email,`🎉 "${m.title}" 모임 여석이 생겨 자동으로 신청되었어요! (신청 횟수 -1)`);
+  // 모임장 알림
+  if(m.hostEmail){
+    db.collection('users').doc(m.hostEmail).get().then(doc=>{
+      if(doc.exists&&doc.data().notifSettings?.hostApply!==false){
+        addNotification(m.hostEmail,`🔄 "${m.title}" 모임에서 대기자 ${fd.realName||fd.name}님이 자동으로 참여 확정되었어요`);
+      }
+    });
+  }
   // 토큰 0 되면 다른 대기 자동 취소
   if(newToken<=0){
     const allWaitSnap=await db.collection('users').doc(email).get();
