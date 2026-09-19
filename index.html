@@ -1464,8 +1464,6 @@ function meetingCardHTML(m){
   const isWaitlisted=waitlisted.has(m.id);
   const canWait=isFull&&!isApplied&&!iAmHost&&!m.closed;
   const waitCount=m.waitCount||0;
-  else if(isApplyClosed){badge=`<span class="card-badge badge-closed">신청마감</span>`;btnCls='full';btnTxt='신청마감';}
-  else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;}
   const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}','meeting')">삭제</button></div>`:''; 
   const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('meetings','${m.id}','${encodeURIComponent(m.title)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:'';
   const hostBadge=iAmHost?`<span class="badge-host">내 모임</span>`:'';
