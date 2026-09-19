@@ -1554,32 +1554,45 @@ function renderAll(){
 }
 
 function meetingCardHTML(m){
+  const today=new Date();today.setHours(0,0,0,0);
+  const isPast=new Date(m.date)<today;
   const isFull=m.applied>=m.max,isApplied=applied.has(m.id),isWish=wishlisted.has(m.id);
   const iAmHost=isHostOf(m);
   const locked=!isAdmin()&&isApplied&&isCancelLocked(m);
   const isQuotaFull=!isAdmin()&&!isApplied&&!iAmHost&&applyToken<=0;
   const isApplyClosed=!isAdmin()&&!isApplied&&!iAmHost&&(m.applyOpen===false);
+  const isWaitlisted=waitlisted.has(m.id);
+  const canWait=isFull&&!isApplied&&!iAmHost&&!m.closed&&!isPast;
+  const waitCount=m.waitCount||0;
   const pct=Math.round((m.applied/m.max)*100);
   const dateStr=new Date(m.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
   let badge,btnCls,btnTxt,clickable=false;
-  if(iAmHost){badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='is-host';btnTxt='내 모임';}
-  else if(isApplied){
+  if(iAmHost){
+    badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='is-host';btnTxt='내 모임';
+  } else if(isPast&&!isApplied){
+    badge=`<span class="card-badge badge-closed">완료</span>`;btnCls='full';btnTxt='마감';
+  } else if(isApplied){
     badge=`<span class="card-badge badge-mine">신청완료</span>`;
     if(locked){btnCls='locked';btnTxt='취소불가';}
     else{btnCls='applied';btnTxt='신청취소';clickable=true;}
+  } else if(isWaitlisted){
+    badge=`<span class="card-badge" style="background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.3);color:rgba(255,220,100,.9)">대기신청중</span>`;btnCls='full';btnTxt='마감';
+  } else if(isFull){
+    badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';
+  } else if(isQuotaFull){
+    badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='quota-full';btnTxt='토큰소진';
+  } else if(isApplyClosed){
+    badge=`<span class="card-badge badge-closed">신청마감</span>`;btnCls='full';btnTxt='신청마감';
+  } else {
+    badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;
   }
-  else if(isFull){badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';}
-  else if(isQuotaFull){badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='quota-full';btnTxt='토큰소진';}
-  else if(isApplyClosed){badge=`<span class="card-badge badge-closed">신청마감</span>`;btnCls='full';btnTxt='신청마감';}
-  else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;}
-  const isWaitlisted=waitlisted.has(m.id);
-  const canWait=isFull&&!isApplied&&!iAmHost&&!m.closed;
-  const waitCount=m.waitCount||0;
-  const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}','meeting')">삭제</button></div>`:''; 
+  const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}','meeting')">삭제</button></div>`:'';
   const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('meetings','${m.id}','${encodeURIComponent(m.title)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:'';
   const hostBadge=iAmHost?`<span class="badge-host">내 모임</span>`:'';
   const closedBadge=m.closed?`<span class="card-badge badge-closed" style="background:rgba(255,80,80,.15);color:rgba(255,130,130,.8)">폐강</span>`:'';
-  return`<div class="card${m.closed?' opacity-60':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}${hostBadge}${closedBadge}</div><div class="card-top-right">${applicantBtn}${adminBtns}</div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div>${m.minMembers?`<div class="info-row"><span class="info-label">최소</span><span class="info-val" style="color:rgba(255,200,100,.8)">${m.minMembers}명 이상</span></div>`:''}</div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리${waitCount>0?` · 대기 <strong>${waitCount}</strong>명`:''}</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><div style="display:flex;gap:5px;align-items:center">${canWait?`<button class="btn-apply ${isWaitlisted?'applied':'open'}" style="font-size:.73rem" onclick="applyWaitlist('${m.id}')">${isWaitlisted?'대기취소 ':'대기신청'}</button>`:''}${!canWait||isWaitlisted?`<button class="btn-apply ${btnCls}" ${clickable?`onclick="applyMeeting('${m.id}')"`:''}>${btnTxt}</button>`:''}</div></div></div>`;
+  const waitBtn=canWait?`<button class="btn-apply ${isWaitlisted?'applied':'open'}" style="font-size:.73rem;${isWaitlisted?'':'background:rgba(255,200,80,.9);color:#0d1f3c;border:none;'}" onclick="applyWaitlist('${m.id}')">${isWaitlisted?'대기취소':'대기신청'}</button>`:'';
+  const mainBtn=(!canWait||isWaitlisted)?`<button class="btn-apply ${btnCls}" ${clickable?`onclick="applyMeeting('${m.id}')"`:''}>${btnTxt}</button>`:'';
+  return`<div class="card${m.closed?' opacity-60':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}${hostBadge}${closedBadge}</div><div class="card-top-right">${applicantBtn}${adminBtns}</div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div>${m.minMembers?`<div class="info-row"><span class="info-label">최소</span><span class="info-val" style="color:rgba(255,200,100,.8)">${m.minMembers}명 이상</span></div>`:''}</div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리${waitCount>0?` · 대기 <strong>${waitCount}</strong>명`:''}</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><div style="display:flex;gap:5px;align-items:center">${waitBtn}${mainBtn}</div></div></div>`;
 }
 
 function smallCardHTML(m){
