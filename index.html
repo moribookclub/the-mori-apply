@@ -1069,10 +1069,23 @@ function isHostOf(m){
 function listenMeetings(){
   if(unsubMeetings){unsubMeetings();unsubMeetings=null;}
   unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
-    const prev=new Map(meetings.map(m=>[m.id,m.applied]));
     meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
     checkAutoClose();
-    renderAll();updateNav();
+    // 유저 데이터 실시간 동기화
+    if(user){
+      db.collection('users').doc(user.email).get().then(doc=>{
+        if(!doc.exists)return;
+        const d=doc.data();
+        applied=new Set(d.applied||[]);
+        waitlisted=new Set(d.waitlisted||[]);
+        appliedSmall=new Set(d.appliedSmall||[]);
+        applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
+        cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
+        renderAll();updateNav();
+      });
+    } else {
+      renderAll();updateNav();
+    }
   });
 }
 
