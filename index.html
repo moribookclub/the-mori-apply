@@ -346,6 +346,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
     <div class="tab active" onclick="switchTab('all',this)">독서모임</div>
     <div class="tab" onclick="switchTab('small',this)">소모임</div>
     <div class="tab" onclick="switchTab('applied',this)">신청한 모임</div>
+    <div class="tab" onclick="switchTab('calendar',this)">캘린더</div>
   </div>
 <div id="tabAll">
     <div class="staff-bar" style="max-width:980px;margin:0 auto 1rem;padding:0 1rem;display:flex;align-items:center;justify-content:space-between">
@@ -353,32 +354,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
         <button id="subTab-upcoming" onclick="switchMeetingSubTab('upcoming')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:#fff;color:#0d1f3c;font-weight:600;transition:all .2s">예정</button>
         <button id="subTab-done" onclick="switchMeetingSubTab('done')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">완료</button>
         <button id="subTab-all" onclick="switchMeetingSubTab('all')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">전체</button>
-        <button id="subTab-calendar" onclick="switchMeetingSubTab('calendar')" style="padding:6px 18px;border:none;border-radius:6px;font-size:.78rem;cursor:pointer;background:transparent;color:rgba(255,255,255,.4);font-weight:400;transition:all .2s">캘린더</button>
       </div>
       <div id="staffBar" style="display:none"><button class="btn-admin" onclick="openAddModal('meeting')">+ 모임 추가</button></div>
     </div>
     <div id="cardGrid" class="grid"><div class="empty">모임 불러오는 중...</div></div>
-    <div id="calendarView" style="display:none;max-width:980px;margin:0 auto;padding:0 1rem 5rem">
-      <div style="background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.08)">
-          <button onclick="changeCalMonth(-1)" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1rem">‹</button>
-          <div id="calMonthLabel" style="font-size:1rem;font-weight:700;letter-spacing:.05em"></div>
-          <button onclick="changeCalMonth(1)" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1rem">›</button>
-        </div>
-<div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,.06)">
-          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,120,120,.7)">일</div>
-          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">월</div>
-          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">화</div>
-          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">수</div>
-          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">목</div>
-          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">금</div>
-          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(100,160,255,.7)">토</div>
-        </div>
-        <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0"></div>
-      </div>
-      <!-- 날짜 클릭시 모임 상세 -->
-      <div id="calDayDetail" style="display:none;margin-top:1rem"></div>
-    </div>
   </div>
   <div id="tabSmall" style="display:none">
     <div id="staffBarSmall" class="staff-bar" style="display:none"><button class="btn-admin" onclick="openAddModal('small')">+ 소모임 추가</button></div>
@@ -390,6 +369,28 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
       <div class="grid" id="myMeetingGrid"></div>
       <div class="section-label" style="margin-top:1.5rem">🎯 신청한 소모임</div>
       <div class="grid" id="mySmallGrid"></div>
+    </div>
+  </div>
+    <div id="tabCalendar" style="display:none">
+    <div style="max-width:980px;margin:0 auto;padding:0 1rem 5rem">
+      <div style="background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid rgba(255,255,255,.08)">
+          <button onclick="changeCalMonth(-1)" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1rem">&#8249;</button>
+          <div id="calMonthLabel" style="font-size:1rem;font-weight:700;letter-spacing:.05em"></div>
+          <button onclick="changeCalMonth(1)" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1rem">&#8250;</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid rgba(255,255,255,.06)">
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,120,120,.7)">일</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">월</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">화</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">수</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">목</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.3)">금</div>
+          <div style="text-align:center;padding:.6rem 0;font-size:.72rem;font-weight:600;color:rgba(100,160,255,.7)">토</div>
+        </div>
+        <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0"></div>
+      </div>
+      <div id="calDayDetail" style="display:none;margin-top:1rem"></div>
     </div>
   </div>
   <div id="tabManage" style="display:none">
@@ -1297,7 +1298,7 @@ let calMonth = new Date().getMonth();
 
 function switchMeetingSubTab(tab){
   meetingSubTab = tab;
-  ['upcoming','done','all','calendar'].forEach(t=>{
+  ['upcoming','done','all'].forEach(t=>{
     const btn = document.getElementById('subTab-'+t);
     if(!btn) return;
     const isActive = t === tab;
@@ -1305,17 +1306,7 @@ function switchMeetingSubTab(tab){
     btn.style.color = isActive ? '#0d1f3c' : 'rgba(255,255,255,.4)';
     btn.style.fontWeight = isActive ? '600' : '400';
   });
-  const calView = document.getElementById('calendarView');
-  const cardGrid = document.getElementById('cardGrid');
-  if(tab === 'calendar'){
-    if(calView) calView.style.display = 'block';
-    if(cardGrid) cardGrid.style.display = 'none';
-    renderCalendar();
-  } else {
-    if(calView) calView.style.display = 'none';
-    if(cardGrid) cardGrid.style.display = 'grid';
-    renderAll();
-  }
+  renderAll();
 }
 
 function changeCalMonth(delta){
@@ -1491,11 +1482,12 @@ function smallCardHTML(m){
 function switchTab(t,el){
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   if(el)el.classList.add('active');
-  const allTabs=['tabAll','tabSmall','tabApplied','tabWish','tabManage','tabProfile'];
+  const allTabs=['tabAll','tabSmall','tabApplied','tabCalendar','tabManage','tabProfile'];
   allTabs.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
-  const map={all:'tabAll',small:'tabSmall',applied:'tabApplied',wish:'tabWish',manage:'tabManage',profile:'tabProfile'};
+  const map={all:'tabAll',small:'tabSmall',applied:'tabApplied',calendar:'tabCalendar',manage:'tabManage',profile:'tabProfile'};
   const target=document.getElementById(map[t]);if(target)target.style.display='block';
   if(t==='manage')renderManageTab();
+  if(t==='calendar')renderCalendar();
   if(t==='profile')updateProfileTab();
   document.getElementById('notifPanel')?.classList.remove('open');
 }
