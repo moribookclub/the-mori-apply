@@ -772,19 +772,6 @@ function initMain(){
   listenSmallGroups();
   listenNotifications();
   loadSiteSettings();
-  listenUserRole();
-}
-
-function listenUserRole(){
-  if(!user)return;
-  let first=true;
-  db.collection('users').doc(user.email).onSnapshot(doc=>{
-    if(first){first=false;return;}
-    if(!doc.exists)return;
-    const newRole=doc.data().role;
-    if(newRole===userRole)return;
-    window.location.reload();
-  });
 }
 
 async function registerFCMToken(){
