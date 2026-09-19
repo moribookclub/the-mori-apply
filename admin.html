@@ -322,7 +322,26 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
     <div class="notice-preview" id="noticeBoardPreview"></div>
   </div>
-
+  <div class="section-card">
+    <div class="section-head">
+      <div>
+        <h2>📋 모임 신청서 작성 전 안내사항</h2>
+        <p>OFF 시 신청자에게 대기 안내 페이지가 표시돼요</p>
+      </div>
+      <label class="toggle-switch" style="margin-top:4px">
+        <input type="checkbox" id="formOpenToggle" onchange="saveFormOpenSetting()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div style="font-size:.82rem;color:rgba(255,255,255,.5);margin-bottom:.8rem">신청서가 OFF일 때 표시할 대기 안내 문구를 입력해주세요</div>
+    <textarea id="formClosedNotice" rows="4" class="plain-editor" placeholder="예) 현재 모임 신청서 접수가 마감되었습니다. 다음 모집 기간에 다시 찾아주세요."></textarea>
+    <button class="btn-save" style="margin-top:.8rem" onclick="saveFormOpenSetting()">저장</button>
+    <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-top:.6rem">미리보기</div>
+    <div id="formClosedNoticePreview" class="notice-preview"></div>
+  </div>
+  
+  <div class="section-card">
+    <div class="section-head"><div><h2>⏳ 신청서 검토화면 공지사항</h2></div></div>
   <div class="section-card">
     <div class="section-head"><div><h2>⏳ 신청서 검토화면 공지사항</h2></div></div>
     <div id="waitingNoticeEditorWrap"></div>
@@ -1089,6 +1108,12 @@ async function loadSiteConfig(){
     if(wishNotifEl) wishNotifEl.checked=d.wishNotifEnabled!==false;
     const globalApplyEl=document.getElementById('globalApplyToggle');
 if(globalApplyEl) globalApplyEl.checked=d.globalApplyOpen!==false;
+    const formOpenEl=document.getElementById('formOpenToggle');
+    if(formOpenEl) formOpenEl.checked=d.formOpen!==false;
+    const formClosedNoticeEl=document.getElementById('formClosedNotice');
+    if(formClosedNoticeEl) formClosedNoticeEl.value=d.formClosedNotice||'';
+    const previewEl=document.getElementById('formClosedNoticePreview');
+    if(previewEl) previewEl.textContent=d.formClosedNotice||'';
   }
   const qi=document.getElementById('globalQuotaInput');
   if(qi) qi.value=siteConfig.globalQuota||2;
@@ -1254,6 +1279,13 @@ async function clearAllHistory(){
   allHistory = [];
   filterHistory();
   showToast('히스토리가 모두 삭제되었어요 ✅');
+}
+  async function saveFormOpenSetting(){
+  const enabled=document.getElementById('formOpenToggle').checked;
+  const notice=document.getElementById('formClosedNotice').value;
+  await db.collection('settings').doc('config').set({formOpen:enabled, formClosedNotice:notice},{merge:true});
+  document.getElementById('formClosedNoticePreview').textContent=notice;
+  showToast(enabled?'신청서가 열렸어요 ✅':'신청서가 닫혔어요 🔒');
 }
 </script>
 </body>
