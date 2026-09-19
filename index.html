@@ -575,6 +575,7 @@ let eligibleMembers=[];
 // 개인 알림 설정
 let notifSettings = {wishRestock:true, hostApply:true, hostCancel:true};
 let notifications = [];
+let waitlisted = new Set(); // 대기 중인 모임 ID
 
 function isAdmin() { return userRole === 'admin' || (user && ADMIN_EMAILS.includes(user.email)); }
 function isStaff()      { return userRole === 'staff'; }
@@ -596,6 +597,7 @@ auth.onAuthStateChanged(async fb => {
       const d=doc.data();
       applied=new Set(d.applied||[]);
       appliedSmall=new Set(d.appliedSmall||[]);
+      waitlisted=new Set(d.waitlisted||[]);
       applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
       cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
       notifSettings=Object.assign({hostApply:true,hostCancel:true},d.notifSettings||{});
@@ -612,6 +614,7 @@ auth.onAuthStateChanged(async fb => {
   if(userRole==='member'||userRole==='staff'||userRole==='smallstaff'){
     applied=new Set(d.applied||[]);
     appliedSmall=new Set(d.appliedSmall||[]);
+    waitlisted=new Set(d.waitlisted||[]);
     await loadFormConfig();
     initMain();
     updateNav();
@@ -985,9 +988,9 @@ async function submitApplication(){
 
 async function saveUserData(){
   if(!user)return;
-  await db.collection('users').doc(user.email).set({applied:[...applied],wishlisted:[...wishlisted],appliedSmall:[...appliedSmall],wishlistedSmall:[...wishlistedSmall],updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  await db.collection('users').doc(user.email).set({applied:[...applied],appliedSmall:[...appliedSmall],waitlisted:[...waitlisted],updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
 }
-
+  
 /* ── 72시간 취소 잠금 체크 ── */
 function isCancelLocked(m){
   if(!siteSettings.cancelLockEnabled)return false;
@@ -1106,7 +1109,9 @@ async function doCancelMeeting(id){
       }
     });
   }
-  showToast('신청이 취소되었어요'); 
+  // 대기자 승격
+  await promoteWaitlist(id);
+  showToast('신청이 취소되었어요');
 const canceledMeeting = meetings.find(x => x.id === id);
 if(canceledMeeting){
   db.collection('users').doc(user.email).collection('history').add({
@@ -1236,6 +1241,7 @@ async function removeMemberBtn(btn){
     reason: `${userRole==='admin'||isAdmin()?'관리자':'스탭'} 제거 (${user.name})`,
     time: firebase.firestore.FieldValue.serverTimestamp()
   });
+  if(col==='meetings') await promoteWaitlist(id);
   showToast(name+' 님이 제거되었어요');
   const h=document.querySelector(`.manage-meeting-header[data-col="${col}"][data-id="${id}"]`);
   const body=document.getElementById('body-'+col+'-'+id);
@@ -1452,6 +1458,9 @@ function meetingCardHTML(m){
     else{btnCls='applied';btnTxt='신청취소';clickable=true;}
   }
   else if(isFull){badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';}
+  const isWaitlisted=waitlisted.has(m.id);
+  const canWait=isFull&&!isApplied&&!iAmHost&&!m.closed;
+  const waitCount=m.waitCount||0;
   else if(isQuotaFull){badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='quota-full';btnTxt='토큰소진';}
   else if(isApplyClosed){badge=`<span class="card-badge badge-closed">신청마감</span>`;btnCls='full';btnTxt='신청마감';}
   else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;}
@@ -1459,7 +1468,7 @@ function meetingCardHTML(m){
   const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('meetings','${m.id}','${encodeURIComponent(m.title)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:'';
   const hostBadge=iAmHost?`<span class="badge-host">내 모임</span>`:'';
   const closedBadge=m.closed?`<span class="card-badge badge-closed" style="background:rgba(255,80,80,.15);color:rgba(255,130,130,.8)">폐강</span>`:'';
-  return`<div class="card${m.closed?' opacity-60':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}${hostBadge}${closedBadge}</div><div class="card-top-right">${applicantBtn}${adminBtns}</div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div>${m.minMembers?`<div class="info-row"><span class="info-label">최소</span><span class="info-val" style="color:rgba(255,200,100,.8)">${m.minMembers}명 이상</span></div>`:''}</div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" ${clickable?`onclick="applyMeeting('${m.id}')"`:''}>${btnTxt}</button></div></div>`;
+  return`<div class="card${m.closed?' opacity-60':''}"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}${hostBadge}${closedBadge}</div><div class="card-top-right">${applicantBtn}${adminBtns}</div></div><div class="book-info"><div class="book-title">${m.title}</div><div class="book-author">${m.author}</div></div><div class="meeting-meta-header"><span class="meta-tag">📝 ${m.topic}</span><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div>${m.minMembers?`<div class="info-row"><span class="info-label">최소</span><span class="info-val" style="color:rgba(255,200,100,.8)">${m.minMembers}명 이상</span></div>`:''}</div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리${waitCount>0?` · 대기 <strong>${waitCount}</strong>명`:''}</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><div style="display:flex;gap:5px;align-items:center">${canWait?`<button class="btn-apply ${isWaitlisted?'applied':'open'}" style="font-size:.73rem" onclick="applyWaitlist('${m.id}')">${isWaitlisted?'대기취소 ':'대기신청'}</button>`:''}${!canWait||isWaitlisted?`<button class="btn-apply ${btnCls}" ${clickable?`onclick="applyMeeting('${m.id}')"`:''}>${btnTxt}</button>`:''}</div></div></div>`;
 }
 
 function smallCardHTML(m){
@@ -1596,12 +1605,28 @@ async function toggleMeetingApply(col, id, isOpen){
 
   // 찜한 인원 수
   const allUsers = await db.collection('users').get();
-  const wishField = col === 'meetings' ? 'wishlisted' : 'wishlistedSmall';
-  const wishCount = allUsers.docs.filter(d => (d.data()[wishField]||[]).includes(id)).length;
+  // 대기 인원
+  const wSnap2=await db.collection(col).doc(id).collection('waitlist').orderBy('time').get();
+  const waitCount2=wSnap2.size;
 
   let html = `<div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.8rem">
-    신청 <strong style="color:#fff">${snap.size}</strong>명 &nbsp;·&nbsp; 찜 <strong style="color:#fff">${wishCount}</strong>명
+    신청 <strong style="color:#fff">${snap.size}</strong>명 &nbsp;·&nbsp; 대기 <strong style="color:#fff">${waitCount2}</strong>명
   </div>`;
+  // 대기자 목록 (스탭/관리자/모임장에게 표시)
+  const mData=meetings.find(x=>x.id===id);
+  const isMyMeeting=mData?.hostEmail===user?.email;
+  if((canViewApplicants()||isMyMeeting)&&waitCount2>0){
+    html+=`<div style="font-size:.75rem;font-weight:600;color:rgba(255,255,255,.4);margin:.8rem 0 .4rem;letter-spacing:.05em">대기자</div>`;
+    html+=wSnap2.docs.map((d,i)=>{
+      const a=d.data();
+      const av=a.photo?`<img src="${a.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:(a.realName||a.name||'?')[0];
+      return`<div style="display:flex;align-items:center;gap:10px;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(255,180,80,.15);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;overflow:hidden;flex-shrink:0">${av}</div>
+        <div style="flex:1;font-size:.83rem">${a.realName||a.name||''} <span style="font-size:.7rem;color:rgba(255,255,255,.35)">${a.realName?'('+a.name+')':''}</span></div>
+        <div style="font-size:.75rem;color:rgba(255,200,80,.7);font-weight:600">${i+1}번</div>
+      </div>`;
+    }).join('');
+  }
 
   if(snap.empty){
     html += '<div class="empty">신청자가 없어요</div>';
@@ -1626,6 +1651,105 @@ async function toggleMeetingApply(col, id, isOpen){
 function closeApplicantModal(){
   document.getElementById('applicantModal').classList.remove('open');
 }
+
+/* ── 대기 신청 ── */
+async function applyWaitlist(id){
+  if(!user){showToast('로그인 후 신청할 수 있어요');return;}
+  const m=meetings.find(x=>x.id===id);if(!m)return;
+  if(isHostOf(m)){showToast('내가 파트너인 모임은 대기할 수 없어요');return;}
+  if(waitlisted.has(id)){
+    // 대기 취소
+    await cancelWaitlist(id);
+    return;
+  }
+  // 대기 신청
+  const wRef=db.collection('meetings').doc(id).collection('waitlist').doc(user.email);
+  // 현재 대기 인원 수 파악 (order 부여)
+  const wSnap=await db.collection('meetings').doc(id).collection('waitlist').orderBy('time').get();
+  const order=wSnap.size+1;
+  const userDoc=await db.collection('users').doc(user.email).get();
+  const realName=userDoc.exists?(userDoc.data().name||user.name):user.name;
+  await wRef.set({
+    name:user.name,realName,email:user.email,photo:user.photo||'',
+    time:firebase.firestore.FieldValue.serverTimestamp(),order
+  });
+  await db.collection('meetings').doc(id).update({waitCount:firebase.firestore.FieldValue.increment(1)});
+  waitlisted.add(id);
+  await saveUserData();
+  showToast(`대기 ${order}번으로 등록되었어요`);
+  renderAll();
+}
+
+async function cancelWaitlist(id,email){
+  const targetEmail=email||user?.email;
+  if(!targetEmail)return;
+  await db.collection('meetings').doc(id).collection('waitlist').doc(targetEmail).delete();
+  await db.collection('meetings').doc(id).update({waitCount:firebase.firestore.FieldValue.increment(-1)});
+  if(!email||email===user?.email){
+    waitlisted.delete(id);
+    await saveUserData();
+    showToast('대기가 취소되었어요');
+    renderAll();
+  }
+}
+
+// 여석 생길 때 대기 1순위 자동 승격
+async function promoteWaitlist(meetingId){
+  const m=meetings.find(x=>x.id===meetingId);if(!m)return;
+  // 대기자 목록 시간순
+  const wSnap=await db.collection('meetings').doc(meetingId).collection('waitlist').orderBy('time').get();
+  if(wSnap.empty)return;
+  const first=wSnap.docs[0];
+  const fd=first.data();
+  const email=fd.email;
+  // 해당 유저 토큰 확인
+  const uDoc=await db.collection('users').doc(email).get();
+  if(!uDoc.exists)return;
+  const uData=uDoc.data();
+  const curToken=uData.applyToken!==undefined?uData.applyToken:DEFAULT_APPLY_TOKEN;
+  if(curToken<=0){
+    // 토큰 없으면 다음 대기자로 넘김 (이 대기는 취소)
+    await cancelWaitlist(meetingId,email);
+    await db.collection('users').doc(email).update({waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
+    addNotification(email,`❌ "${m.title}" 모임 여석이 생겼지만 신청 횟수가 없어 대기가 취소되었어요`);
+    await promoteWaitlist(meetingId); // 재귀로 다음 대기자 시도
+    return;
+  }
+  // 승격 처리
+  await db.collection('meetings').doc(meetingId).collection('applicants').doc(email).set({
+    name:fd.name,realName:fd.realName||fd.name,email,photo:fd.photo||'',
+    time:new Date().toLocaleString('ko-KR')
+  });
+  await db.collection('meetings').doc(meetingId).update({
+    applied:firebase.firestore.FieldValue.increment(1),
+    waitCount:firebase.firestore.FieldValue.increment(-1)
+  });
+  // 대기 문서 삭제
+  await first.ref.delete();
+  // 유저 데이터 업데이트
+  const newToken=curToken-1;
+  await db.collection('users').doc(email).update({
+    applyToken:newToken,
+    applied:firebase.firestore.FieldValue.arrayUnion(meetingId),
+    waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)
+  });
+  // 알림
+  addNotification(email,`🎉 "${m.title}" 모임 여석이 생겨 자동으로 신청되었어요! (신청 횟수 -1)`);
+  // 토큰 0 되면 다른 대기 자동 취소
+  if(newToken<=0){
+    const allWaitSnap=await db.collection('users').doc(email).get();
+    const waitIds=(allWaitSnap.data()?.waitlisted||[]);
+    for(const wid of waitIds){
+      if(wid===meetingId)continue;
+      await db.collection('meetings').doc(wid).collection('waitlist').doc(email).delete();
+      await db.collection('meetings').doc(wid).update({waitCount:firebase.firestore.FieldValue.increment(-1)});
+      const wm=meetings.find(x=>x.id===wid);
+      if(wm)addNotification(email,`❌ 신청 횟수 소진으로 "${wm.title||wid}" 모임 대기가 자동 취소되었어요`);
+    }
+    await db.collection('users').doc(email).update({waitlisted:[]});
+  }
+}
+  
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 </script>
   <!-- 신청자 확인 모달 -->
