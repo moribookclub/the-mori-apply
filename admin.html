@@ -885,9 +885,7 @@ async function exportMembersCSV(){
 }
 
 /* ── MEETINGS ─────────────────────────────────────────── */
-function listenMeetings(){db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()}));renderMeetingChips();});}
-function renderMeetingChips(){document.getElementById('meetingChips').innerHTML=meetings.map(m=>`<div class="chip${adminSelected===m.id?' active':''}" onclick="selectMeeting('${m.id}')">${m.title}</div>`).join('');}
-function selectMeeting(id){adminSelected=id;renderMeetingChips();renderApplicantTable();}
+function listenMeetings(){db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{meetings=snap.docs.map(d=>({id:d.id,...d.data()}));});}
 async function renderApplicantTable(){
   const wrap=document.getElementById('applicantTableWrap');
   if(!adminSelected){wrap.innerHTML=`<div class="empty">모임을 선택하면 신청자 명단이 표시돼요</div>`;return;}
