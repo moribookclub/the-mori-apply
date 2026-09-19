@@ -582,49 +582,75 @@ function canManage()    { return userRole === 'admin' || userRole === 'staff' ||
 function canViewApplicants() { return userRole === 'admin' || userRole === 'staff'; }
 
 /* ── AUTH ── */
-auth.onAuthStateChanged(fb => {
+auth.onAuthStateChanged(async fb => {
   [unsubMeetings,unsubSmall,unsubNotif].forEach(u=>{if(u)u();});
-  // 로딩 화면 숨기기 (Firebase가 상태 확인 완료)
   unsubMeetings=unsubSmall=unsubNotif=null;
-  if(!fb){user=null;userRole=null;applied=new Set();wishlisted=new Set();appliedSmall=new Set();wishlistedSmall=new Set();showScreen('login');updateNav();return;}
+  if(!fb){user=null;userRole=null;applied=new Set();appliedSmall=new Set();showScreen('login');updateNav();return;}
   user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:(fb.displayName||'?')[0]};
-  if (ADMIN_EMAILS.includes(fb.email)) {
+
+  if(ADMIN_EMAILS.includes(fb.email)){
     userRole='admin';
-    db.collection('users').doc(fb.email).get().then(doc=>{
-      if(doc.exists){const d=doc.data();applied=new Set(d.applied||[]);wishlisted=new Set(d.wishlisted||[]);appliedSmall=new Set(d.appliedSmall||[]);wishlistedSmall=new Set(d.wishlistedSmall||[]);applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;notifSettings=Object.assign({wishRestock:true,hostApply:true,hostCancel:true},d.notifSettings||{});}
-    else{db.collection('users').doc(fb.email).set({name:fb.displayName,email:fb.email,photo:fb.photoURL||'',applied:[],wishlisted:[],appliedSmall:[],wishlistedSmall:[],applyToken:DEFAULT_APPLY_TOKEN,cancelToken:DEFAULT_CANCEL_TOKEN,notifSettings},{merge:true});}
-      loadFormConfig().then(() => { initMain(); updateNav(); registerFCMToken(); });
-    });
+    const doc=await db.collection('users').doc(fb.email).get();
+    if(doc.exists){
+      const d=doc.data();
+      applied=new Set(d.applied||[]);
+      appliedSmall=new Set(d.appliedSmall||[]);
+      applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
+      cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
+      notifSettings=Object.assign({hostApply:true,hostCancel:true},d.notifSettings||{});
+    } else {
+      db.collection('users').doc(fb.email).set({name:fb.displayName,email:fb.email,photo:fb.photoURL||'',applied:[],appliedSmall:[],applyToken:DEFAULT_APPLY_TOKEN,cancelToken:DEFAULT_CANCEL_TOKEN,notifSettings},{merge:true});
+    }
+    await loadFormConfig();
+    initMain();
+    updateNav();
+    registerFCMToken();
     return;
   }
-  db.collection('users').doc(fb.email).get().then(doc=>{
-    if(!doc.exists){
-      userRole='';
-      const cfgDoc = await db.collection('settings').doc('config').get();
-      const formOpen = cfgDoc.exists ? cfgDoc.data().formOpen!==false : true;
-      if(!formOpen){
-        const notice = cfgDoc.data().formClosedNotice||'현재 모임 신청서 접수가 마감되었습니다.';
-        showScreen('formClosed');
-        document.getElementById('formClosedMsg').innerHTML=notice;
-        updateNav();
-        return;
-      }
-      loadFormConfig().then(()=>{showScreen('form');updateNav();});
+
+  const doc=await db.collection('users').doc(fb.email).get();
+  if(!doc.exists){
+    userRole='';
+    const cfgDoc=await db.collection('settings').doc('config').get();
+    const formOpen=cfgDoc.exists?cfgDoc.data().formOpen!==false:true;
+    if(!formOpen){
+      const notice=cfgDoc.exists?(cfgDoc.data().formClosedNotice||'현재 모임 신청서 접수가 마감되었습니다.'):'현재 모임 신청서 접수가 마감되었습니다.';
+      await loadFormConfig();
+      showScreen('formClosed');
+      document.getElementById('formClosedMsg').innerHTML=notice;
+      updateNav();
       return;
     }
-    const d=doc.data();
-    userRole=d.role||'';
-    applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
-    cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
-    notifSettings=Object.assign({wishRestock:true,hostApply:true,hostCancel:true},d.notifSettings||{});
-    if(userRole==='member'||userRole==='staff'||userRole==='smallstaff'){
-      applied=new Set(d.applied||[]);wishlisted=new Set(d.wishlisted||[]);appliedSmall=new Set(d.appliedSmall||[]);wishlistedSmall=new Set(d.wishlistedSmall||[]);
-      loadFormConfig().then(() => { initMain(); updateNav(); registerFCMToken(); });
-    } else if(userRole==='pending'){showScreen('waiting');updateNav();loadWaitingNotice();}
-    else{loadFormConfig().then(()=>{showScreen('form');updateNav();});}
-  }).catch(e=>{console.error(e);showToast('데이터 로드 오류. 새로고침해주세요.');});
-});
+    await loadFormConfig();
+    showScreen('form');
+    updateNav();
+    return;
+  }
 
+  const d=doc.data();
+  userRole=d.role||'';
+  applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
+  cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
+  notifSettings=Object.assign({hostApply:true,hostCancel:true},d.notifSettings||{});
+
+  if(userRole==='member'||userRole==='staff'||userRole==='smallstaff'){
+    applied=new Set(d.applied||[]);
+    appliedSmall=new Set(d.appliedSmall||[]);
+    await loadFormConfig();
+    initMain();
+    updateNav();
+    registerFCMToken();
+  } else if(userRole==='pending'){
+    showScreen('waiting');
+    updateNav();
+    loadWaitingNotice();
+  } else {
+    await loadFormConfig();
+    showScreen('form');
+    updateNav();
+  }
+});
+  
 function googleLogin(){auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>showToast('로그인 실패: '+e.message));}
 function logout(){auth.signOut();}
 
