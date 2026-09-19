@@ -637,6 +637,18 @@ auth.onAuthStateChanged(async fb => {
     await loadFormConfig();
     showScreen('form');
     updateNav();
+    // 신청서 화면에서도 role 변경 감지
+    db.collection('users').doc(fb.email).onSnapshot(snap=>{
+      if(!snap.exists)return;
+      const role=snap.data().role;
+      if(role==='member'||role==='staff'||role==='smallstaff'){
+        window.location.reload();
+      } else if(role==='pending'){
+        showScreen('waiting');
+        updateNav();
+        loadWaitingNotice();
+      }
+    });
   }
 });
   
@@ -713,6 +725,18 @@ function initMain(){
   listenSmallGroups();
   listenNotifications();
   loadSiteSettings();
+  listenUserRole();
+}
+
+function listenUserRole(){
+  if(!user)return;
+  db.collection('users').doc(user.email).onSnapshot(doc=>{
+    if(!doc.exists)return;
+    const newRole=doc.data().role;
+    if(newRole===userRole)return;
+    // role이 바뀌면 페이지 새로고침
+    window.location.reload();
+  });
 }
 
 async function registerFCMToken(){
