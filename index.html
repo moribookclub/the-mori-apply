@@ -1122,7 +1122,8 @@ db.collection('users').doc(user.email).collection('history').add({
   meetingId: id,
   time: firebase.firestore.FieldValue.serverTimestamp()
 });
-  await saveUserData();updateNav();renderAll();
+  // unsubUser 리스너가 자동으로 상태 업데이트하므로 saveUserData 불필요
+  updateNav();renderAll();
 }
 
 /* ── 취소 팝업 ── */
@@ -1196,7 +1197,7 @@ if(canceledMeeting){
     time: firebase.firestore.FieldValue.serverTimestamp()
   });
 }
-  await saveUserData();updateNav();renderAll();
+  updateNav();renderAll();
 }
 
 async function toggleWish(id){
@@ -1236,7 +1237,7 @@ await aRef.set({name:user.name,realName:realName,email:user.email,time:new Date(
     if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.name}님이 신청했어요`);});}
     showToast('소모임 신청 완료! 🎯');
   }
-  await saveUserData();renderAll();
+  renderAll();
 }
 
 async function toggleWishSmall(id){
@@ -1760,7 +1761,9 @@ async function applyWaitlist(id){
   });
   await db.collection('meetings').doc(id).update({waitCount:firebase.firestore.FieldValue.increment(1)});
   waitlisted.add(id);
-  await saveUserData();
+  await db.collection('users').doc(user.email).update({
+    waitlisted: firebase.firestore.FieldValue.arrayUnion(id)
+  });
   showToast(`대기 ${order}번으로 등록되었어요`);
   renderAll();
 }
@@ -1772,7 +1775,9 @@ async function cancelWaitlist(id,email){
   await db.collection('meetings').doc(id).update({waitCount:firebase.firestore.FieldValue.increment(-1)});
   if(!email||email===user?.email){
     waitlisted.delete(id);
-    await saveUserData();
+    await db.collection('users').doc(user.email).update({
+      waitlisted: firebase.firestore.FieldValue.arrayRemove(id)
+    });
     showToast('대기가 취소되었어요');
     renderAll();
   }
