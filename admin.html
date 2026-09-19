@@ -194,11 +194,12 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
           <div><h2>멤버 관리</h2><p>신청서를 제출한 멤버를 승인하고 권한을 관리해요</p></div>
           <button class="btn-csv" onclick="exportMembersCSV()">멤버 CSV 내보내기</button>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:.8rem">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:.8rem;flex-wrap:wrap">
   <span style="font-size:.78rem;color:rgba(255,255,255,.4)">정렬:</span>
   <button id="sortBtn" onclick="toggleSort()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:4px 12px;border-radius:20px;font-size:.76rem;cursor:pointer">
     🕐 오래된순
   </button>
+  <input id="memberSearchBox" type="text" placeholder="이름 또는 이메일 검색" oninput="renderMemberList()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 14px;color:#fff;font-size:.76rem;outline:none;width:200px">
 </div>
         <div class="filter-chips">
   <div class="chip active" onclick="filterMembers('pending',this)">⏳ 대기중 <span id="count-pending"></span></div>
@@ -655,6 +656,8 @@ if(setAll)     setAll.textContent     = `(${countAll})`;
   let list=allMembers;
 if(memberFilter==='none') list=allMembers.filter(u=>!u.role||u.role==='cancelled');
 else if(memberFilter!=='all') list=allMembers.filter(u=>u.role===memberFilter);
+const searchQ=(document.getElementById('memberSearchBox')?.value||'').trim().toLowerCase();
+if(searchQ) list=list.filter(u=>(u.name||'').toLowerCase().includes(searchQ)||(u.email||'').toLowerCase().includes(searchQ));
 
 // 신청서 제출 시간 순으로 정렬
 list=list.slice().sort((a,b)=>{
