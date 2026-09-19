@@ -1674,21 +1674,10 @@ async function toggleMeetingApply(col, id, isOpen){
   // 대기자 목록 (스탭/관리자/모임장에게 표시)
   const mData=meetings.find(x=>x.id===id);
   const isMyMeeting=mData?.hostEmail===user?.email;
-  if((canViewApplicants()||isMyMeeting)&&waitCount2>0){
-    html+=`<div style="font-size:.75rem;font-weight:600;color:rgba(255,255,255,.4);margin:.8rem 0 .4rem;letter-spacing:.05em">대기자</div>`;
-    html+=wSnap2.docs.map((d,i)=>{
-      const a=d.data();
-      const av=a.photo?`<img src="${a.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:(a.realName||a.name||'?')[0];
-      return`<div style="display:flex;align-items:center;gap:10px;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
-        <div style="width:26px;height:26px;border-radius:50%;background:rgba(255,180,80,.15);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;overflow:hidden;flex-shrink:0">${av}</div>
-        <div style="flex:1;font-size:.83rem">${a.realName||a.name||''} <span style="font-size:.7rem;color:rgba(255,255,255,.35)">${a.realName?'('+a.name+')':''}</span></div>
-        <div style="font-size:.75rem;color:rgba(255,200,80,.7);font-weight:600">${i+1}번</div>
-      </div>`;
-    }).join('');
-  }
-
+  // 신청자 목록
+  html+=`<div style="font-size:.75rem;font-weight:600;color:rgba(255,255,255,.5);margin:.8rem 0 .4rem;letter-spacing:.05em;padding-bottom:.3rem;border-bottom:1px solid rgba(255,255,255,.07)">📋 신청자</div>`;
   if(snap.empty){
-    html += '<div class="empty">신청자가 없어요</div>';
+    html += '<div style="color:rgba(255,255,255,.25);font-size:.82rem;padding:.5rem 0">신청자가 없어요</div>';
   } else {
     html += snap.docs.map((d,i) => {
       const a = d.data();
@@ -1700,6 +1689,20 @@ async function toggleMeetingApply(col, id, isOpen){
           <div style="font-size:.72rem;color:rgba(255,255,255,.35)">${a.time||''}</div>
         </div>
         <div style="font-size:.78rem;color:rgba(255,255,255,.4)">${i+1}번</div>
+      </div>`;
+    }).join('');
+  }
+
+  // 대기자 목록
+  if((canViewApplicants()||isMyMeeting)&&waitCount2>0){
+    html+=`<div style="font-size:.75rem;font-weight:600;color:rgba(255,200,80,.7);margin:1rem 0 .4rem;letter-spacing:.05em;padding-bottom:.3rem;border-bottom:1px solid rgba(255,200,80,.15)">⏳ 대기자</div>`;
+    html+=wSnap2.docs.map((d,i)=>{
+      const a=d.data();
+      const av=a.photo?`<img src="${a.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:(a.realName||a.name||'?')[0];
+      return`<div style="display:flex;align-items:center;gap:10px;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+        <div style="width:26px;height:26px;border-radius:50%;background:rgba(255,180,80,.15);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:600;overflow:hidden;flex-shrink:0">${av}</div>
+        <div style="flex:1;font-size:.83rem">${a.realName||a.name||''} <span style="font-size:.7rem;color:rgba(255,255,255,.35)">${a.realName?'('+a.name+')':''}</span></div>
+        <div style="font-size:.75rem;color:rgba(255,200,80,.8);font-weight:600">대기 ${i+1}번</div>
       </div>`;
     }).join('');
   }
@@ -1716,6 +1719,7 @@ async function applyWaitlist(id){
   if(!user){showToast('로그인 후 신청할 수 있어요');return;}
   const m=meetings.find(x=>x.id===id);if(!m)return;
   if(isHostOf(m)){showToast('내가 파트너인 모임은 대기할 수 없어요');return;}
+  if(!waitlisted.has(id)&&!isAdmin()&&applyToken<=0){showToast('신청 가능 횟수가 없으면 대기 신청을 할 수 없어요');return;}
   if(waitlisted.has(id)){
     // 대기 취소
     await cancelWaitlist(id);
