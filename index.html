@@ -288,7 +288,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 </div>
   
 <div id="screenLogin" class="screen">
-  <div class="hero"><h1>THE MORI APPLY</h1><p>독서모임 신청 페이지</p></div>
+  <div class="hero"><h1>THE MORI APPLY</h1></div>
   <div style="text-align:center;padding:2rem 1rem">
     <p style="color:rgba(255,255,255,.45);font-size:.88rem;margin-bottom:1.3rem">Google 계정으로 로그인해 주세요</p>
     <button class="btn-glogin" style="margin:0 auto" onclick="googleLogin()">
@@ -338,7 +338,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 </div>
 
 <div id="screenMain" class="screen">
-  <div class="hero"><h1>THE MORI APPLY</h1><p>독서모임 신청 페이지</p></div>
+  <div class="hero"><h1>THE MORI APPLY</h1></div>
   <div id="noticeBanner" style="display:none;max-width:980px;margin:0 auto 1.2rem;padding:0 1rem">
     <div id="noticeBannerContent" style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.22);border-radius:12px;padding:.9rem 1.1rem;font-size:.86rem;color:rgba(255,220,100,.9);line-height:1.7"></div>
   </div>
@@ -1737,9 +1737,9 @@ async function toggleMeetingApply(col, id, isOpen){
   const waitCount2=wSnap2.size;
 
   let html = ``;
-  if(isStaff()){
+  if(canViewApplicants()){
     html+=`<div style="background:rgba(100,180,255,.07);border:1px solid rgba(100,180,255,.2);border-radius:8px;padding:.7rem .9rem;margin-bottom:.9rem;font-size:.78rem;color:rgba(150,210,255,.8);line-height:1.5">
-      ⭐ 이 페이지는 <strong>스탭</strong>만 확인할 수 있어요.
+      ⭐ 이 페이지는 <strong>스탭</strong>과 <strong>관리자</strong>만 확인할 수 있어요.
     </div>`;
   }
   html += `<div style="font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:.8rem">
