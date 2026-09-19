@@ -585,8 +585,8 @@ function canViewApplicants() { return userRole === 'admin' || userRole === 'staf
 
 /* ── AUTH ── */
 auth.onAuthStateChanged(async fb => {
-  [unsubMeetings,unsubSmall,unsubNotif].forEach(u=>{if(u)u();});
-  unsubMeetings=unsubSmall=unsubNotif=null;
+  [unsubMeetings,unsubSmall,unsubNotif,unsubUser].forEach(u=>{if(u)u();});
+  unsubMeetings=unsubSmall=unsubNotif=unsubUser=null;
   if(!fb){user=null;userRole=null;applied=new Set();appliedSmall=new Set();showScreen('login');updateNav();return;}
   user={name:fb.displayName,email:fb.email,photo:fb.photoURL,initial:(fb.displayName||'?')[0]};
 
@@ -1066,27 +1066,27 @@ function isHostOf(m){
 }
 
 /* ── MEETINGS 실시간 리스닝 ── */
+let unsubUser=null;
 function listenMeetings(){
   if(unsubMeetings){unsubMeetings();unsubMeetings=null;}
   unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
     meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
     checkAutoClose();
-    // 유저 데이터 실시간 동기화
-    if(user){
-      db.collection('users').doc(user.email).get().then(doc=>{
-        if(!doc.exists)return;
-        const d=doc.data();
-        applied=new Set(d.applied||[]);
-        waitlisted=new Set(d.waitlisted||[]);
-        appliedSmall=new Set(d.appliedSmall||[]);
-        applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
-        cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
-        renderAll();updateNav();
-      });
-    } else {
-      renderAll();updateNav();
-    }
+    renderAll();updateNav();
   });
+  // 유저 데이터 실시간 리스너
+  if(user&&!unsubUser){
+    unsubUser=db.collection('users').doc(user.email).onSnapshot(doc=>{
+      if(!doc.exists)return;
+      const d=doc.data();
+      applied=new Set(d.applied||[]);
+      waitlisted=new Set(d.waitlisted||[]);
+      appliedSmall=new Set(d.appliedSmall||[]);
+      applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
+      cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
+      renderAll();updateNav();
+    });
+  }
 }
 
 async function applyMeeting(id){
