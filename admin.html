@@ -350,15 +350,16 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <!-- 히스토리 -->
 <div id="tabHistory" style="display:none">
   <div class="section-card">
-    <div class="section-head">
+<div class="section-head">
       <div><h2>📋 모임 신청/취소 이력</h2><p>전체 멤버의 신청 및 취소 기록이에요</p></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <select id="historyTypeFilter" onchange="loadHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none">
           <option value="all">전체</option>
           <option value="apply">신청만</option>
           <option value="cancel">취소만</option>
         </select>
         <input id="historySearchInput" type="text" placeholder="이름 또는 모임명 검색" oninput="filterHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none;width:180px">
+        <button onclick="clearAllHistory()" style="background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.35);color:rgba(255,130,130,.9);padding:6px 14px;border-radius:7px;font-size:.8rem;cursor:pointer;white-space:nowrap">🗑 전체 삭제</button>
       </div>
     </div>
     <div id="historyList"><div class="empty">불러오는 중...</div></div>
@@ -1248,6 +1249,20 @@ async function addAdminNotification(toEmail, message){
   });
   showToast(memberName+' 님이 제거되었어요');
   renderApplicantTable();
+}
+async function clearAllHistory(){
+  if(!confirm('모든 멤버의 히스토리를 삭제할까요?\n이 작업은 되돌릴 수 없어요.')) return;
+  showToast('삭제 중...');
+  const usersSnap = await db.collection('users').get();
+  for(const uDoc of usersSnap.docs){
+    const histSnap = await db.collection('users').doc(uDoc.id).collection('history').get();
+    const batch = db.batch();
+    histSnap.docs.forEach(d => batch.delete(d.ref));
+    if(histSnap.docs.length > 0) await batch.commit();
+  }
+  allHistory = [];
+  filterHistory();
+  showToast('히스토리가 모두 삭제되었어요 ✅');
 }
 </script>
 </body>
