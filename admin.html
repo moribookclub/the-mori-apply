@@ -959,11 +959,12 @@ function closeAddMemberModal(){document.getElementById('addMemberModal').classLi
 /* ── TABS ─────────────────────────────────────────────── */
 function switchAdminTab(t,el){
   document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
-['tabMembers','tabSettings','tabForm','tabHistory'].forEach(id=>document.getElementById(id).style.display='none');
-document.getElementById({members:'tabMembers',settings:'tabSettings',form:'tabForm',history:'tabHistory'}[t]).style.display='block';
-if(t==='history') loadHistory();
-if(t==='settings') renderCloseableMeetings();
-renderMeetingApplyControlList();
+['tabMembers','tabSettings','tabForm','tabHistory'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+const tabMap={members:'tabMembers',settings:'tabSettings',form:'tabForm',history:'tabHistory'};
+const target=document.getElementById(tabMap[t]);
+if(target)target.style.display='block';
+if(t==='history')loadHistory();
+if(t==='settings'){renderCloseableMeetings();renderMeetingApplyControlList();}
 if(t==='form')renderBasicFieldsEditor();
 }
 async function saveGlobalApplySetting(){
