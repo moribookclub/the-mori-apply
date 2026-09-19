@@ -611,6 +611,53 @@ auth.onAuthStateChanged(async fb => {
     return;
   }
 
+  const doc=await db.collection('users').doc(fb.email).get();
+  if(!doc.exists){
+    userRole='';
+    const cfgDoc=await db.collection('settings').doc('config').get();
+    const formOpen=cfgDoc.exists?cfgDoc.data().formOpen!==false:true;
+    if(!formOpen){
+      const notice=cfgDoc.exists?(cfgDoc.data().formClosedNotice||'현재 모임 신청서 접수가 마감되었습니다.'):'현재 모임 신청서 접수가 마감되었습니다.';
+      await loadFormConfig();
+      showScreen('formClosed');
+      document.getElementById('formClosedMsg').innerHTML=notice;
+      updateNav();
+      return;
+    }
+    await loadFormConfig();
+    showScreen('form');
+    updateNav();
+    let formRoleListenerFirst=true;
+    db.collection('users').doc(fb.email).onSnapshot(async snap=>{
+      if(formRoleListenerFirst){formRoleListenerFirst=false;return;}
+      if(!snap.exists)return;
+      const role=snap.data().role;
+      if(role==='member'||role==='staff'||role==='smallstaff'){
+        const d=snap.data();
+        userRole=role;
+        applied=new Set(d.applied||[]);
+        appliedSmall=new Set(d.appliedSmall||[]);
+        waitlisted=new Set(d.waitlisted||[]);
+        applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
+        cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
+        notifSettings=Object.assign({hostApply:true,hostCancel:true},d.notifSettings||{});
+        await loadFormConfig();
+        initMain();
+        updateNav();
+        registerFCMToken();
+      } else if(role==='pending'){
+        showScreen('waiting');
+        updateNav();
+        loadWaitingNotice();
+      }
+    });
+    return;
+  }
+  const d=doc.data();
+  userRole=d.role||'';
+  applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
+  cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
+  notifSettings=Object.assign({hostApply:true,hostCancel:true},d.notifSettings||{});
   if(userRole==='member'||userRole==='staff'||userRole==='smallstaff'){
     applied=new Set(d.applied||[]);
     appliedSmall=new Set(d.appliedSmall||[]);
