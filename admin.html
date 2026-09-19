@@ -957,13 +957,14 @@ function closeAddMemberModal(){document.getElementById('addMemberModal').classLi
 /* ── TABS ─────────────────────────────────────────────── */
 function switchAdminTab(t,el){
   document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
-['tabMembers','tabSettings','tabForm','tabHistory'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-const tabMap={members:'tabMembers',settings:'tabSettings',form:'tabForm',history:'tabHistory'};
-const target=document.getElementById(tabMap[t]);
-if(target)target.style.display='block';
-if(t==='history')loadHistory();
-if(t==='settings'){renderCloseableMeetings();renderMeetingApplyControlList();}
-if(t==='form')renderBasicFieldsEditor();
+  ['tabMembers','tabSettings','tabForm','tabHistory'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+  const tabMap={members:'tabMembers',settings:'tabSettings',form:'tabForm',history:'tabHistory'};
+  const target=document.getElementById(tabMap[t]);
+  if(target)target.style.display='block';
+  if(t==='history')loadHistory();
+  if(t==='settings'){renderCloseableMeetings();renderMeetingApplyControlList();}
+  if(t==='form'){initEditors();renderBasicFieldsEditor();}
+  if(t==='members')renderMemberList();
 }
 async function saveGlobalApplySetting(){
   const enabled = document.getElementById('globalApplyToggle').checked;
