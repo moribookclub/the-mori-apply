@@ -1066,6 +1066,7 @@ function isHostOf(m){
 }
 
 /* ── MEETINGS 실시간 리스닝 ── */
+let blockUserSnap=false;
 let unsubUser=null;
 function listenMeetings(){
   if(unsubMeetings){unsubMeetings();unsubMeetings=null;}
@@ -1079,6 +1080,7 @@ function listenMeetings(){
     let userSnapFirst=true;
     unsubUser=db.collection('users').doc(user.email).onSnapshot(doc=>{
       if(!doc.exists)return;
+      if(blockUserSnap)return;
       const d=doc.data();
       const newApplied=new Set(d.applied||[]);
       const newWaitlisted=new Set(d.waitlisted||[]);
@@ -1114,6 +1116,7 @@ async function applyMeeting(id){
   if(existingSnap.exists){showToast('이미 신청한 모임이에요');applied.add(id);renderAll();return;}
   const mRef=db.collection('meetings').doc(id),aRef=mRef.collection('applicants').doc(user.email);
   applied.add(id);
+  blockUserSnap=true;
   // Firestore에서 실명 가져오기
 const userDoc = await db.collection('users').doc(user.email).get();
 const realName = userDoc.exists ? (userDoc.data().name || user.name) : user.name;
@@ -1136,9 +1139,9 @@ db.collection('users').doc(user.email).collection('history').add({
   time: firebase.firestore.FieldValue.serverTimestamp()
 });
   // unsubUser 리스너가 자동으로 상태 업데이트하므로 saveUserData 불필요
+  blockUserSnap=false;
   updateNav();renderAll();
 }
-
 /* ── 취소 팝업 ── */
 function showCancelConfirm(id,title){
   const m=meetings.find(x=>x.id===id);
@@ -1183,6 +1186,7 @@ async function doCancelMeeting(id){
   const m=meetings.find(x=>x.id===id);
   const mRef=db.collection('meetings').doc(id),aRef=mRef.collection('applicants').doc(user.email);
   applied.delete(id);
+  blockUserSnap=true;
   await aRef.delete();
   await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
   if(!isAdmin()){
@@ -1210,6 +1214,7 @@ if(canceledMeeting){
     time: firebase.firestore.FieldValue.serverTimestamp()
   });
 }
+  blockUserSnap=false;
   updateNav();renderAll();
 }
 
