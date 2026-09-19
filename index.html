@@ -1074,17 +1074,30 @@ function listenMeetings(){
     checkAutoClose();
     renderAll();updateNav();
   });
-  // 유저 데이터 실시간 리스너
+  // 유저 데이터 실시간 리스너 (토큰/대기승격 등 외부 변경만 감지)
   if(user&&!unsubUser){
+    let userSnapFirst=true;
     unsubUser=db.collection('users').doc(user.email).onSnapshot(doc=>{
       if(!doc.exists)return;
       const d=doc.data();
-      applied=new Set(d.applied||[]);
-      waitlisted=new Set(d.waitlisted||[]);
-      appliedSmall=new Set(d.appliedSmall||[]);
-      applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
-      cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
-      renderAll();updateNav();
+      const newApplied=new Set(d.applied||[]);
+      const newWaitlisted=new Set(d.waitlisted||[]);
+      const newAppliedSmall=new Set(d.appliedSmall||[]);
+      const newApplyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
+      const newCancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
+      // 토큰이나 Set이 실제로 바뀐 경우만 업데이트
+      const tokenChanged=newApplyToken!==applyToken||newCancelToken!==cancelToken;
+      const appliedChanged=[...newApplied].some(x=>!applied.has(x))||[...applied].some(x=>!newApplied.has(x));
+      const waitChanged=[...newWaitlisted].some(x=>!waitlisted.has(x))||[...waitlisted].some(x=>!newWaitlisted.has(x));
+      applied=newApplied;
+      waitlisted=newWaitlisted;
+      appliedSmall=newAppliedSmall;
+      applyToken=newApplyToken;
+      cancelToken=newCancelToken;
+      if(!userSnapFirst&&(tokenChanged||appliedChanged||waitChanged)){
+        renderAll();updateNav();
+      }
+      userSnapFirst=false;
     });
   }
 }
