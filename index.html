@@ -620,6 +620,16 @@ auth.onAuthStateChanged(async fb => {
     updateNav();
     loadWaitingNotice();
   } else {
+    const cfgDoc2=await db.collection('settings').doc('config').get();
+    const formOpen2=cfgDoc2.exists?cfgDoc2.data().formOpen!==false:true;
+    if(!formOpen2){
+      const notice2=cfgDoc2.exists?(cfgDoc2.data().formClosedNotice||'현재 모임 신청서 접수가 마감되었습니다.'):'현재 모임 신청서 접수가 마감되었습니다.';
+      await loadFormConfig();
+      showScreen('formClosed');
+      document.getElementById('formClosedMsg').innerHTML=notice2;
+      updateNav();
+      return;
+    }
     await loadFormConfig();
     showScreen('form');
     updateNav();
