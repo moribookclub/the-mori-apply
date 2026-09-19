@@ -1096,6 +1096,9 @@ async function applyMeeting(id){
   if(applied.has(id)){showCancelConfirm(id,m.title);return;}
   if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
   if(!isAdmin()&&applyToken<=0){showToast('신청 가능 횟수가 모두 소진되었어요');return;}
+  // Firestore에서 실제 신청 여부 재확인 (중복 방지)
+  const existingSnap=await db.collection('meetings').doc(id).collection('applicants').doc(user.email).get();
+  if(existingSnap.exists){showToast('이미 신청한 모임이에요');applied.add(id);renderAll();return;}
   const mRef=db.collection('meetings').doc(id),aRef=mRef.collection('applicants').doc(user.email);
   applied.add(id);
   // Firestore에서 실명 가져오기
@@ -1733,6 +1736,12 @@ async function applyWaitlist(id){
   const m=meetings.find(x=>x.id===id);if(!m)return;
   if(isHostOf(m)){showToast('내가 파트너인 모임은 대기할 수 없어요');return;}
   if(!waitlisted.has(id)&&!isAdmin()&&applyToken<=0){showToast('신청 가능 횟수가 없으면 대기 신청을 할 수 없어요');return;}
+  // 이미 신청한 모임이면 대기 불가
+  const existingApply=await db.collection('meetings').doc(id).collection('applicants').doc(user.email).get();
+  if(existingApply.exists){showToast('이미 신청한 모임은 대기할 수 없어요');applied.add(id);renderAll();return;}
+  // Firestore에서 실제 대기 여부 재확인
+  const existingWait=await db.collection('meetings').doc(id).collection('waitlist').doc(user.email).get();
+  if(existingWait.exists&&!waitlisted.has(id)){showToast('이미 대기 중인 모임이에요');waitlisted.add(id);renderAll();return;}
   if(waitlisted.has(id)){
     // 대기 취소
     await cancelWaitlist(id);
