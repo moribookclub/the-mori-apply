@@ -1772,6 +1772,7 @@ async function applyWaitlist(id){
   const m=meetings.find(x=>x.id===id);if(!m)return;
   if(isHostOf(m)){showToast('내가 파트너인 모임은 대기할 수 없어요');return;}
   if(!waitlisted.has(id)&&!isAdmin()&&applyToken<=0){showToast('신청 가능 횟수가 없으면 대기 신청을 할 수 없어요');return;}
+  blockUserSnap=true;
   // 이미 신청한 모임이면 대기 불가
   const existingApply=await db.collection('meetings').doc(id).collection('applicants').doc(user.email).get();
   if(existingApply.exists){showToast('이미 신청한 모임은 대기할 수 없어요');applied.add(id);renderAll();return;}
@@ -1799,6 +1800,7 @@ async function applyWaitlist(id){
   await db.collection('users').doc(user.email).update({
     waitlisted: firebase.firestore.FieldValue.arrayUnion(id)
   });
+  blockUserSnap=false;
   showToast(`대기 ${order}번으로 등록되었어요`);
   renderAll();
 }
@@ -1806,6 +1808,7 @@ async function applyWaitlist(id){
 async function cancelWaitlist(id,email){
   const targetEmail=email?decodeURIComponent(email):user?.email;
   if(!targetEmail)return;
+  blockUserSnap=true;
   await db.collection('meetings').doc(id).collection('waitlist').doc(targetEmail).delete();
   await db.collection('meetings').doc(id).update({waitCount:firebase.firestore.FieldValue.increment(-1)});
   if(!email||email===user?.email){
@@ -1813,8 +1816,11 @@ async function cancelWaitlist(id,email){
     await db.collection('users').doc(user.email).update({
       waitlisted: firebase.firestore.FieldValue.arrayRemove(id)
     });
+    blockUserSnap=false;
     showToast('대기가 취소되었어요');
     renderAll();
+  } else {
+    blockUserSnap=false;
   }
 }
 
