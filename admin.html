@@ -182,7 +182,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <div class="page-sub" id="adminSubtitle"></div>
     <div class="admin-tab-bar">
       <div class="admin-tab active" onclick="switchAdminTab('members',this)">멤버 관리</div>
-      <div class="admin-tab" onclick="switchAdminTab('meetings',this)">모임 신청자</div>
       <div class="admin-tab" onclick="switchAdminTab('settings',this)">설정</div>
       <div class="admin-tab" onclick="switchAdminTab('form',this)">신청서 편집</div>
       <div class="admin-tab" onclick="switchAdminTab('history',this)">히스토리</div>
@@ -210,18 +209,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
   <div class="chip" onclick="filterMembers('all',this)">전체 <span id="count-all"></span></div>
 </div>
         <div class="member-list" id="memberList"><div class="empty">불러오는 중...</div></div>
-      </div>
-    </div>
-
-    <!-- 모임 신청자 -->
-    <div id="tabMeetings" style="display:none">
-      <div class="section-card">
-        <div class="section-head">
-          <div><h2>모임 신청자 명단</h2></div>
-          <button class="btn-csv" onclick="exportCSV()">CSV 내보내기</button>
-        </div>
-        <div class="filter-chips" id="meetingChips"></div>
-        <div id="applicantTableWrap"><div class="empty">모임을 선택하면 신청자 명단이 표시돼요</div></div>
       </div>
     </div>
 
@@ -697,7 +684,9 @@ else if(u.role==='staff'){
 else if(u.role==='smallstaff'){
   actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">소모임장 회수</button>`;
 }
-    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${u.appliedAt ? ' · 제출 ' + u.appliedAt.toDate().toLocaleString('ko-KR') : ''}</div><div class="member-badges">${roleBadge}${tokenBadges}</div></div><div class="member-actions">${actions}</div></div>`;
+    const appliedTitles=(u.applied||[]).map(id=>{const m=meetings.find(x=>x.id===id);return m?`<span style="display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:2px 8px;font-size:.72rem;color:rgba(255,255,255,.7);margin:2px 2px 0 0">${m.title}</span>`:null;}).filter(Boolean).join('');
+    const appliedRow = appliedTitles ? `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:2px">${appliedTitles}</div>` : '';
+    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${u.appliedAt ? ' · 제출 ' + u.appliedAt.toDate().toLocaleString('ko-KR') : ''}</div><div class="member-badges">${roleBadge}${tokenBadges}</div>${appliedRow}</div><div class="member-actions">${actions}</div></div>`;
   }).join('');
 }
 
@@ -948,13 +937,12 @@ function closeAddMemberModal(){document.getElementById('addMemberModal').classLi
 /* ── TABS ─────────────────────────────────────────────── */
 function switchAdminTab(t,el){
   document.querySelectorAll('.admin-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');
-['tabMembers','tabMeetings','tabSettings','tabForm','tabHistory'].forEach(id=>document.getElementById(id).style.display='none');
-document.getElementById({members:'tabMembers',meetings:'tabMeetings',settings:'tabSettings',form:'tabForm',history:'tabHistory'}[t]).style.display='block';
+['tabMembers','tabSettings','tabForm','tabHistory'].forEach(id=>document.getElementById(id).style.display='none');
+document.getElementById({members:'tabMembers',settings:'tabSettings',form:'tabForm',history:'tabHistory'}[t]).style.display='block';
 if(t==='history') loadHistory();
-  if(t==='meetings')renderMeetingChips();
-  if(t==='settings') renderCloseableMeetings();
-  renderMeetingApplyControlList();
-  if(t==='form')renderBasicFieldsEditor();
+if(t==='settings') renderCloseableMeetings();
+renderMeetingApplyControlList();
+if(t==='form')renderBasicFieldsEditor();
 }
 async function saveGlobalApplySetting(){
   const enabled = document.getElementById('globalApplyToggle').checked;
