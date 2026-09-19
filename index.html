@@ -395,6 +395,9 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
   </div>
   <div id="tabManage" style="display:none">
     <div class="manage-section">
+      <div style="background:rgba(100,180,255,.07);border:1px solid rgba(100,180,255,.2);border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.82rem;color:rgba(150,210,255,.8);line-height:1.6">
+        ⭐ 이 페이지는 <strong>스탭</strong>과 <strong>소모임장</strong>만 접근할 수 있어요. 본인이 담당한 모임만 관리할 수 있어요.
+      </div>
       <div class="section-label" style="margin-bottom:1rem">📚 독서모임 관리</div>
       <div id="manageMeetingList"></div>
       <div class="section-label" style="margin:1.5rem 0 1rem">🎯 소모임 관리</div>
@@ -1587,7 +1590,7 @@ function meetingCardHTML(m){
     badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;
   }
   const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.title}','meeting')">삭제</button></div>`:'';
-  const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('meetings','${m.id}','${encodeURIComponent(m.title)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:'';
+  const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('meetings','${m.id}','${encodeURIComponent(m.title)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:isSmallStaff()?`<button onclick="showToast('신청자 명단은 스탭만 확인할 수 있어요')" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.3)">👥 ${m.applied}</button>`:'';
   const hostBadge=iAmHost?`<span class="badge-host">내 모임</span>`:'';
   const closedBadge=m.closed?`<span class="card-badge badge-closed" style="background:rgba(255,80,80,.15);color:rgba(255,130,130,.8)">폐강</span>`:'';
   const waitBtn=canWait?`<button class="btn-apply ${isWaitlisted?'applied':'open'}" style="font-size:.73rem;${isWaitlisted?'':'background:rgba(255,200,80,.9);color:#0d1f3c;border:none;'}" onclick="applyWaitlist('${m.id}')">${isWaitlisted?'대기취소':'대기신청'}</button>`:'';
@@ -1606,7 +1609,7 @@ function smallCardHTML(m){
   else if(isFull){badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';}
   else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;}
   const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditSmallModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.name}','small')">삭제</button></div>`:''; 
-  const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('smallGroups','${m.id}','${encodeURIComponent(m.name)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:'';
+  const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('smallGroups','${m.id}','${encodeURIComponent(m.name)}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:isSmallStaff()?`<button onclick="showToast('신청자 명단은 스탭만 확인할 수 있어요')" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.3)">👥 ${m.applied}</button>`:'';
   const hostBadge=iAmHost?`<span class="badge-host">내 모임</span>`:'';
   return`<div class="card"><div class="card-header"><div class="card-top-row"><div class="card-top-left">${badge}<span class="badge-small">소모임</span>${hostBadge}</div><div class="card-top-right">${applicantBtn}${adminBtns}</div></div><div class="book-info"><div class="book-title">${m.name}</div></div><div class="meeting-meta-header"><span class="meta-tag">👤 ${m.host}</span></div></div><div class="card-body"><div class="info-row"><span class="info-label">날짜</span><span class="info-val">${dateStr}</span></div><div class="info-row"><span class="info-label">시간</span><span class="info-val">${m.time}</span></div><div class="info-row"><span class="info-label">장소</span><span class="info-val">${m.place}</span></div></div><div class="card-footer"><div><div class="seats">잔여 <strong>${m.max-m.applied}</strong> / ${m.max}자리</div><div class="seat-bar"><div class="seat-fill${isFull?' full':''}" style="width:${pct}%"></div></div></div><button class="btn-apply ${btnCls}" ${clickable?`onclick="applySmall('${m.id}')"`:''}>${btnTxt}</button></div></div>`;
 }
