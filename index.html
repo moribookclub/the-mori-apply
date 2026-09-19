@@ -320,6 +320,14 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
   </div>
 </div>
 
+<div id="screenFormClosed" class="screen">
+  <div class="waiting-screen">
+    <div class="waiting-icon">🔒</div>
+    <h2>신청서 접수 마감</h2>
+    <div id="formClosedMsg" style="color:rgba(255,255,255,.5);font-size:.88rem;line-height:1.7;margin-bottom:1.3rem"></div>
+    <button class="btn-sm" onclick="logout()">로그아웃</button>
+  </div>
+</div>
 <div id="screenWaiting" class="screen">
   <div class="waiting-screen">
     <div class="waiting-icon">⏳</div>
@@ -590,7 +598,20 @@ auth.onAuthStateChanged(fb => {
     return;
   }
   db.collection('users').doc(fb.email).get().then(doc=>{
-    if(!doc.exists){userRole='';loadFormConfig().then(()=>{showScreen('form');updateNav();});return;}
+    if(!doc.exists){
+      userRole='';
+      const cfgDoc = await db.collection('settings').doc('config').get();
+      const formOpen = cfgDoc.exists ? cfgDoc.data().formOpen!==false : true;
+      if(!formOpen){
+        const notice = cfgDoc.data().formClosedNotice||'현재 모임 신청서 접수가 마감되었습니다.';
+        showScreen('formClosed');
+        document.getElementById('formClosedMsg').innerHTML=notice;
+        updateNav();
+        return;
+      }
+      loadFormConfig().then(()=>{showScreen('form');updateNav();});
+      return;
+    }
     const d=doc.data();
     userRole=d.role||'';
     applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
@@ -609,7 +630,7 @@ function logout(){auth.signOut();}
 
 function showScreen(s){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
-  const map={loading:'screenLoading',login:'screenLogin',form:'screenForm',waiting:'screenWaiting',main:'screenMain'};
+  const map={loading:'screenLoading',login:'screenLogin',form:'screenForm',waiting:'screenWaiting',main:'screenMain',formClosed:'screenFormClosed'};
   const el=document.getElementById(map[s]);if(el)el.classList.add('active');
 }
 
