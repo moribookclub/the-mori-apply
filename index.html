@@ -1125,7 +1125,12 @@ const userDoc = await db.collection('users').doc(user.email).get();
 const realName = userDoc.exists ? (userDoc.data().name || user.name) : user.name;
 await aRef.set({name:user.name, realName:realName, email:user.email, time:new Date().toLocaleString('ko-KR'), photo:user.photo||''});
   await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
-  if(!isAdmin()){applyToken=Math.max(0,applyToken-1);await db.collection('users').doc(user.email).update({applyToken});}
+  if(!isAdmin()){
+    applyToken=Math.max(0,applyToken-1);
+    await db.collection('users').doc(user.email).update({applyToken, applied:firebase.firestore.FieldValue.arrayUnion(id)});
+  } else {
+    await db.collection('users').doc(user.email).update({applied:firebase.firestore.FieldValue.arrayUnion(id)});
+  }
   // 모임장 알림
   if(m.hostEmail&&m.hostEmail!==user.email){
     db.collection('users').doc(m.hostEmail).get().then(doc=>{
@@ -1194,8 +1199,10 @@ async function doCancelMeeting(id){
   await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});
   if(!isAdmin()){
     cancelToken=Math.max(0,cancelToken-1);
-    applyToken=applyToken+1;  // 취소 시 신청 토큰 복구
-    await db.collection('users').doc(user.email).update({cancelToken, applyToken});
+    applyToken=applyToken+1;
+    await db.collection('users').doc(user.email).update({cancelToken, applyToken, applied:firebase.firestore.FieldValue.arrayRemove(id)});
+  } else {
+    await db.collection('users').doc(user.email).update({applied:firebase.firestore.FieldValue.arrayRemove(id)});
   }
   // 모임장 알림
   if(m?.hostEmail&&m.hostEmail!==user.email){
