@@ -251,7 +251,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 .cal-date.today-dot{background:#fff;color:#0d1f3c}
 .cal-event{font-size:.62rem;padding:1px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .cal-event.meeting{background:rgba(255,255,255,.18);color:#fff}
+.cal-event.mine{background:rgba(100,220,100,.35);color:rgba(150,255,150,.95);font-weight:700}
+.cal-event.waiting{background:rgba(255,200,80,.25);color:rgba(255,220,100,.9);font-weight:700}
 .cal-event.small{background:rgba(140,100,255,.35);color:rgba(200,180,255,.95)}
+.cal-event.mineSmall{background:rgba(100,180,255,.35);color:rgba(150,210,255,.95);font-weight:700}
 .cal-day-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.6rem}
 .cal-day-card h3{font-size:.85rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:.8rem;letter-spacing:.05em}
 </style>
@@ -369,6 +372,8 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
       <div class="grid" id="myMeetingGrid"></div>
       <div class="section-label" style="margin-top:1.5rem">🎯 신청한 소모임</div>
       <div class="grid" id="mySmallGrid"></div>
+      <div class="section-label" style="margin-top:1.5rem">⏳ 대기중인 모임</div>
+      <div id="myWaitlistGrid" style="display:flex;flex-direction:column;gap:.6rem;padding-bottom:3rem"></div>
     </div>
   </div>
     <div id="tabCalendar" style="display:none">
@@ -1461,8 +1466,15 @@ function renderCalendar(){
     if(!eventMap[dateStr]) eventMap[dateStr] = [];
     eventMap[dateStr].push({item, type});
   };
-  meetings.forEach(m => addEvent(m.date, m, 'meeting'));
-  smallGroups.forEach(m => addEvent(m.date, m, 'small'));
+  meetings.forEach(m => {
+    if(applied.has(m.id)) addEvent(m.date, m, 'mine');
+    else if(waitlisted.has(m.id)) addEvent(m.date, m, 'waiting');
+    else addEvent(m.date, m, 'meeting');
+  });
+  smallGroups.forEach(m => {
+    if(appliedSmall.has(m.id)) addEvent(m.date, m, 'mineSmall');
+    else addEvent(m.date, m, 'small');
+  });
 
   let cells = '';
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
@@ -1560,6 +1572,34 @@ function renderAll(){
   const mmg=document.getElementById('myMeetingGrid'),msg=document.getElementById('mySmallGrid');
   if(mmg){const l=meetings.filter(m=>applied.has(m.id));mmg.innerHTML=l.length?l.map(meetingCardHTML).join(''):`<div class="empty">신청한 독서모임이 없어요</div>`;}
   if(msg){const l=smallGroups.filter(m=>appliedSmall.has(m.id));msg.innerHTML=l.length?l.map(smallCardHTML).join(''):`<div class="empty">신청한 소모임이 없어요</div>`;}
+   // 대기중인 모임 렌더
+  const wg=document.getElementById('myWaitlistGrid');
+  if(wg){
+    const waitMeetings=meetings.filter(m=>waitlisted.has(m.id));
+    if(!waitMeetings.length){
+      wg.innerHTML=`<div class="empty">대기중인 모임이 없어요</div>`;
+    } else {
+      wg.innerHTML='';
+      // 각 모임의 대기 순위를 비동기로 가져옴
+      Promise.all(waitMeetings.map(async m=>{
+        const wSnap=await db.collection('meetings').doc(m.id).collection('waitlist').orderBy('time').get();
+        const myOrder=wSnap.docs.findIndex(d=>d.id===user.email)+1;
+        const dateStr=new Date(m.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+        return `<div style="background:#0d1f3c;border:1px solid rgba(255,200,80,.2);border-radius:12px;padding:1rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:.92rem;font-weight:700;margin-bottom:3px">${m.title}</div>
+            <div style="font-size:.78rem;color:rgba(255,255,255,.45)">${dateStr} · ${m.time} · ${m.place}</div>
+            <div style="font-size:.76rem;color:rgba(255,255,255,.4);margin-top:3px">👤 ${m.host}</div>
+          </div>
+          <div style="text-align:center;flex-shrink:0">
+            <div style="font-size:1.3rem;font-weight:700;color:rgba(255,200,80,.9)">${myOrder}</div>
+            <div style="font-size:.7rem;color:rgba(255,200,80,.6);font-weight:600">대기번호</div>
+            <button class="btn-apply applied" style="font-size:.72rem;margin-top:6px" onclick="applyWaitlist('${m.id}')">대기취소</button>
+          </div>
+        </div>`;
+      })).then(items=>{wg.innerHTML=items.join('');});
+    }
+  }
   if(document.getElementById('tabManage')?.style.display!=='none')renderManageTab();
 }
 
