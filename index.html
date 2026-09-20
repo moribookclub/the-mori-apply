@@ -1506,13 +1506,15 @@ function renderCalendar(){
     const dayColor = colIdx===0 ? 'color:rgba(255,120,120,.9)' : colIdx===6 ? 'color:rgba(100,160,255,.9)' : '';
 
     const getItemName = (e) => {
-      if(e.type==='small'||e.type==='mineSmall') return e.item.name;
-      return e.item.title;
+      if(e.type==='small') return `🎯 ${e.item.name}`;
+      if(e.type==='mineSmall') return `✅ ${e.item.name}`;
+      if(e.type==='mine') return `✅ ${e.item.title}`;
+      if(e.type==='waiting') return `⏳ ${e.item.title}`;
+      return `📚 ${e.item.title}`;
     };
     const eventsHTML = dayEvents.slice(0,3).map(e =>
       `<div class="cal-event ${e.type}" title="${getItemName(e)}">${getItemName(e)}</div>`
     ).join('') + (dayEvents.length > 3 ? `<div style="font-size:.58rem;color:rgba(255,255,255,.3);padding-left:3px">+${dayEvents.length-3}개</div>` : '');
-
     cells += `<div class="cal-cell${isOther?' other-month':''}${isToday?' today':''}" onclick="showCalDay('${dateStr}')">
       <div class="cal-date ${dotClass}" style="${dayColor}">${day}</div>
       ${eventsHTML}
@@ -1535,26 +1537,42 @@ function showCalDay(dateStr){
   let html = '';
   if(dayMeetings.length){
     html += `<div class="cal-day-card"><h3>📚 독서모임</h3>`;
-    html += dayMeetings.map(m => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div>
+    html += dayMeetings.map(m => {
+      const isApplied=applied.has(m.id);
+      const isWaiting=waitlisted.has(m.id);
+      let statusBadge='';
+      if(isApplied) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(100,220,100,.9);background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);border-radius:20px;padding:2px 8px">✅ 신청완료</span>`;
+      else if(isWaiting) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(255,200,80,.9);background:rgba(255,200,80,.1);border:1px solid rgba(255,200,80,.25);border-radius:20px;padding:2px 8px">⏳ 대기중</span>`;
+      return `<div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
           <div style="font-size:.88rem;font-weight:600">${m.title}</div>
-          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${m.time} · ${m.place} · ${m.host}</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);flex-shrink:0">${m.applied}/${m.max}명</div>
         </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.4);flex-shrink:0;margin-left:8px">${m.applied}/${m.max}명</div>
-      </div>`).join('');
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:8px">
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4)">${m.time} · ${m.place} · ${m.host}</div>
+          ${statusBadge}
+        </div>
+      </div>`;
+    }).join('');
     html += `</div>`;
   }
   if(daySmall.length){
     html += `<div class="cal-day-card"><h3>🎯 소모임</h3>`;
-    html += daySmall.map(m => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div>
+    html += daySmall.map(m => {
+      const isApplied=appliedSmall.has(m.id);
+      let statusBadge='';
+      if(isApplied) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(100,220,100,.9);background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);border-radius:20px;padding:2px 8px">✅ 신청완료</span>`;
+      return `<div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
           <div style="font-size:.88rem;font-weight:600">${m.name}</div>
-          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${m.time} · ${m.place} · ${m.host}</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);flex-shrink:0">${m.applied}/${m.max}명</div>
         </div>
-        <div style="font-size:.75rem;color:rgba(255,255,255,.4);flex-shrink:0;margin-left:8px">${m.applied}/${m.max}명</div>
-      </div>`).join('');
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:8px">
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4)">${m.time} · ${m.place} · ${m.host}</div>
+          ${statusBadge}
+        </div>
+      </div>`;
+    }).join('');
     html += `</div>`;
   }
   detail.innerHTML = `<div style="font-size:.82rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:.7rem;padding-left:.2rem">${dateLabel}</div>` + html;
