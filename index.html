@@ -1505,8 +1505,12 @@ function renderCalendar(){
     const colIdx = i % 7;
     const dayColor = colIdx===0 ? 'color:rgba(255,120,120,.9)' : colIdx===6 ? 'color:rgba(100,160,255,.9)' : '';
 
+    const getItemName = (e) => {
+      if(e.type==='small'||e.type==='mineSmall') return e.item.name;
+      return e.item.title;
+    };
     const eventsHTML = dayEvents.slice(0,3).map(e =>
-      `<div class="cal-event ${e.type}" title="${e.type==='meeting'?e.item.title:e.item.name}">${e.type==='meeting'?e.item.title:e.item.name}</div>`
+      `<div class="cal-event ${e.type}" title="${getItemName(e)}">${getItemName(e)}</div>`
     ).join('') + (dayEvents.length > 3 ? `<div style="font-size:.58rem;color:rgba(255,255,255,.3);padding-left:3px">+${dayEvents.length-3}개</div>` : '');
 
     cells += `<div class="cal-cell${isOther?' other-month':''}${isToday?' today':''}" onclick="showCalDay('${dateStr}')">
