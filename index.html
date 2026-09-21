@@ -254,7 +254,9 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 .cal-event.mine{background:rgba(100,220,100,.35);color:rgba(150,255,150,.95);font-weight:700}
 .cal-event.waiting{background:rgba(255,200,80,.25);color:rgba(255,220,100,.9);font-weight:700}
 .cal-event.small{background:rgba(140,100,255,.35);color:rgba(200,180,255,.95)}
-.cal-event.mineSmall{background:rgba(100,180,255,.35);color:rgba(150,210,255,.95);font-weight:700}
+.cal-event.mineSmall{background:rgba(100,220,100,.35);color:rgba(150,255,150,.95);font-weight:700}
+.cal-event.hostMeeting{background:rgba(80,150,255,.35);color:rgba(150,200,255,.95);font-weight:700}
+.cal-event.hostSmall{background:rgba(80,150,255,.35);color:rgba(150,200,255,.95);font-weight:700}150,210,255,.95);font-weight:700}
 .cal-day-card{background:#0d1f3c;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.6rem}
 .cal-day-card h3{font-size:.85rem;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:.8rem;letter-spacing:.05em}
 </style>
@@ -1478,12 +1480,14 @@ function renderCalendar(){
     eventMap[dateStr].push({item, type});
   };
   meetings.forEach(m => {
-    if(applied.has(m.id)) addEvent(m.date, m, 'mine');
+    if(isHostOf(m)) addEvent(m.date, m, 'hostMeeting');
+    else if(applied.has(m.id)) addEvent(m.date, m, 'mine');
     else if(waitlisted.has(m.id)) addEvent(m.date, m, 'waiting');
     else addEvent(m.date, m, 'meeting');
   });
   smallGroups.forEach(m => {
-    if(appliedSmall.has(m.id)) addEvent(m.date, m, 'mineSmall');
+    if(isHostOf(m)) addEvent(m.date, m, 'hostSmall');
+    else if(appliedSmall.has(m.id)) addEvent(m.date, m, 'mineSmall');
     else addEvent(m.date, m, 'small');
   });
 
@@ -1521,6 +1525,8 @@ function renderCalendar(){
       if(e.type==='mineSmall') return `✅ ${e.item.name}`;
       if(e.type==='mine') return `✅ ${e.item.title}`;
       if(e.type==='waiting') return `⏳ ${e.item.title}`;
+      if(e.type==='hostMeeting') return `📘 ${e.item.title}`;
+      if(e.type==='hostSmall') return `📘 ${e.item.name}`;
       return `📚 ${e.item.title}`;
     };
     const eventsHTML = dayEvents.slice(0,3).map(e =>
@@ -1551,8 +1557,10 @@ function showCalDay(dateStr){
     html += dayMeetings.map(m => {
       const isApplied=applied.has(m.id);
       const isWaiting=waitlisted.has(m.id);
+      const isMeetingHost=isHostOf(m);
       let statusBadge='';
-      if(isApplied) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(100,220,100,.9);background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);border-radius:20px;padding:2px 8px">✅ 신청완료</span>`;
+      if(isMeetingHost) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(100,170,255,.9);background:rgba(80,150,255,.1);border:1px solid rgba(80,150,255,.3);border-radius:20px;padding:2px 8px">📘 내 모임</span>`;
+      else if(isApplied) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(100,220,100,.9);background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);border-radius:20px;padding:2px 8px">✅ 신청완료</span>`;
       else if(isWaiting) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(255,200,80,.9);background:rgba(255,200,80,.1);border:1px solid rgba(255,200,80,.25);border-radius:20px;padding:2px 8px">⏳ 대기중</span>`;
       return `<div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -1571,9 +1579,10 @@ function showCalDay(dateStr){
     html += `<div class="cal-day-card"><h3>🎯 소모임</h3>`;
     html += daySmall.map(m => {
       const isApplied=appliedSmall.has(m.id);
+      const isSmallHost=isHostOf(m);
       let statusBadge='';
-      if(isApplied) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(100,220,100,.9);background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);border-radius:20px;padding:2px 8px">✅ 신청완료</span>`;
-      return `<div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+      if(isSmallHost) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(100,170,255,.9);background:rgba(80,150,255,.1);border:1px solid rgba(80,150,255,.3);border-radius:20px;padding:2px 8px">📘 내 모임</span>`;
+      else if(isApplied) statusBadge=`<span style="font-size:.7rem;font-weight:600;color:rgba(100,220,100,.9);background:rgba(100,220,100,.1);border:1px solid rgba(100,220,100,.25);border-radius:20px;padding:2px 8px">✅ 신청완료</span>`;      return `<div style="padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
           <div style="font-size:.88rem;font-weight:600">${m.name}</div>
           <div style="font-size:.75rem;color:rgba(255,255,255,.4);flex-shrink:0">${m.applied}/${m.max}명</div>
