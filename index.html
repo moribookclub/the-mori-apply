@@ -337,11 +337,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
   <div class="waiting-screen">
     <div class="waiting-icon">⏳</div>
     <h2>신청서 검토 중이에요</h2>
-    <p style="margin-bottom:1.3rem">관리자가 신청서를 확인한 후 승인해드릴게요.<br>승인되면 모임 신청 페이지로 이동할 수 있어요.</p>
+    <div id="waitingNoticeBox" style="max-width:500px;margin:.5rem auto 1rem;padding:0 1.5rem"></div>
     <button class="btn-sm" onclick="logout()">로그아웃</button>
   </div>
 </div>
-
 <div id="screenMain" class="screen">
   <div class="hero"><h1>THE MORI APPLY</h1></div>
   <div id="noticeBanner" style="display:none;max-width:980px;margin:0 auto 1.2rem;padding:0 1rem">
@@ -884,15 +883,13 @@ function loadNotices(){
   });
 }
 function loadWaitingNotice() {
-  // 기존 박스 있으면 제거 후 새로 만들기
-  const existing = document.getElementById('waitingNoticeBox');
-  if(existing) existing.remove();
-  
+  const box = document.getElementById('waitingNoticeBox');
+  if(!box) return;
   db.collection('settings').doc('config').get().then(d=>{
     if(d.exists&&d.data().waitingNotice){
-      const wrap=document.createElement('div');wrap.id='waitingNoticeBox';wrap.style.cssText='max-width:500px;margin:1rem auto 0;padding:0 1.5rem';
-      wrap.innerHTML=`<div style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.2);border-radius:10px;padding:.9rem 1.1rem;font-size:.83rem;color:rgba(255,220,100,.85);line-height:1.7">${d.data().waitingNotice}</div>`;
-      document.querySelector('.waiting-screen').appendChild(wrap);
+      box.innerHTML=`<div style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.2);border-radius:10px;padding:.9rem 1.1rem;font-size:.83rem;color:rgba(255,220,100,.85);line-height:1.7">${d.data().waitingNotice}</div>`;
+    } else {
+      box.innerHTML=`<div style="font-size:.83rem;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1rem">관리자가 신청서를 확인한 후 승인해드릴게요.<br>승인되면 모임 신청 페이지로 이동할 수 있어요.</div>`;
     }
   });
 }
