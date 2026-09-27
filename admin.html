@@ -1027,7 +1027,7 @@ async function loadHistory(){
   const promises = usersSnap.docs.map(async uDoc => {
     const u = uDoc.data();
     const histSnap = await db.collection('users').doc(uDoc.id).collection('history')
-      .orderBy('time','desc').limit(50).get();
+      .orderBy('time','desc').limit(10).get();
     return histSnap.docs.map(d => ({
       ...d.data(),
       userName: u.name || uDoc.id,
