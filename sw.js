@@ -27,6 +27,9 @@ self.addEventListener('install', e => {
 });
 self.addEventListener('message', e => {
   if(e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if(e.data && e.data.type === 'GET_VERSION'){
+    e.source.postMessage({type:'VERSION', version:CACHE});
+  }
 });
 self.addEventListener('activate', e => {
   e.waitUntil(
