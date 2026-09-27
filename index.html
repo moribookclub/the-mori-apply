@@ -417,6 +417,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
         <h3>내 정보</h3>
         <div id="profileInfoRows"></div>
         <button class="btn-logout-profile" onclick="logout()">로그아웃</button>
+        <div style="text-align:center;margin-top:1.5rem;font-size:.72rem;color:rgba(255,255,255,.2)" id="appVersion"></div>
       </div>
       <div class="profile-card">
         <h3>🎟 토큰 현황</h3>
@@ -781,6 +782,7 @@ function initMain(){
   listenSmallGroups();
   listenNotifications();
   loadSiteSettings();
+  loadAppVersion();
 }
 
 async function registerFCMToken(){
@@ -2096,6 +2098,19 @@ async function confirmCancelWaitlist(meetingId, encodedEmail, encodedName){
 }
   
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+function loadAppVersion(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>{
+      reg.active?.postMessage({type:'GET_VERSION'});
+    });
+    navigator.serviceWorker.addEventListener('message',e=>{
+      if(e.data?.type==='VERSION'){
+        const el=document.getElementById('appVersion');
+        if(el) el.textContent=`v ${e.data.version}`;
+      }
+    });
+  }
+}
 </script>
   <!-- 신청자 확인 모달 -->
 <div class="modal-overlay" id="applicantModal">
