@@ -1914,6 +1914,13 @@ async function applyWaitlist(id){
   await db.collection('users').doc(user.email).update({
     waitlisted: firebase.firestore.FieldValue.arrayUnion(id)
   });
+  await db.collection('users').doc(user.email).collection('history').add({
+    type:'wait',
+    meetingTitle:m.title,
+    meetingId:id,
+    reason:`대기 ${order}번 신청`,
+    time:firebase.firestore.FieldValue.serverTimestamp()
+  });
   blockUserSnap=false;
   showToast(`대기 ${order}번으로 등록되었어요`);
   renderAll();
@@ -1930,10 +1937,27 @@ async function cancelWaitlist(id,email){
     await db.collection('users').doc(user.email).update({
       waitlisted: firebase.firestore.FieldValue.arrayRemove(id)
     });
+    await db.collection('users').doc(user.email).collection('history').add({
+      type:'wait-cancel',
+      meetingTitle:meetings.find(x=>x.id===id)?.title||id,
+      meetingId:id,
+      reason:'대기 취소',
+      time:firebase.firestore.FieldValue.serverTimestamp()
+    });
     blockUserSnap=false;
     showToast('대기가 취소되었어요');
     renderAll();
   } else {
+    // 관리자/스탭이 대기 취소한 경우 히스토리
+    const targetEmail=decodeURIComponent(email);
+    const m=meetings.find(x=>x.id===id);
+    await db.collection('users').doc(targetEmail).collection('history').add({
+      type:'wait-cancel',
+      meetingTitle:m?.title||id,
+      meetingId:id,
+      reason:`관리자/스탭 대기 취소 (${user.name})`,
+      time:firebase.firestore.FieldValue.serverTimestamp()
+    });
     blockUserSnap=false;
   }
 }
