@@ -2016,6 +2016,14 @@ async function promoteWaitlist(meetingId){
     applied:firebase.firestore.FieldValue.arrayUnion(meetingId),
     waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)
   });
+  // 히스토리 기록 (대기 승격)
+  await db.collection('users').doc(email).collection('history').add({
+    type:'apply',
+    meetingTitle:m.title,
+    meetingId:meetingId,
+    reason:'대기 후 자동 참여 확정',
+    time:firebase.firestore.FieldValue.serverTimestamp()
+  });
   // 승격된 유저 알림
   addNotification(email,`🎉 "${m.title}" 모임 여석이 생겨 자동으로 신청되었어요! (신청 횟수 -1)`);
   // 모임장 알림
