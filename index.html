@@ -1879,7 +1879,13 @@ async function applyWaitlist(id){
   if(!user){showToast('로그인 후 신청할 수 있어요');return;}
   const m=meetings.find(x=>x.id===id);if(!m)return;
   if(isHostOf(m)){showToast('내가 파트너인 모임은 대기할 수 없어요');return;}
-  if(!waitlisted.has(id)&&!isAdmin()&&applyToken<=0){showToast('신청 가능 횟수가 없으면 대기 신청을 할 수 없어요');return;}
+  if(!waitlisted.has(id)&&!isAdmin()){
+    // Firestore에서 실제 토큰 재확인
+    const freshUser=await db.collection('users').doc(user.email).get();
+    const freshToken=freshUser.exists?(freshUser.data().applyToken!==undefined?freshUser.data().applyToken:DEFAULT_APPLY_TOKEN):0;
+    applyToken=freshToken;
+    if(freshToken<=0){showToast('신청 가능 횟수가 없으면 대기 신청을 할 수 없어요');return;}
+  }
   blockUserSnap=true;
   // 이미 신청한 모임이면 대기 불가
   const existingApply=await db.collection('meetings').doc(id).collection('applicants').doc(user.email).get();
@@ -1955,6 +1961,15 @@ async function promoteWaitlist(meetingId){
       addNotification(m.hostEmail,`⚠️ "${m.title}" 모임 여석이 생겼지만 대기자 ${fd.realName||fd.name}님의 신청 횟수가 없어 다음 대기자로 넘어갔어요`);
     }
     await promoteWaitlist(meetingId); // 재귀로 다음 대기자 시도
+    return;
+  }
+    // 이미 신청자 명단에 있으면 중복 방지
+  const existingApply=await db.collection('meetings').doc(meetingId).collection('applicants').doc(email).get();
+  if(existingApply.exists){
+    // 대기 문서만 삭제하고 종료
+    await first.ref.delete();
+    await db.collection('meetings').doc(meetingId).update({waitCount:firebase.firestore.FieldValue.increment(-1)});
+    await db.collection('users').doc(email).update({waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
     return;
   }
   // 승격 처리
