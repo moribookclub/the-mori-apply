@@ -770,9 +770,11 @@ async function openProfileModal(email){
         const timeStr = h.time?.toDate
           ? h.time.toDate().toLocaleString('ko-KR')
           : (h.time || '');
-        const isApply = h.type === 'apply';
-        const color = isApply ? 'rgba(100,220,100,.8)' : 'rgba(255,130,130,.8)';
-        const icon = isApply ? '📚 신청' : '❌ 취소';
+        let color, icon;
+        if(h.type==='apply'){color='rgba(100,220,100,.8)';icon='📚 신청';}
+        else if(h.type==='wait'){color='rgba(255,200,80,.8)';icon='⏳ 대기';}
+        else if(h.type==='wait-cancel'){color='rgba(255,160,80,.8)';icon='⏳ 대기취소';}
+        else{color='rgba(255,130,130,.8)';icon='❌ 취소';}
         return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem">
           <span style="color:${color};font-weight:600;flex-shrink:0;margin-right:8px">${icon}</span>
           <span style="flex:1;color:rgba(255,255,255,.8)">${h.meetingTitle || '-'}</span>
