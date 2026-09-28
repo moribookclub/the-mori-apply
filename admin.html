@@ -50,6 +50,12 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .badge-apply-token{background:rgba(100,200,255,.1);border:1px solid rgba(100,200,255,.25);color:rgba(150,220,255,.9);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
 .badge-cancel-token{background:rgba(255,180,80,.1);border:1px solid rgba(255,180,80,.25);color:rgba(255,210,100,.9);font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:600}
 .member-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+/* 모바일: 버튼이 여러 개인 멤버(참여자·대기중)는 버튼을 이름 아래 한 줄로 내려서 화면을 덜 차지하게 */
+@media(max-width:600px){
+  .member-row{flex-wrap:wrap}
+  .member-actions.multi{flex-basis:100%;margin-left:52px;margin-top:-4px}
+  .member-actions.multi button{padding:5px 10px;font-size:.72rem}
+}
 .btn-approve{background:#fff;color:#0d1f3c;border:none;padding:6px 13px;border-radius:5px;font-size:.76rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .btn-approve:hover{opacity:.85}
 .btn-reject{background:transparent;border:1px solid rgba(255,100,100,.35);color:rgba(255,130,130,.8);padding:6px 13px;border-radius:5px;font-size:.76rem;cursor:pointer;white-space:nowrap}
@@ -702,7 +708,7 @@ else if(u.role==='smallstaff'){
     const appliedTitles=(u.applied||[]).map(id=>{const m=meetings.find(x=>x.id===id);return m?`<span style="display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:2px 8px;font-size:.72rem;color:rgba(255,255,255,.7);margin:2px 2px 0 0">${m.title}</span>`:null;}).filter(Boolean).join('');
     const waitTitles=(u.waitlisted||[]).map(id=>{const m=meetings.find(x=>x.id===id);return m?`<span style="display:inline-block;background:rgba(255,200,80,.1);border:1px solid rgba(255,200,80,.3);border-radius:5px;padding:2px 8px;font-size:.72rem;color:rgba(255,220,100,.9);margin:2px 2px 0 0">${m.title}</span>`:null;}).filter(Boolean).join('');
     const appliedRow = (appliedTitles||waitTitles) ? `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:2px">${appliedTitles}${waitTitles}</div>` : '';
-    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${u.appliedAt ? ' · 제출 ' + u.appliedAt.toDate().toLocaleString('ko-KR') : ''}</div><div class="member-badges">${roleBadge}${tokenBadges}</div>${appliedRow}</div><div class="member-actions">${actions}</div></div>`;
+    return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}</div><div class="member-badges">${roleBadge}${tokenBadges}</div>${appliedRow}</div><div class="member-actions${u.role==='staff'||u.role==='smallstaff'?'':' multi'}">${actions}</div></div>`;
   }).join('');
 }
 
@@ -836,6 +842,7 @@ async function openProfileModal(email){
       <div class="profile-row"><span class="profile-label">연락처</span><span class="profile-val">${u.phone||'-'}</span></div>
       <div class="profile-row"><span class="profile-label">멤버구분</span><span class="profile-val">${u.memberType||'-'}</span></div>
       <div class="profile-row"><span class="profile-label">권한</span><span class="profile-val">${roleLabel}</span></div>
+      <div class="profile-row"><span class="profile-label">제출시간</span><span class="profile-val">${u.appliedAt?.toDate ? u.appliedAt.toDate().toLocaleString('ko-KR') : '-'}</span></div>
     </div>
     ${answersHTML ? `<div class="profile-section"><div class="profile-section-title">신청서 답변</div>${answersHTML}</div>` : ''}
     <div class="profile-section">
