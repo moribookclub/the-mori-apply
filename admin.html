@@ -114,6 +114,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .profile-answer{background:rgba(255,255,255,.05);border-radius:7px;padding:.8rem;font-size:.84rem;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:.6rem;white-space:pre-wrap}
 .profile-q{font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:.3rem}
 .applied-chip{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:4px 10px;font-size:.78rem;color:rgba(255,255,255,.7);margin:3px}
+.applied-chip.wait{background:rgba(255,200,80,.1);border-color:rgba(255,200,80,.3);color:rgba(255,220,100,.9)}
 .profile-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,.08)}
 .empty{text-align:center;padding:2.5rem;color:rgba(255,255,255,.22);font-size:.88rem}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#fff;color:#0d1f3c;padding:11px 22px;border-radius:8px;font-size:.85rem;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
@@ -756,6 +757,10 @@ async function openProfileModal(email){
       return m ? m.title : null; // 없으면 null
     })
     .filter(Boolean); // null 제거 (삭제/취소된 모임 제외)
+  // ── 대기중인 모임: waitlisted 배열 (노란색으로 표시)
+  const waitTitles = (u.waitlisted || [])
+    .map(id => meetings.find(x => x.id === id)?.title)
+    .filter(Boolean);
 
   // ── 신청/취소 히스토리 로드
   const historySnap = await db.collection('users').doc(email)
@@ -829,8 +834,9 @@ async function openProfileModal(email){
     ${answersHTML ? `<div class="profile-section"><div class="profile-section-title">신청서 답변</div>${answersHTML}</div>` : ''}
     <div class="profile-section">
       <div class="profile-section-title">현재 신청한 모임</div>
-      ${appliedTitles.length
+      ${appliedTitles.length || waitTitles.length
         ? appliedTitles.map(t => `<span class="applied-chip">${t}</span>`).join('')
+          + waitTitles.map(t => `<span class="applied-chip wait">${t}</span>`).join('')
         : '<span style="color:rgba(255,255,255,.3);font-size:.83rem">신청한 모임 없음</span>'
       }
     </div>
