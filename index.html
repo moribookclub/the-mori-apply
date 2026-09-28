@@ -592,6 +592,7 @@ function isStaff()      { return userRole === 'staff'; }
 function isSmallStaff() { return userRole === 'smallstaff'; }
 function canManage()    { return userRole === 'admin' || userRole === 'staff' || userRole === 'smallstaff'; }
 function canViewApplicants() { return userRole === 'admin' || userRole === 'staff'; }
+function managerLabel()  { return isAdmin() ? '관리자' : isSmallStaff() ? '소모임장' : '스탭'; }
 
 /* ── AUTH ── */
 auth.onAuthStateChanged(async fb => {
@@ -1287,6 +1288,7 @@ async function applySmall(id){
     appliedSmall.delete(id);
     if(existing.exists){await aRef.delete();await mRef.update({applied:firebase.firestore.FieldValue.increment(-1)});}
     await uRef.update({appliedSmall:firebase.firestore.FieldValue.arrayRemove(id)});
+    uRef.collection('history').add({type:'cancel',kind:'small',meetingTitle:m.name,meetingId:id,time:firebase.firestore.FieldValue.serverTimestamp()});
     // 모임장 알림
     if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostCancel!==false)addNotification(m.hostEmail,`❌ "${m.name}" 소모임에서 ${user.name}님이 취소했어요`);});}
     showToast('소모임 신청이 취소되었어요');
@@ -1298,6 +1300,7 @@ const realName=uDoc.exists?(uDoc.data().name||user.name):user.name;
 await aRef.set({name:user.name,realName:realName,email:user.email,time:new Date().toLocaleString('ko-KR'),photo:user.photo||''});
     await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
     await uRef.update({appliedSmall:firebase.firestore.FieldValue.arrayUnion(id)});
+    uRef.collection('history').add({type:'apply',kind:'small',meetingTitle:m.name,meetingId:id,time:firebase.firestore.FieldValue.serverTimestamp()});
     if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.name}님이 신청했어요`);});}
     showToast('소모임 신청 완료! 🎯');
   }
@@ -1399,7 +1402,8 @@ async function removeMemberBtn(btn){
     type: 'cancel',
     meetingTitle: meetingTitle,
     meetingId: id,
-    reason: `${userRole==='admin'||isAdmin()?'관리자':'스탭'} 제거 (${user.name})`,
+    kind: col==='smallGroups'?'small':'meeting',
+    reason: `${managerLabel()} 제거 (${user.name})`,
     time: firebase.firestore.FieldValue.serverTimestamp()
   });
   if(col==='meetings'){
@@ -1450,7 +1454,8 @@ async function confirmAddSelectedMembers(){
       type: 'apply',
       meetingTitle: meetingTitle,
       meetingId: id,
-      reason: `${isAdmin()?'관리자':'스탭'} 추가 (${user.name})`,
+      kind: col==='smallGroups'?'small':'meeting',
+      reason: `${managerLabel()} 추가 (${user.name})`,
       time: firebase.firestore.FieldValue.serverTimestamp()
     });
     added++;
