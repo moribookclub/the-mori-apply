@@ -15,7 +15,6 @@ GitHub Pages(`/the-mori-apply/` 경로)에서 `main` 브랜치가 그대로 배�
 | `sw.js` | 실제 사용 중인 서비스워커 (오프라인 캐시 + FCM 푸시). `index.html`에서 `/the-mori-apply/sw.js`로 등록 |
 | `manifest.json` | PWA 매니페스트 |
 | `firebase-messaging-sw.js` | 주석 한 줄뿐인 빈 파일 (FCM 처리는 `sw.js`에서 함) |
-| `sw_js.js`, `manifest_json.json` | 과거 업로드 중 생긴 중복 파일. 어디서도 참조하지 않음 — 수정하지 말 것 |
 | `icon-192.png`, `icon-512.png` | 앱 아이콘 |
 
 ## ⚠️ 수정할 때 반드시 지킬 것
