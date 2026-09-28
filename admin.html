@@ -814,7 +814,7 @@ async function openProfileModal(email){
       </div>
     </div>` : '';
 
-  document.getElementById('profileModalTitle').textContent = u.name || email;
+  document.getElementById('profileModalTitle').innerHTML = `${u.name||email} <button onclick="openNameEdit('${encodeURIComponent(u.email)}','${encodeURIComponent(u.name||'')}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:2px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.5);vertical-align:middle">✏️ 수정</button>`;
   document.getElementById('profileModalContent').innerHTML = `
     <div class="profile-section">
       <div class="profile-section-title">기본 정보</div>
@@ -1277,6 +1277,39 @@ async function clearAllHistory(){
   document.getElementById('formClosedNoticePreview').textContent=notice;
   showToast(enabled?'신청서가 열렸어요 ✅':'신청서가 닫혔어요 🔒');
 }
+  function openNameEdit(encodedEmail, encodedName){
+  document.getElementById('nameEditEmail').value=decodeURIComponent(encodedEmail);
+  document.getElementById('nameEditInput').value=decodeURIComponent(encodedName);
+  document.getElementById('nameEditModal').style.display='flex';
+}
+
+function closeNameEdit(){
+  document.getElementById('nameEditModal').style.display='none';
+}
+
+async function saveNameEdit(){
+  const email=document.getElementById('nameEditEmail').value;
+  const newName=document.getElementById('nameEditInput').value.trim();
+  if(!newName){showToast('이름을 입력해주세요');return;}
+  await db.collection('users').doc(email).update({name:newName});
+  showToast('이름이 수정되었어요 ✅');
+  closeNameEdit();
+  // 멤버 목록 새로고침
+  await loadAllMembers();
+  renderMemberList();
+}
 </script>
+  <!-- 이름 수정 모달 -->
+<div class="modal-overlay" id="nameEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:center;justify-content:center">
+  <div style="background:#0d1f3c;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:1.5rem;width:90%;max-width:360px">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.2rem">이름 수정</h3>
+    <input id="nameEditInput" type="text" placeholder="새 이름 입력" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.7rem 1rem;color:#fff;font-size:.9rem;outline:none;box-sizing:border-box;margin-bottom:1rem">
+    <input id="nameEditEmail" type="hidden">
+    <div style="display:flex;gap:8px">
+      <button onclick="closeNameEdit()" style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:.7rem;color:rgba(255,255,255,.6);cursor:pointer;font-size:.85rem">취소</button>
+      <button onclick="saveNameEdit()" style="flex:1;background:#fff;border:none;border-radius:8px;padding:.7rem;color:#0d1f3c;cursor:pointer;font-size:.85rem;font-weight:700">저장</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
