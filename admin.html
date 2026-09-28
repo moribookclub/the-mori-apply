@@ -345,18 +345,24 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 <div class="section-head">
       <div><h2>📋 모임 신청/취소 이력</h2><p>전체 멤버의 신청 및 취소 기록이에요</p></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <select id="historyTypeFilter" onchange="loadHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none">
+        <select id="historyKindFilter" onchange="historyPage=1;filterHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none">
+          <option value="all">전체 모임</option>
+          <option value="meeting">독서모임만</option>
+          <option value="small">소모임만</option>
+        </select>
+        <select id="historyTypeFilter" onchange="historyPage=1;filterHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none">
           <option value="all">전체</option>
           <option value="apply">신청만</option>
           <option value="cancel">취소만</option>
           <option value="wait">대기만</option>
           <option value="wait-cancel">대기취소만</option>
         </select>
-        <input id="historySearchInput" type="text" placeholder="이름 또는 모임명 검색" oninput="filterHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none;width:180px">
+        <input id="historySearchInput" type="text" placeholder="이름 또는 모임명 검색" oninput="historyPage=1;filterHistory()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:6px 10px;color:#fff;font-size:.8rem;outline:none;width:180px">
         <button onclick="clearAllHistory()" style="background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.35);color:rgba(255,130,130,.9);padding:6px 14px;border-radius:7px;font-size:.8rem;cursor:pointer;white-space:nowrap">🗑 전체 삭제</button>
       </div>
     </div>
     <div id="historyList"><div class="empty">불러오는 중...</div></div>
+    <div id="historyPager" style="display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:1rem"></div>
   </div>
 </div>
     <!-- 신청서 편집 -->
@@ -940,6 +946,7 @@ async function confirmAddSelectedMembers(){
       type:'apply',
       meetingTitle: title||id,
       meetingId: id,
+      kind: col==='smallGroups'?'small':'meeting',
       reason: `관리자 추가 (${user.name})`,
       time: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -1027,18 +1034,23 @@ function toggleSort(){
 }  
 // ── 히스토리 ──────────────────────────────────────────────
 let allHistory = [];
+let historyPage = 1;
+const HISTORY_PAGE_SIZE = 10;
 
 async function loadHistory(){
   document.getElementById('historyList').innerHTML='<div class="empty">불러오는 중...</div>';
 
+  // 소모임 ID 목록 (kind 필드가 없는 예전 기록 구분용)
+  const smallIds = new Set((await db.collection('smallGroups').get()).docs.map(d=>d.id));
   // 모든 유저의 history 서브컬렉션 로드
   const usersSnap = await db.collection('users').get();
   const promises = usersSnap.docs.map(async uDoc => {
     const u = uDoc.data();
     const histSnap = await db.collection('users').doc(uDoc.id).collection('history')
-      .orderBy('time','desc').limit(10).get();
+      .orderBy('time','desc').limit(100).get();
     return histSnap.docs.map(d => ({
       ...d.data(),
+      kind: d.data().kind || (smallIds.has(d.data().meetingId) ? 'small' : 'meeting'),
       userName: u.name || uDoc.id,
       userEmail: uDoc.id
     }));
@@ -1051,14 +1063,17 @@ async function loadHistory(){
     return bt - at; // 최신순
   });
 
+  historyPage = 1;
   filterHistory();
 }
 
 function filterHistory(){
+  const kind = document.getElementById('historyKindFilter').value;
   const type = document.getElementById('historyTypeFilter').value;
   const q = document.getElementById('historySearchInput').value.trim().toLowerCase();
 
   let list = allHistory;
+  if(kind !== 'all') list = list.filter(h => h.kind === kind);
   if(type !== 'all') list = list.filter(h => h.type === type);
   if(q) list = list.filter(h =>
     (h.userName||'').toLowerCase().includes(q) ||
@@ -1066,9 +1081,15 @@ function filterHistory(){
   );
 
   const el = document.getElementById('historyList');
-  if(!list.length){ el.innerHTML='<div class="empty">이력이 없어요</div>'; return; }
+  const pager = document.getElementById('historyPager');
+  if(!list.length){ el.innerHTML='<div class="empty">이력이 없어요</div>'; pager.innerHTML=''; return; }
 
-  el.innerHTML = list.map(h => {
+  // 페이지 나누기 (최근 기록 10개씩)
+  const totalPages = Math.ceil(list.length / HISTORY_PAGE_SIZE);
+  historyPage = Math.min(Math.max(1, historyPage), totalPages);
+  const pageList = list.slice((historyPage-1)*HISTORY_PAGE_SIZE, historyPage*HISTORY_PAGE_SIZE);
+
+  el.innerHTML = pageList.map(h => {
     let color, icon;
     if(h.type==='apply'){color='rgba(100,220,100,.8)';icon='🟢 신청';}
     else if(h.type==='wait'){color='rgba(255,200,80,.8)';icon='⏳ 대기';}
@@ -1076,15 +1097,31 @@ function filterHistory(){
     else{color='rgba(255,130,130,.8)';icon='❌ 취소';}
     const timeStr = h.time?.toDate ? h.time.toDate().toLocaleString('ko-KR') : '-';
     const reason = h.reason ? `<span style="font-size:.72rem;color:rgba(255,200,80,.7);margin-left:6px">(${h.reason})</span>` : '';
+    const kindTag = h.kind==='small' ? `<span style="font-size:.66rem;padding:1px 6px;border-radius:4px;background:rgba(140,100,255,.15);border:1px solid rgba(140,100,255,.3);color:rgba(180,150,255,.9);margin-right:6px;vertical-align:middle">소모임</span>` : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:.7rem .5rem;border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap">
       <span style="font-size:.78rem;color:${color};font-weight:600;min-width:60px">${icon}</span>
       <div style="flex:1;min-width:120px">
-        <div style="font-size:.86rem;font-weight:600">${h.meetingTitle||'-'}${reason}</div>
+        <div style="font-size:.86rem;font-weight:600">${kindTag}${h.meetingTitle||'-'}${reason}</div>
         <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px">${h.userName} · ${h.userEmail}</div>
       </div>
       <div style="font-size:.75rem;color:rgba(255,255,255,.35);flex-shrink:0">${timeStr}</div>
     </div>`;
   }).join('');
+
+  // 페이지 버튼 (이전 · 번호 · 다음)
+  if(totalPages <= 1){ pager.innerHTML=''; return; }
+  const btn = (label, page, active, disabled) => `<button ${disabled?'disabled':''} onclick="goHistoryPage(${page})" style="min-width:32px;padding:5px 9px;border-radius:6px;font-size:.78rem;cursor:${disabled?'default':'pointer'};border:1px solid ${active?'rgba(255,255,255,.5)':'rgba(255,255,255,.12)'};background:${active?'rgba(255,255,255,.15)':'rgba(255,255,255,.04)'};color:${disabled?'rgba(255,255,255,.2)':'#fff'};font-weight:${active?700:400}">${label}</button>`;
+  const start = Math.max(1, Math.min(historyPage-2, totalPages-4));
+  const end = Math.min(totalPages, start+4);
+  let html = btn('‹', historyPage-1, false, historyPage===1);
+  for(let p=start; p<=end; p++) html += btn(p, p, p===historyPage, false);
+  html += btn('›', historyPage+1, false, historyPage===totalPages);
+  pager.innerHTML = html + `<span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:6px">총 ${list.length}건</span>`;
+}
+function goHistoryPage(p){
+  historyPage = p;
+  filterHistory();
+  document.getElementById('tabHistory').scrollIntoView({behavior:'smooth'});
 }
   
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
@@ -1257,6 +1294,7 @@ async function addAdminNotification(toEmail, message){
     type: 'cancel',
     meetingTitle: meetingTitle,
     meetingId: meetingId,
+    kind: col==='smallGroups'?'small':'meeting',
     reason: `관리자 제거 (${user.name})`,
     time: firebase.firestore.FieldValue.serverTimestamp()
   });
