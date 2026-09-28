@@ -784,6 +784,7 @@ function initMain(){
   listenNotifications();
   loadSiteSettings();
   loadAppVersion();
+  if(!isAdmin()&&applyToken<=0&&waitlisted.size) cancelWaitsNoToken(user.email).then(renderAll).catch(console.error);
 }
 
 async function registerFCMToken(){
@@ -1153,6 +1154,8 @@ db.collection('users').doc(user.email).collection('history').add({
   meetingId: id,
   time: firebase.firestore.FieldValue.serverTimestamp()
 });
+  // 신청 횟수를 다 쓰면 걸어둔 대기 자동 취소
+  if(!isAdmin()&&applyToken<=0&&waitlisted.size) await cancelWaitsNoToken(user.email);
   // unsubUser 리스너가 자동으로 상태 업데이트하므로 saveUserData 불필요
   blockUserSnap=false;
   updateNav();renderAll();
@@ -2073,18 +2076,28 @@ async function promoteWaitlist(meetingId){
     });
   }
   // 토큰 0 되면 다른 대기 자동 취소
-  if(newToken<=0){
-    const allWaitSnap=await db.collection('users').doc(email).get();
-    const waitIds=(allWaitSnap.data()?.waitlisted||[]);
-    for(const wid of waitIds){
-      if(wid===meetingId)continue;
-      await db.collection('meetings').doc(wid).collection('waitlist').doc(email).delete();
-      await db.collection('meetings').doc(wid).update({waitCount:firebase.firestore.FieldValue.increment(-1)});
-      const wm=meetings.find(x=>x.id===wid);
-      if(wm)addNotification(email,`❌ 신청 횟수 소진으로 "${wm.title||wid}" 모임 대기가 자동 취소되었어요`);
+  if(newToken<=0) await cancelWaitsNoToken(email);
+}
+// 신청 횟수가 0이 되면 걸어둔 대기를 모두 자동 취소 (알림 + 히스토리 기록)
+async function cancelWaitsNoToken(email){
+  const uRef=db.collection('users').doc(email);
+  const uDoc=await uRef.get();
+  const waitIds=uDoc.data()?.waitlisted||[];
+  if(!waitIds.length)return;
+  for(const wid of waitIds){
+    const mRef=db.collection('meetings').doc(wid);
+    const wRef=mRef.collection('waitlist').doc(email);
+    if((await wRef.get()).exists){
+      await wRef.delete();
+      await mRef.update({waitCount:firebase.firestore.FieldValue.increment(-1)}).catch(()=>{});
     }
-    await db.collection('users').doc(email).update({waitlisted:[]});
+    const title=meetings.find(x=>x.id===wid)?.title||(await mRef.get()).data()?.title;
+    if(!title)continue; // 삭제된 모임
+    addNotification(email,`❌ 신청 횟수 소진으로 "${title}" 모임 대기가 자동 취소되었어요`);
+    await uRef.collection('history').add({type:'wait-cancel',meetingTitle:title,meetingId:wid,reason:'신청 횟수 소진으로 자동 취소',time:firebase.firestore.FieldValue.serverTimestamp()});
   }
+  await uRef.update({waitlisted:firebase.firestore.FieldValue.arrayRemove(...waitIds)});
+  if(email===user?.email) waitIds.forEach(id=>waitlisted.delete(id));
 }
 async function confirmPromoteWaitlist(col, meetingId, encodedEmail, encodedName){
   const email=decodeURIComponent(encodedEmail);
