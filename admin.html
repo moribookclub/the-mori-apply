@@ -1291,10 +1291,35 @@ async function saveNameEdit(){
   const email=document.getElementById('nameEditEmail').value;
   const newName=document.getElementById('nameEditInput').value.trim();
   if(!newName){showToast('이름을 입력해주세요');return;}
+  showToast('이름 업데이트 중...');
+
+  // 1. users 문서 업데이트
   await db.collection('users').doc(email).update({name:newName});
-  showToast('이름이 수정되었어요 ✅');
+
+  // 2. meetings/applicants 업데이트
+  const meetingsSnap=await db.collection('meetings').get();
+  for(const mDoc of meetingsSnap.docs){
+    const aDoc=await db.collection('meetings').doc(mDoc.id).collection('applicants').doc(email).get();
+    if(aDoc.exists) await aDoc.ref.update({name:newName,realName:newName});
+    const wDoc=await db.collection('meetings').doc(mDoc.id).collection('waitlist').doc(email).get();
+    if(wDoc.exists) await wDoc.ref.update({name:newName,realName:newName});
+  }
+
+  // 3. smallGroups/applicants 업데이트
+  const smallSnap=await db.collection('smallGroups').get();
+  for(const sDoc of smallSnap.docs){
+    const aDoc=await db.collection('smallGroups').doc(sDoc.id).collection('applicants').doc(email).get();
+    if(aDoc.exists) await aDoc.ref.update({name:newName,realName:newName});
+  }
+
+  // 4. history 업데이트 (일괄)
+  const histSnap=await db.collection('users').doc(email).collection('history').get();
+  const batch=db.batch();
+  histSnap.docs.forEach(d=>batch.update(d.ref,{userName:newName}));
+  if(histSnap.docs.length>0) await batch.commit();
+
+  showToast('이름이 모두 업데이트되었어요 ✅');
   closeNameEdit();
-  // 멤버 목록 새로고침
   await loadAllMembers();
   renderMemberList();
 }
