@@ -693,7 +693,8 @@ else if(u.role==='smallstaff'){
   actions=`<button class="btn-revoke" onclick="event.stopPropagation();setRole('${u.email}','member')">소모임장 회수</button>`;
 }
     const appliedTitles=(u.applied||[]).map(id=>{const m=meetings.find(x=>x.id===id);return m?`<span style="display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:2px 8px;font-size:.72rem;color:rgba(255,255,255,.7);margin:2px 2px 0 0">${m.title}</span>`:null;}).filter(Boolean).join('');
-    const appliedRow = appliedTitles ? `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:2px">${appliedTitles}</div>` : '';
+    const waitTitles=(u.waitlisted||[]).map(id=>{const m=meetings.find(x=>x.id===id);return m?`<span style="display:inline-block;background:rgba(255,200,80,.1);border:1px solid rgba(255,200,80,.3);border-radius:5px;padding:2px 8px;font-size:.72rem;color:rgba(255,220,100,.9);margin:2px 2px 0 0">⏳ ${m.title}</span>`:null;}).filter(Boolean).join('');
+    const appliedRow = (appliedTitles||waitTitles) ? `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:2px">${appliedTitles}${waitTitles}</div>` : '';
     return `<div class="member-row" onclick="openProfileModal('${u.email}')"><div class="member-av">${av}</div><div class="member-info"><div class="member-name">${u.name||'이름 없음'}</div><div class="member-meta">${u.email} · ${u.memberType||'-'}${u.appliedAt ? ' · 제출 ' + u.appliedAt.toDate().toLocaleString('ko-KR') : ''}</div><div class="member-badges">${roleBadge}${tokenBadges}</div>${appliedRow}</div><div class="member-actions">${actions}</div></div>`;
   }).join('');
 }
