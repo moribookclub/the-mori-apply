@@ -578,12 +578,12 @@ let appliedSmall = new Set(), wishlistedSmall = new Set();
 let applyToken = DEFAULT_APPLY_TOKEN, cancelToken = DEFAULT_CANCEL_TOKEN;
 let editingId = null, editingSmallId = null;
 let formConfig = {notice:'',privacy:'',commonQuestions:[],newQuestions:[],existingQuestions:[],basicFields:{gender:true,birth:true,phone:true,memberType:true},genderOptions:['남성','여성','기타'],memberTypeOptions:['신규멤버','기존멤버']};
-let siteSettings = {cancelLockEnabled:false, cancelLockHours:72, minMemberAutoCloseEnabled:false, wishNotifEnabled:true};
+let siteSettings = {cancelLockEnabled:false, cancelLockHours:72, minMemberAutoCloseEnabled:false};
 let unsubMeetings=null, unsubSmall=null, unsubNotif=null;
 let addMemberTarget=null, selectedEmails=new Set();
 let eligibleMembers=[];
 // 개인 알림 설정
-let notifSettings = {wishRestock:true, hostApply:true, hostCancel:true};
+let notifSettings = {hostApply:true, hostCancel:true};
 let notifications = [];
 let waitlisted = new Set(); // 대기 중인 모임 ID
 
@@ -865,7 +865,6 @@ function loadSiteSettings(){
       cancelLockEnabled: data.cancelLockEnabled||false,
       cancelLockHours: data.cancelLockHours||72,
       minMemberAutoCloseEnabled: data.minMemberAutoCloseEnabled||false,
-      wishNotifEnabled: data.wishNotifEnabled!==false,
       globalApplyOpen: data.globalApplyOpen!==false
     };
     const nb=document.getElementById('noticeBanner'),nc=document.getElementById('noticeBannerContent');
