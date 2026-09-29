@@ -346,6 +346,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 </div>
 <div id="screenMain" class="screen">
   <div class="hero"><h1>THE MORI APPLY</h1></div>
+  <div id="pushBanner" style="display:none;max-width:980px;margin:0 auto 1.2rem;padding:0 1rem"></div>
   <div id="noticeBanner" style="display:none;max-width:980px;margin:0 auto 1.2rem;padding:0 1rem">
     <div id="noticeBannerContent" style="background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.22);border-radius:12px;padding:.9rem 1.1rem;font-size:.86rem;color:rgba(255,220,100,.9);line-height:1.7"></div>
   </div>
@@ -825,6 +826,7 @@ async function registerFCMToken(fromClick){
   try {
     if(!('Notification' in window) || !('serviceWorker' in navigator)){
       if(fromClick) showToast('이 브라우저는 푸시 알림을 지원하지 않아요. 아이폰은 홈 화면에 추가한 앱에서 켜주세요');
+      updatePushStatus();
       return;
     }
     let permission = Notification.permission;
@@ -844,6 +846,7 @@ async function registerFCMToken(fromClick){
       serviceWorkerRegistration: swReg
     });
 
+    listenForegroundPush(messaging, swReg);
     if(token && user){
       currentFcmToken = token;
       // 이미 등록된 기기면 저장 생략 (불필요한 Firestore 쓰기 방지)
@@ -862,8 +865,46 @@ async function registerFCMToken(fromClick){
   }
   updatePushStatus();
 }
+// 앱이 화면에 떠 있을 때 온 푸시도 휴대폰 알림으로 표시 (기본은 앱 안 🔔에만 표시됨)
+let foregroundPushOn=false;
+function listenForegroundPush(messaging, swReg){
+  if(foregroundPushOn)return;
+  foregroundPushOn=true;
+  messaging.onMessage(payload=>{
+    const n=payload.notification||{};
+    swReg.showNotification(n.title||'THE MORI',{
+      body:n.body||'',
+      icon:'/the-mori-apply/icon-192.png',
+      badge:'/the-mori-apply/icon-192.png',
+      tag:n.tag||String(Date.now()),
+      data:{link:'/the-mori-apply/'}
+    });
+  });
+}
+// 푸시가 꺼진 회원에게 메인 화면 상단 안내 배너 (닫으면 이 기기에서는 다시 안 뜸)
+function isIOS(){return /iPhone|iPad|iPod/.test(navigator.userAgent);}
+function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}
+function updatePushBanner(){
+  const el=document.getElementById('pushBanner');if(!el)return;
+  let dismissed=false;try{dismissed=localStorage.getItem('pushBannerDismissed')==='1';}catch(e){}
+  let msg='',btn='';
+  if(dismissed||!user){el.style.display='none';return;}
+  if(isIOS()&&!isStandalone()){
+    msg='📱 아이폰은 Safari 공유 버튼 → <b>홈 화면에 추가</b>로 설치하면 푸시 알림을 받을 수 있어요';
+  } else if(('Notification' in window)&&Notification.permission==='default'){
+    msg='📱 푸시 알림을 켜면 신청·대기 소식을 바로 받아요';
+    btn=`<button onclick="registerFCMToken(true)" style="background:rgba(100,200,120,.2);border:1px solid rgba(100,200,120,.45);color:rgba(150,235,170,.95);padding:5px 12px;border-radius:6px;font-size:.78rem;cursor:pointer;white-space:nowrap">켜기</button>`;
+  } else {el.style.display='none';return;}
+  el.innerHTML=`<div style="display:flex;align-items:center;gap:10px;background:rgba(100,200,120,.07);border:1px solid rgba(100,200,120,.22);border-radius:12px;padding:.75rem 1rem;font-size:.83rem;color:rgba(200,240,210,.9);line-height:1.5"><div style="flex:1">${msg}</div>${btn}<button onclick="dismissPushBanner()" aria-label="닫기" style="background:transparent;border:none;color:rgba(255,255,255,.4);font-size:1rem;cursor:pointer;padding:0 2px">✕</button></div>`;
+  el.style.display='block';
+}
+function dismissPushBanner(){
+  try{localStorage.setItem('pushBannerDismissed','1');}catch(e){}
+  updatePushBanner();
+}
 // 알림 설정 화면의 "이 기기 푸시 알림" 상태 표시
 function updatePushStatus(){
+  updatePushBanner();
   const el=document.getElementById('pushStatusRow');if(!el)return;
   let state,btn='';
   if(!('Notification' in window)) state='지원 안 됨 (아이폰은 홈 화면에 추가한 앱에서 가능)';

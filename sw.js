@@ -9,7 +9,7 @@ firebase.initializeApp({
   appId: "1:306904700616:web:2217470905df10786837fd"
 });
 const messaging = firebase.messaging();
-const CACHE = 'mori-apply-v123';
+const CACHE = 'mori-apply-v124';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
@@ -92,6 +92,19 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
           return res;
         });
+    })
+  );
+});
+
+// 앱에서 직접 띄운 알림을 누르면 앱 창으로 이동 (FCM이 띄운 알림은 FCM이 처리)
+self.addEventListener('notificationclick', e => {
+  const link = e.notification.data && e.notification.data.link;
+  if (!link) return;
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(list => {
+      const c = list.find(w => w.url.includes('/the-mori-apply/'));
+      return c ? c.focus() : self.clients.openWindow(link);
     })
   );
 });
