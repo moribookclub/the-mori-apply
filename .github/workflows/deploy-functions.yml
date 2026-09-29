@@ -1,0 +1,46 @@
+# 서버 기능(functions 폴더)이 바뀌어 main에 합쳐지면 Firebase에 자동으로 올린다.
+# 필요한 것: GitHub 저장소 Settings → Secrets → Actions 에 FIREBASE_SERVICE_ACCOUNT (Firebase 서비스 계정 키 JSON 전체)
+name: 서버 기능 배포 (Firebase Functions)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'functions/**'
+      - 'firebase.json'
+      - '.github/workflows/deploy-functions.yml'
+  workflow_dispatch: # Actions 탭에서 "Run workflow"로 직접 실행 가능
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: 서버 기능 패키지 설치
+        run: npm ci
+        working-directory: functions
+
+      - name: 서비스 계정 키 준비
+        run: |
+          if [ -z "$SA_KEY" ]; then
+            echo "::error::GitHub Secrets에 FIREBASE_SERVICE_ACCOUNT가 없어요. 안내에 따라 먼저 등록해주세요."
+            exit 1
+          fi
+          echo "$SA_KEY" > "$RUNNER_TEMP/sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/sa.json" >> "$GITHUB_ENV"
+        env:
+          SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Firebase에 배포
+        run: npx --yes firebase-tools@15 deploy --only functions --project the-mori-apply --force --non-interactive
+
+      - name: 키 파일 삭제
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"

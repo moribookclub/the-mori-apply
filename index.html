@@ -435,6 +435,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
       </div>
       <div class="profile-card" id="profileNotifCard">
         <h3>🔔 알림 설정</h3>
+        <div class="notif-toggle-row" id="pushStatusRow"></div>
         <div id="profileNotifRows"></div>
       </div>
     </div>
@@ -719,7 +720,13 @@ auth.onAuthStateChanged(async fb => {
 });
   
 function googleLogin(){auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>showToast('로그인 실패: '+e.message));}
-function logout(){auth.signOut();}
+async function logout(){
+  if(user&&currentFcmToken){
+    await db.collection('users').doc(user.email).update({fcmTokens:firebase.firestore.FieldValue.arrayRemove(currentFcmToken)}).catch(()=>{});
+    currentFcmToken=null;
+  }
+  auth.signOut();
+}
 
 function showScreen(s){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
@@ -791,6 +798,7 @@ function updateProfileTab(){
       ])
       +`</div>`;
   }
+  updatePushStatus();
 }
 
 async function saveNotifSetting(key,val){
@@ -810,11 +818,22 @@ function initMain(){
   if(!isAdmin()&&applyToken<=0&&waitlisted.size) cancelWaitsNoToken(user.email).then(renderAll).catch(console.error);
 }
 
-async function registerFCMToken(){
+// 이 기기를 푸시 알림 받을 기기로 등록 (한 사람이 여러 기기 등록 가능: users.fcmTokens)
+// fromClick: 사용자가 버튼을 눌렀을 때 (아이폰은 버튼을 눌러야만 알림 허용 창이 뜸)
+let currentFcmToken=null;
+async function registerFCMToken(fromClick){
   try {
-    if(!('Notification' in window)) return;
-    const permission = await Notification.requestPermission();
-    if(permission !== 'granted') return;
+    if(!('Notification' in window) || !('serviceWorker' in navigator)){
+      if(fromClick) showToast('이 브라우저는 푸시 알림을 지원하지 않아요. 아이폰은 홈 화면에 추가한 앱에서 켜주세요');
+      return;
+    }
+    let permission = Notification.permission;
+    if(permission === 'default') permission = await Notification.requestPermission();
+    if(permission !== 'granted'){
+      if(fromClick) showToast('알림이 차단되어 있어요. 휴대폰·브라우저 설정에서 허용해주세요');
+      updatePushStatus();
+      return;
+    }
 
     // 이미 등록된 서비스워커 사용 (강제 업데이트 제거)
     const swReg = await navigator.serviceWorker.ready;
@@ -826,21 +845,32 @@ async function registerFCMToken(){
     });
 
     if(token && user){
-      // 기존 토큰과 같으면 저장 생략 (불필요한 Firestore 쓰기 방지)
+      currentFcmToken = token;
+      // 이미 등록된 기기면 저장 생략 (불필요한 Firestore 쓰기 방지)
       const userDoc = await db.collection('users').doc(user.email).get();
-      if(userDoc.exists && userDoc.data().fcmToken === token) {
-        console.log('FCM 토큰 유지 (변경 없음)');
-        return;
+      if(!(userDoc.exists && (userDoc.data().fcmTokens||[]).includes(token))){
+        await db.collection('users').doc(user.email).set(
+          {fcmTokens: firebase.firestore.FieldValue.arrayUnion(token)},
+          {merge: true}
+        );
       }
-      await db.collection('users').doc(user.email).set(
-        {fcmToken: token},
-        {merge: true}
-      );
-      console.log('FCM 토큰 저장 완료');
+      if(fromClick) showToast('이 기기에서 푸시 알림을 받아요 📱');
     }
   } catch(e){
     console.log('FCM 등록 실패:', e);
+    if(fromClick) showToast('푸시 알림 등록에 실패했어요 😢');
   }
+  updatePushStatus();
+}
+// 알림 설정 화면의 "이 기기 푸시 알림" 상태 표시
+function updatePushStatus(){
+  const el=document.getElementById('pushStatusRow');if(!el)return;
+  let state,btn='';
+  if(!('Notification' in window)) state='지원 안 됨 (아이폰은 홈 화면에 추가한 앱에서 가능)';
+  else if(Notification.permission==='denied') state='차단됨 — 휴대폰·브라우저 설정에서 허용해주세요';
+  else if(Notification.permission==='granted'&&currentFcmToken) state='받는 중 ✅';
+  else {state='꺼져 있어요';btn=`<button onclick="registerFCMToken(true)" style="background:rgba(100,200,120,.15);border:1px solid rgba(100,200,120,.4);color:rgba(140,230,160,.95);padding:5px 12px;border-radius:6px;font-size:.76rem;cursor:pointer;white-space:nowrap">켜기</button>`;}
+  el.innerHTML=`<div><div class="notif-toggle-label">📱 이 기기 푸시 알림</div><div class="notif-toggle-sub">${state}</div></div>${btn}`;
 }
   async function checkAutoClose(){
   if(!siteSettings.minMemberAutoCloseEnabled) return;
