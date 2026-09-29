@@ -2,9 +2,12 @@
 // 앱이 notifications/{email}/items 에 알림을 저장하면, 그 사람의 휴대폰(등록된 모든 기기)으로 푸시를 보낸다.
 // 알림 설정(전체·상황별 끄기)은 앱이 알림을 저장하기 전에 이미 확인하므로 여기서는 저장된 알림을 그대로 보낸다.
 const functions = require('firebase-functions/v1');
-const admin = require('firebase-admin');
+// firebase-admin 14부터는 admin.firestore() 같은 예전 방식이 없어서 기능별로 불러옴
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getMessaging } = require('firebase-admin/messaging');
 
-admin.initializeApp();
+initializeApp();
 
 const APP_URL = 'https://moribookclub.github.io/the-mori-apply/';
 
@@ -23,7 +26,7 @@ exports.sendPushOnNotification = functions
     const message = (snap.data() || {}).message;
     if (!message) return;
 
-    const userRef = admin.firestore().collection('users').doc(email);
+    const userRef = getFirestore().collection('users').doc(email);
     const user = (await userRef.get()).data();
     if (!user) return;
 
@@ -31,7 +34,7 @@ exports.sendPushOnNotification = functions
     const tokens = [...new Set([...(user.fcmTokens || []), user.fcmToken].filter(Boolean))];
     if (!tokens.length) return;
 
-    const res = await admin.messaging().sendEachForMulticast({
+    const res = await getMessaging().sendEachForMulticast({
       tokens,
       webpush: {
         notification: {
@@ -50,8 +53,8 @@ exports.sendPushOnNotification = functions
       return !r.success && DEAD_TOKEN_ERRORS.includes(r.error?.code);
     });
     if (dead.length) {
-      const update = { fcmTokens: admin.firestore.FieldValue.arrayRemove(...dead) };
-      if (dead.includes(user.fcmToken)) update.fcmToken = admin.firestore.FieldValue.delete();
+      const update = { fcmTokens: FieldValue.arrayRemove(...dead) };
+      if (dead.includes(user.fcmToken)) update.fcmToken = FieldValue.delete();
       await userRef.update(update);
     }
     functions.logger.info(`푸시 발송 ${email}: 성공 ${res.successCount}, 실패 ${res.failureCount}, 정리 ${dead.length}`);
