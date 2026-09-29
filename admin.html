@@ -1216,7 +1216,7 @@ async function closeMeeting(id, encodedTitle){
 
     // 1. 인앱 알림 발송
     promises.push(addAdminNotification(email,
-      `📢 "${title}" 모임이 최소인원 미달로 폐강되었어요. 신청이 자동 취소되고 신청 토큰이 복구됩니다.`
+      `📢 "${title}" 모임이 최소인원 미달로 폐강되었어요. 신청이 자동 취소되고 신청 토큰이 복구됩니다.`, 'meetingClosed'
     ));
 
     // 2. users.applied 배열에서 제거
@@ -1257,7 +1257,7 @@ async function closeMeeting(id, encodedTitle){
   // 모임장 알림
   if(m?.hostEmail){
     promises.push(addAdminNotification(m.hostEmail,
-      `📢 담당하신 "${title}" 모임이 최소인원 미달로 폐강 처리되었어요.`
+      `📢 담당하신 "${title}" 모임이 최소인원 미달로 폐강 처리되었어요.`, 'hostClosed'
     ));
   }
 
@@ -1270,8 +1270,11 @@ async function closeMeeting(id, encodedTitle){
 }
 
 // ── 알림 기록 헬퍼 ────────────────────────────────────────────────────────────
-async function addAdminNotification(toEmail, message){
+// key: 알림 종류 — 받는 사람이 전체 알림 또는 해당 알림을 꺼두었으면 보내지 않음
+async function addAdminNotification(toEmail, message, key){
   try {
+    const ns=(await db.collection('users').doc(toEmail).get()).data()?.notifSettings||{};
+    if(ns.all===false||(key&&ns[key]===false))return;
     await db.collection('notifications').doc(toEmail).collection('items').add({
       message,
       read: false,
