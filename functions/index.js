@@ -41,7 +41,7 @@ exports.sendPushOnNotification = functions
           title: 'THE MORI',
           body: message,
           icon: APP_URL + 'icon-192.png',
-          badge: APP_URL + 'icon-192.png',
+          badge: APP_URL + 'badge-96.png', // 안드로이드 상단바 작은 아이콘: 흰색 실루엣 + 투명 배경이어야 함
           tag: context.params.itemId,
         },
         fcmOptions: { link: APP_URL },

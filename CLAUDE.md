@@ -16,6 +16,7 @@ GitHub Pages(`/the-mori-apply/` 경로)에서 `main` 브랜치가 그대로 배�
 | `manifest.json` | PWA 매니페스트 |
 | `firebase-messaging-sw.js` | 주석 한 줄뿐인 빈 파일 (FCM 처리는 `sw.js`에서 함) |
 | `icon-192.png`, `icon-512.png` | 앱 아이콘 |
+| `badge-96.png` | 푸시 알림 상단바 작은 아이콘 (흰색 실루엣 + 투명 배경이어야 함, 컬러 이미지는 흰 네모로 보임) |
 | `functions/` | Firebase 서버 기능 (Node 22). `notifications/{email}/items`에 알림이 저장되면 그 사람의 모든 기기(`users.fcmTokens`)로 푸시 발송 |
 | `firebase.json`, `.firebaserc` | 서버 기능 배포 설정 (프로젝트 `the-mori-apply`) |
 | `.github/workflows/deploy-functions.yml` | `functions/`가 바뀌어 main에 합쳐지면 GitHub Actions가 Firebase에 자동 배포 (Secret `FIREBASE_SERVICE_ACCOUNT` 필요) |

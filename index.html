@@ -616,6 +616,7 @@ auth.onAuthStateChanged(async fb => {
     const doc=await db.collection('users').doc(fb.email).get();
     if(doc.exists){
       const d=doc.data();
+      user.realName=d.name||'';
       applied=new Set(d.applied||[]);
       appliedSmall=new Set(d.appliedSmall||[]);
       waitlisted=new Set(d.waitlisted||[]);
@@ -655,6 +656,7 @@ auth.onAuthStateChanged(async fb => {
       const role=snap.data().role;
       if(role==='member'||role==='staff'||role==='smallstaff'){
         const d=snap.data();
+        user.realName=d.name||'';
         userRole=role;
         applied=new Set(d.applied||[]);
         appliedSmall=new Set(d.appliedSmall||[]);
@@ -675,6 +677,7 @@ auth.onAuthStateChanged(async fb => {
     return;
   }
   const d=doc.data();
+  user.realName=d.name||'';
   userRole=d.role||'';
   applyToken=d.applyToken!==undefined?d.applyToken:DEFAULT_APPLY_TOKEN;
   cancelToken=d.cancelToken!==undefined?d.cancelToken:DEFAULT_CANCEL_TOKEN;
@@ -875,7 +878,7 @@ function listenForegroundPush(messaging, swReg){
     swReg.showNotification(n.title||'THE MORI',{
       body:n.body||'',
       icon:'/the-mori-apply/icon-192.png',
-      badge:'/the-mori-apply/icon-192.png',
+      badge:'/the-mori-apply/badge-96.png',
       tag:n.tag||String(Date.now()),
       data:{link:'/the-mori-apply/'}
     });
@@ -1190,6 +1193,7 @@ function listenMeetings(){
       if(!doc.exists)return;
       if(blockUserSnap)return;
       const d=doc.data();
+      if(d.name) user.realName=d.name;
       const newApplied=new Set(d.applied||[]);
       const newWaitlisted=new Set(d.waitlisted||[]);
       const newAppliedSmall=new Set(d.appliedSmall||[]);
@@ -1240,7 +1244,7 @@ await aRef.set({name:user.name, realName:realName, email:user.email, time:new Da
   if(m.hostEmail&&m.hostEmail!==user.email){
     db.collection('users').doc(m.hostEmail).get().then(doc=>{
       if(doc.exists&&doc.data().notifSettings?.hostApply!==false){
-        addNotification(m.hostEmail,`📚 "${m.title}" 모임에 ${user.name}님이 신청했어요`,'hostApply');
+        addNotification(m.hostEmail,`📚 "${m.title}" 모임에 ${user.realName||user.name}님이 신청했어요`,'hostApply');
       }
     });
   }
@@ -1315,7 +1319,7 @@ async function doCancelMeeting(id){
   if(m?.hostEmail&&m.hostEmail!==user.email){
     db.collection('users').doc(m.hostEmail).get().then(doc=>{
       if(doc.exists&&doc.data().notifSettings?.hostCancel!==false){
-        addNotification(m.hostEmail,`❌ "${m?.title}" 모임에서 ${user.name}님이 취소했어요`,'hostCancel');
+        addNotification(m.hostEmail,`❌ "${m?.title}" 모임에서 ${user.realName||user.name}님이 취소했어요`,'hostCancel');
       }
     });
   }
@@ -1410,7 +1414,7 @@ async function applySmall(id){
     await uRef.update({appliedSmall:firebase.firestore.FieldValue.arrayRemove(id)});
     uRef.collection('history').add({type:'cancel',kind:'small',meetingTitle:m.name,meetingId:id,time:firebase.firestore.FieldValue.serverTimestamp()});
     // 모임장 알림
-    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostCancel!==false)addNotification(m.hostEmail,`❌ "${m.name}" 소모임에서 ${user.name}님이 취소했어요`,'hostCancel');});}
+    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostCancel!==false)addNotification(m.hostEmail,`❌ "${m.name}" 소모임에서 ${user.realName||user.name}님이 취소했어요`,'hostCancel');});}
     showToast('소모임 신청이 취소되었어요');
   } else {
     if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
@@ -1421,7 +1425,7 @@ await aRef.set({name:user.name,realName:realName,email:user.email,time:new Date(
     await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
     await uRef.update({appliedSmall:firebase.firestore.FieldValue.arrayUnion(id)});
     uRef.collection('history').add({type:'apply',kind:'small',meetingTitle:m.name,meetingId:id,time:firebase.firestore.FieldValue.serverTimestamp()});
-    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.name}님이 신청했어요`,'hostApply');});}
+    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.realName||user.name}님이 신청했어요`,'hostApply');});}
     showToast('소모임 신청 완료! 🎯');
   }
   renderAll();
