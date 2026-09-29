@@ -9,7 +9,7 @@ firebase.initializeApp({
   appId: "1:306904700616:web:2217470905df10786837fd"
 });
 const messaging = firebase.messaging();
-const CACHE = 'mori-apply-v119';
+const CACHE = 'mori-apply-v120';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
@@ -21,7 +21,8 @@ const ASSETS = [
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(ASSETS))
+      // cache:'reload' → 브라우저 임시저장본이 아닌 서버의 최신 파일로 저장
+      .then(c => c.addAll(ASSETS.map(u => new Request(u, {cache: 'reload'}))))
       .then(() => self.skipWaiting())
   );
 });
@@ -40,6 +41,27 @@ self.addEventListener('activate', e => {
       .then(() => self.clients.claim())
   );
 });
+
+// 화면(HTML)은 항상 서버에서 최신 버전을 먼저 받아옴 (자동 업데이트)
+// 3초 안에 응답이 없거나 오프라인이면 저장본으로 표시
+function networkFirst(request){
+  const fromNetwork = fetch(request.url, {cache: 'no-store', credentials: 'same-origin'})
+    // 주소가 바뀌는 경우(예: 끝에 / 붙이기)는 브라우저 기본 방식으로 처리
+    .then(res => res.redirected ? fetch(request) : res)
+    .then(res => {
+    if (res && res.status === 200) {
+      const clone = res.clone();
+      caches.open(CACHE).then(c => c.put(request, clone));
+    }
+    return res;
+  });
+  const fromCache = () => caches.match(request, {ignoreSearch: true})
+    .then(cached => cached || caches.match('/the-mori-apply/index.html'));
+  const timeout = new Promise(resolve => setTimeout(resolve, 3000)).then(fromCache);
+  return Promise.race([fromNetwork.catch(fromCache), timeout])
+    .then(res => res || fromNetwork);
+}
+
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
@@ -55,6 +77,11 @@ self.addEventListener('fetch', e => {
     e.respondWith(fetch(e.request));
     return;
   }
+  if (e.request.mode === 'navigate' || e.request.destination === 'document') {
+    e.respondWith(networkFirst(e.request));
+    return;
+  }
+  // 아이콘·매니페스트 등은 저장본 우선 (빠르게)
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -64,11 +91,6 @@ self.addEventListener('fetch', e => {
           const clone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
           return res;
-        })
-        .catch(() => {
-          if (e.request.destination === 'document') {
-            return caches.match('/the-mori-apply/index.html');
-          }
         });
     })
   );

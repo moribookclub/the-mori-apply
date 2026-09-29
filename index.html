@@ -417,7 +417,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
         <h3>내 정보</h3>
         <div id="profileInfoRows"></div>
         <button class="btn-logout-profile" onclick="logout()">로그아웃</button>
-        <div style="text-align:center;margin-top:1.5rem;font-size:.72rem;color:rgba(255,255,255,.2)" id="appVersion"></div>
+        <div style="text-align:center;margin-top:1.5rem;font-size:.72rem;color:rgba(255,255,255,.2)"><span id="appVersion"></span> <button onclick="forceAppUpdate()" style="background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:2px 7px;margin-left:4px;font-size:.68rem;color:rgba(255,255,255,.4);cursor:pointer">🔄 최신 버전으로 업데이트</button></div>
       </div>
       <div class="profile-card">
         <h3>🎟 토큰 현황</h3>
@@ -533,6 +533,11 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/the-mori-apply/sw.js').then(reg => {
+
+    // 앱을 다시 화면에 띄울 때마다 새 버전 확인
+    document.addEventListener('visibilitychange', () => {
+      if(document.visibilityState === 'visible') reg.update().catch(()=>{});
+    });
 
     // 새 서비스워커가 설치되면 바로 활성화
     reg.addEventListener('updatefound', () => {
@@ -2156,6 +2161,15 @@ async function confirmCancelWaitlist(meetingId, encodedEmail, encodedName){
 }
   
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+// 저장된 앱 파일을 모두 지우고 최신 버전으로 다시 불러오기 (F12 → 저장소 삭제와 같은 효과, 로그인은 유지)
+async function forceAppUpdate(){
+  showToast('최신 버전으로 업데이트 중... 🔄');
+  try{
+    if('caches' in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}
+    if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}
+  }catch(e){console.error(e);}
+  setTimeout(()=>location.reload(),500);
+}
 function loadAppVersion(){
   if('serviceWorker' in navigator){
     navigator.serviceWorker.ready.then(reg=>{
