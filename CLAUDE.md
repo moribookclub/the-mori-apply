@@ -16,6 +16,9 @@ GitHub Pages(`/the-mori-apply/` 경로)에서 `main` 브랜치가 그대로 배�
 | `manifest.json` | PWA 매니페스트 |
 | `firebase-messaging-sw.js` | 주석 한 줄뿐인 빈 파일 (FCM 처리는 `sw.js`에서 함) |
 | `icon-192.png`, `icon-512.png` | 앱 아이콘 |
+| `functions/` | Firebase 서버 기능 (Node 22). `notifications/{email}/items`에 알림이 저장되면 그 사람의 모든 기기(`users.fcmTokens`)로 푸시 발송 |
+| `firebase.json`, `.firebaserc` | 서버 기능 배포 설정 (프로젝트 `the-mori-apply`) |
+| `.github/workflows/deploy-functions.yml` | `functions/`가 바뀌어 main에 합쳐지면 GitHub Actions가 Firebase에 자동 배포 (Secret `FIREBASE_SERVICE_ACCOUNT` 필요) |
 
 ## ⚠️ 수정할 때 반드시 지킬 것
 1. **수정할 때마다 `sw.js`의 캐시 버전을 올린다.** `const CACHE = 'mori-apply-vNNN';` 숫자를 +1.
@@ -55,7 +58,9 @@ GitHub Pages(`/the-mori-apply/` 경로)에서 `main` 브랜치가 그대로 배�
 - 대기열: `applyWaitlist()`, `promoteWaitlist()`, `cancelWaitlist()`
   - 승격은 트랜잭션으로 처리(중복·정원 초과 방지). 취소·제거·정원 증가·인원 보정 시 바로 호출하고,
     안전장치 `autoPromoteCheck()`가 대기자 본인·관리자·스탭 앱에서 자리 있는 모임의 대기자를 올린다.
-- 푸시: `registerFCMToken()` (VAPID 키 사용), 앱 내 알림 `addNotification()`
+- 푸시: `registerFCMToken()` (VAPID 키 사용)이 기기 토큰을 `users.fcmTokens` 배열에 추가, 로그아웃 시 제거.
+  앱 내 알림 `addNotification()`이 받는 사람 설정을 확인해 저장하면 서버 기능이 푸시로 보낸다.
+  `functions/` 수정 시 `functions/package-lock.json`도 함께 갱신(`npm install`).
 
 ## 디자인
 - 남색 다크 테마: 배경 `#0a1628`, 네비/카드 `#0d1f3c`, 흰 글씨와 `rgba(255,255,255,.x)` 투명도로 위계 표현
