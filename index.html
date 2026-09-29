@@ -209,8 +209,11 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 .token-val{font-size:1.1rem;font-weight:700;color:#fff}
 .token-val.warn{color:rgba(255,200,100,.9)}
 .token-val.empty{color:rgba(255,130,130,.9)}
-.notif-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.notif-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .notif-toggle-row:last-child{border-bottom:none}
+.notif-group-title{font-size:.74rem;font-weight:600;color:rgba(255,255,255,.45);margin:1rem 0 .1rem;letter-spacing:.03em}
+.notif-sub{padding-left:.8rem;border-left:2px solid rgba(255,255,255,.08);margin-top:.2rem}
+.notif-sub.off{opacity:.35;pointer-events:none}
 .notif-toggle-label{font-size:.86rem;color:rgba(255,255,255,.7)}
 .notif-toggle-sub{font-size:.73rem;color:rgba(255,255,255,.35);margin-top:2px}
 .toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0}
@@ -417,7 +420,7 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
         <h3>내 정보</h3>
         <div id="profileInfoRows"></div>
         <button class="btn-logout-profile" onclick="logout()">로그아웃</button>
-        <div style="text-align:center;margin-top:1.5rem;font-size:.72rem;color:rgba(255,255,255,.2)"><span id="appVersion"></span> <button onclick="forceAppUpdate()" style="background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:2px 7px;margin-left:4px;font-size:.68rem;color:rgba(255,255,255,.4);cursor:pointer">🔄 최신 버전으로 업데이트</button></div>
+        <div style="text-align:center;margin-top:1.5rem;font-size:.72rem;color:rgba(255,255,255,.2)"><span id="appVersion"></span> <button onclick="forceAppUpdate()" title="최신 버전으로 업데이트" aria-label="최신 버전으로 업데이트" style="background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:2px 6px;margin-left:4px;font-size:.72rem;color:rgba(255,255,255,.4);cursor:pointer">🔄</button></div>
       </div>
       <div class="profile-card">
         <h3>🎟 토큰 현황</h3>
@@ -588,7 +591,7 @@ let unsubMeetings=null, unsubSmall=null, unsubNotif=null;
 let addMemberTarget=null, selectedEmails=new Set();
 let eligibleMembers=[];
 // 개인 알림 설정
-let notifSettings = {hostApply:true, hostCancel:true};
+let notifSettings = {all:true, hostApply:true, hostCancel:true, hostWaitSkip:true, hostClosed:true, waitPromoted:true, promoteConfirmed:true, waitCanceled:true, meetingClosed:true};
 let notifications = [];
 let waitlisted = new Set(); // 대기 중인 모임 ID
 
@@ -769,10 +772,24 @@ function updateProfileTab(){
   // 알림 설정 렌더
   const nEl=document.getElementById('profileNotifRows');
   if(nEl){
-    nEl.innerHTML=[
-      {key:'hostApply',label:'내 모임 신청 알림',sub:'내가 담당한 모임에 누군가 신청하면 알려드려요'},
-      {key:'hostCancel',label:'내 모임 취소 알림',sub:'내가 담당한 모임을 누군가 취소하면 알려드려요'},
-    ].map(n=>`<div class="notif-toggle-row"><div><div class="notif-toggle-label">${n.label}</div><div class="notif-toggle-sub">${n.sub}</div></div><label class="toggle-switch"><input type="checkbox" ${notifSettings[n.key]?'checked':''} onchange="saveNotifSetting('${n.key}',this.checked)"><span class="toggle-slider"></span></label></div>`).join('');
+    const on=k=>notifSettings[k]!==false;
+    const row=n=>`<div class="notif-toggle-row"><div><div class="notif-toggle-label">${n.label}</div><div class="notif-toggle-sub">${n.sub}</div></div><label class="toggle-switch"><input type="checkbox" ${on(n.key)?'checked':''} onchange="saveNotifSetting('${n.key}',this.checked)"><span class="toggle-slider"></span></label></div>`;
+    const group=(title,items)=>`<div class="notif-group-title">${title}</div>`+items.map(row).join('');
+    nEl.innerHTML=row({key:'all',label:'전체 알림',sub:'끄면 아래 모든 알림을 받지 않아요'})
+      +`<div class="notif-sub${on('all')?'':' off'}">`
+      +group('📋 내가 담당한 모임',[
+        {key:'hostApply',label:'신청 알림',sub:'누군가 신청하거나 대기자가 참여 확정되면 알려드려요'},
+        {key:'hostCancel',label:'취소 알림',sub:'누군가 신청을 취소하면 알려드려요'},
+        {key:'hostWaitSkip',label:'대기자 건너뜀 알림',sub:'대기자의 신청 횟수가 없어 다음 대기자로 넘어가면 알려드려요'},
+        {key:'hostClosed',label:'폐강 알림',sub:'담당 모임이 최소인원 미달로 폐강되면 알려드려요'},
+      ])
+      +group('🙋 내 신청',[
+        {key:'waitPromoted',label:'대기 자동 참여 알림',sub:'대기하던 모임에 자리가 나서 자동 신청되면 알려드려요'},
+        {key:'promoteConfirmed',label:'참여 확정 알림',sub:'관리자·스탭이 대기에서 참여를 확정하면 알려드려요'},
+        {key:'waitCanceled',label:'대기 취소 알림',sub:'신청 횟수가 없어 대기가 자동 취소되면 알려드려요'},
+        {key:'meetingClosed',label:'폐강 알림',sub:'신청한 모임이 최소인원 미달로 폐강되면 알려드려요'},
+      ])
+      +`</div>`;
   }
 }
 
@@ -780,6 +797,7 @@ async function saveNotifSetting(key,val){
   notifSettings[key]=val;
   await db.collection('users').doc(user.email).set({notifSettings},{merge:true});
   showToast(val?'알림을 켰어요 🔔':'알림을 껐어요');
+  if(key==='all') updateProfileTab();
 }
 
 function initMain(){
@@ -840,7 +858,7 @@ async function registerFCMToken(){
       const snap = await db.collection('meetings').doc(m.id).collection('applicants').get();
       for(const a of snap.docs){
         const email = a.id;
-        await addNotification(email, `📢 "${m.title}" 모임이 최소인원 미달로 폐강되었어요. 신청 토큰이 복구됩니다.`);
+        await addNotification(email, `📢 "${m.title}" 모임이 최소인원 미달로 폐강되었어요. 신청 토큰이 복구됩니다.`,'meetingClosed');
         const uDoc = await db.collection('users').doc(email).get();
         if(uDoc.exists){
           const cur = uDoc.data().applyToken !== undefined ? uDoc.data().applyToken : 4;
@@ -852,7 +870,7 @@ async function registerFCMToken(){
         await a.ref.delete();
       }
       if(m.hostEmail){
-        await addNotification(m.hostEmail, `📢 담당하신 "${m.title}" 모임이 최소인원 미달로 자동 폐강되었어요.`);
+        await addNotification(m.hostEmail, `📢 담당하신 "${m.title}" 모임이 최소인원 미달로 자동 폐강되었어요.`,'hostClosed');
       }
       await db.collection('meetings').doc(m.id).update({applied: 0});
       showToast(`"${m.title}" 모임이 자동 폐강되었어요`);
@@ -964,8 +982,11 @@ document.addEventListener('click',e=>{
 });
 
 // 알림 기록 (Firestore에 저장)
-async function addNotification(toEmail, message){
+// key: 알림 종류 — 받는 사람이 전체 알림 또는 해당 알림을 꺼두었으면 보내지 않음
+async function addNotification(toEmail, message, key){
   try{
+    const ns=(await db.collection('users').doc(toEmail).get()).data()?.notifSettings||{};
+    if(ns.all===false||(key&&ns[key]===false))return;
     await db.collection('notifications').doc(toEmail).collection('items').add({message,read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
   }catch(e){console.error('알림 저장 실패',e);}
 }
@@ -1088,6 +1109,7 @@ function listenMeetings(){
   unsubMeetings=db.collection('meetings').orderBy('date','asc').onSnapshot(snap=>{
     meetings=snap.docs.map(d=>({id:d.id,...d.data()}));
     checkAutoClose();
+    autoPromoteCheck();
     renderAll();updateNav();
   });
   // 유저 데이터 실시간 리스너 (토큰/대기승격 등 외부 변경만 감지)
@@ -1147,7 +1169,7 @@ await aRef.set({name:user.name, realName:realName, email:user.email, time:new Da
   if(m.hostEmail&&m.hostEmail!==user.email){
     db.collection('users').doc(m.hostEmail).get().then(doc=>{
       if(doc.exists&&doc.data().notifSettings?.hostApply!==false){
-        addNotification(m.hostEmail,`📚 "${m.title}" 모임에 ${user.name}님이 신청했어요`);
+        addNotification(m.hostEmail,`📚 "${m.title}" 모임에 ${user.name}님이 신청했어요`,'hostApply');
       }
     });
   }
@@ -1222,7 +1244,7 @@ async function doCancelMeeting(id){
   if(m?.hostEmail&&m.hostEmail!==user.email){
     db.collection('users').doc(m.hostEmail).get().then(doc=>{
       if(doc.exists&&doc.data().notifSettings?.hostCancel!==false){
-        addNotification(m.hostEmail,`❌ "${m?.title}" 모임에서 ${user.name}님이 취소했어요`);
+        addNotification(m.hostEmail,`❌ "${m?.title}" 모임에서 ${user.name}님이 취소했어요`,'hostCancel');
       }
     });
   }
@@ -1272,11 +1294,31 @@ async function syncMyAppliedSmall(){
   await db.collection('users').doc(user.email).update({appliedSmall:firebase.firestore.FieldValue.arrayUnion(...missing)});
   renderAll();
 }
-// 모임 인원 숫자(applied)가 실제 신청자 수와 다르면 바로잡기
+// 모임 인원 숫자(applied)가 실제 신청자 수와 다르면 바로잡기 (자리가 생기면 대기자 승격)
 async function syncAppliedCount(col,id){
   const all=await db.collection(col).doc(id).collection('applicants').get();
   const m=(col==='meetings'?meetings:smallGroups).find(x=>x.id===id);
-  if(m&&m.applied!==all.size) await db.collection(col).doc(id).update({applied:all.size});
+  if(m&&m.applied!==all.size){
+    await db.collection(col).doc(id).update({applied:all.size});
+    if(col==='meetings'&&all.size<m.max) await promoteWaitlist(id);
+  }
+}
+// 안전장치: 자리가 있는데 대기자가 남아 있으면 자동 승격
+// (대기자 본인 · 관리자 · 스탭의 앱에서 모임 정보가 바뀔 때마다 확인)
+const promoteChecked=new Set();
+function autoPromoteCheck(){
+  if(!user)return;
+  const today=new Date();today.setHours(0,0,0,0);
+  meetings.forEach(m=>{
+    if(m.closed||new Date(m.date)<today||(m.applied||0)>=m.max)return;
+    const mine=waitlisted.has(m.id);
+    const manager=(isAdmin()||canViewApplicants())&&(m.waitCount||0)>0;
+    if(!mine&&!manager)return;
+    const key=`${m.id}:${m.applied}:${m.max}`; // 같은 상태로는 한 번만 시도
+    if(promoteChecked.has(key))return;
+    promoteChecked.add(key);
+    promoteWaitlist(m.id).catch(console.error);
+  });
 }
 
 async function applySmall(id){
@@ -1297,7 +1339,7 @@ async function applySmall(id){
     await uRef.update({appliedSmall:firebase.firestore.FieldValue.arrayRemove(id)});
     uRef.collection('history').add({type:'cancel',kind:'small',meetingTitle:m.name,meetingId:id,time:firebase.firestore.FieldValue.serverTimestamp()});
     // 모임장 알림
-    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostCancel!==false)addNotification(m.hostEmail,`❌ "${m.name}" 소모임에서 ${user.name}님이 취소했어요`);});}
+    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostCancel!==false)addNotification(m.hostEmail,`❌ "${m.name}" 소모임에서 ${user.name}님이 취소했어요`,'hostCancel');});}
     showToast('소모임 신청이 취소되었어요');
   } else {
     if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
@@ -1308,7 +1350,7 @@ await aRef.set({name:user.name,realName:realName,email:user.email,time:new Date(
     await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
     await uRef.update({appliedSmall:firebase.firestore.FieldValue.arrayUnion(id)});
     uRef.collection('history').add({type:'apply',kind:'small',meetingTitle:m.name,meetingId:id,time:firebase.firestore.FieldValue.serverTimestamp()});
-    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.name}님이 신청했어요`);});}
+    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.name}님이 신청했어요`,'hostApply');});}
     showToast('소모임 신청 완료! 🎯');
   }
   renderAll();
@@ -1798,7 +1840,7 @@ async function submitMeeting(){
   if(!title||!author||!topic||!date||!place||!hostRaw){showToast('필수 항목을 모두 입력해주세요');return;}
   const [hostName,hostEmail]=hostRaw.split('||');
   const data={title,author,topic,host:hostName,hostEmail,date,time,place,max,minMembers};
-  if(editingId){await db.collection('meetings').doc(editingId).update(data);showToast('모임이 수정되었어요 ✅');}
+  if(editingId){const id=editingId;await db.collection('meetings').doc(id).update(data);showToast('모임이 수정되었어요 ✅');promoteWaitlist(id).catch(console.error);}
   else{await db.collection('meetings').add({...data,applied:0,closed:false,createdAt:firebase.firestore.FieldValue.serverTimestamp()});showToast('모임이 추가되었어요 ✅');}
   closeAddModal();
 }
@@ -2010,77 +2052,66 @@ async function cancelWaitlist(id,email){
 }
 
 // 여석 생길 때 대기 1순위 자동 승격
+// ── 대기자 자동 승격 (index.html · admin.html 두 곳에 같은 코드 — 수정 시 둘 다) ──
+// 자리가 있는 동안 대기 1번부터 차례로 참여 확정. 트랜잭션으로 처리해서
+// 여러 기기에서 동시에 실행돼도 한 사람이 두 번 올라가거나 정원을 넘지 않음.
 async function promoteWaitlist(meetingId){
-  const m=meetings.find(x=>x.id===meetingId);if(!m)return;
-  // 대기자 목록 시간순
-  const wSnap=await db.collection('meetings').doc(meetingId).collection('waitlist').orderBy('time').get();
-  if(wSnap.empty)return;
-  const first=wSnap.docs[0];
-  const fd=first.data();
-  const email=fd.email;
-  // 해당 유저 토큰 확인
-  const uDoc=await db.collection('users').doc(email).get();
-  if(!uDoc.exists)return;
-  const uData=uDoc.data();
-  const curToken=uData.applyToken!==undefined?uData.applyToken:DEFAULT_APPLY_TOKEN;
-  if(curToken<=0){
-    // 토큰 없으면 다음 대기자로 넘김 (이 대기는 취소)
-    await cancelWaitlist(meetingId,email);
-    await db.collection('users').doc(email).update({waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
-    addNotification(email,`❌ "${m.title}" 모임 여석이 생겼지만 신청 횟수가 없어 대기가 취소되었어요`);
-    if(m.hostEmail){
-      addNotification(m.hostEmail,`⚠️ "${m.title}" 모임 여석이 생겼지만 대기자 ${fd.realName||fd.name}님의 신청 횟수가 없어 다음 대기자로 넘어갔어요`);
-    }
-    await promoteWaitlist(meetingId); // 재귀로 다음 대기자 시도
-    return;
-  }
-    // 이미 신청자 명단에 있으면 중복 방지
-  const existingApply=await db.collection('meetings').doc(meetingId).collection('applicants').doc(email).get();
-  if(existingApply.exists){
-    // 대기 문서만 삭제하고 종료
-    await first.ref.delete();
-    await db.collection('meetings').doc(meetingId).update({waitCount:firebase.firestore.FieldValue.increment(-1)});
-    await db.collection('users').doc(email).update({waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
-    return;
-  }
-  // 승격 처리
-  await db.collection('meetings').doc(meetingId).collection('applicants').doc(email).set({
-    name:fd.name,realName:fd.realName||fd.name,email,photo:fd.photo||'',
-    time:new Date().toLocaleString('ko-KR')
-  });
-  await db.collection('meetings').doc(meetingId).update({
-    applied:firebase.firestore.FieldValue.increment(1),
-    waitCount:firebase.firestore.FieldValue.increment(-1)
-  });
-  // 대기 문서 삭제
-  await first.ref.delete();
-  // 유저 데이터 업데이트
-  const newToken=curToken-1;
-  await db.collection('users').doc(email).update({
-    applyToken:newToken,
-    applied:firebase.firestore.FieldValue.arrayUnion(meetingId),
-    waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)
-  });
-  // 히스토리 기록 (대기 승격)
-  await db.collection('users').doc(email).collection('history').add({
-    type:'apply',
-    meetingTitle:m.title,
-    meetingId:meetingId,
-    reason:'대기 후 자동 참여 확정',
-    time:firebase.firestore.FieldValue.serverTimestamp()
-  });
-  // 승격된 유저 알림
-  addNotification(email,`🎉 "${m.title}" 모임 여석이 생겨 자동으로 신청되었어요! (신청 횟수 -1)`);
-  // 모임장 알림
-  if(m.hostEmail){
-    db.collection('users').doc(m.hostEmail).get().then(doc=>{
-      if(doc.exists&&doc.data().notifSettings?.hostApply!==false){
-        addNotification(m.hostEmail,`🔄 "${m.title}" 모임에서 대기자 ${fd.realName||fd.name}님이 자동으로 참여 확정되었어요`);
+  const inc=firebase.firestore.FieldValue.increment;
+  const mRef=db.collection('meetings').doc(meetingId);
+  for(let tries=0;tries<20;tries++){
+    const wSnap=await mRef.collection('waitlist').orderBy('time').limit(1).get();
+    if(wSnap.empty)return;
+    const first=wSnap.docs[0],fd=first.data(),email=fd.email||first.id;
+    const aRef=mRef.collection('applicants').doc(email),uRef=db.collection('users').doc(email);
+    let mData=null,newToken=0;
+    let result;
+    try{
+      result=await db.runTransaction(async t=>{
+        const [mDoc,aDoc,wDoc,uDoc]=await Promise.all([t.get(mRef),t.get(aRef),t.get(first.ref),t.get(uRef)]);
+        if(!mDoc.exists)return 'stop';
+        if(!wDoc.exists)return 'next'; // 다른 기기에서 이미 처리됨
+        mData=mDoc.data();
+        if(mData.closed)return 'stop';
+        if(aDoc.exists){ // 이미 신청자 → 대기만 정리
+          t.delete(first.ref);t.update(mRef,{waitCount:inc(-1)});
+          if(uDoc.exists)t.update(uRef,{waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
+          return 'next';
+        }
+        if((mData.applied||0)>=mData.max)return 'stop';
+        if(!uDoc.exists)return 'stop';
+        const ud=uDoc.data();
+        const curToken=ud.applyToken!==undefined?ud.applyToken:DEFAULT_APPLY_TOKEN;
+        if(curToken<=0)return 'noToken';
+        newToken=curToken-1;
+        t.set(aRef,{name:fd.name,realName:fd.realName||fd.name,email,photo:fd.photo||'',time:new Date().toLocaleString('ko-KR')});
+        t.update(mRef,{applied:inc(1),waitCount:inc(-1)});
+        t.delete(first.ref);
+        t.update(uRef,{applyToken:newToken,applied:firebase.firestore.FieldValue.arrayUnion(meetingId),waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
+        return 'ok';
+      });
+    }catch(e){console.error('대기자 승격 실패',e);return;}
+    if(result==='stop')return;
+    if(result==='next')continue;
+    const title=mData.title||meetingId;
+    if(result==='noToken'){
+      // 신청 횟수가 없으면 이 대기는 취소하고 다음 대기자로
+      if((await first.ref.get()).exists){
+        await first.ref.delete();
+        await mRef.update({waitCount:inc(-1)});
       }
-    });
+      await uRef.update({waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)}).catch(()=>{});
+      await uRef.collection('history').add({type:'wait-cancel',meetingTitle:title,meetingId,reason:'여석 발생 시 신청 횟수 없음',time:firebase.firestore.FieldValue.serverTimestamp()});
+      addNotification(email,`❌ "${title}" 모임 여석이 생겼지만 신청 횟수가 없어 대기가 취소되었어요`,'waitCanceled');
+      if(mData.hostEmail)addNotification(mData.hostEmail,`⚠️ "${title}" 모임 여석이 생겼지만 대기자 ${fd.realName||fd.name}님의 신청 횟수가 없어 다음 대기자로 넘어갔어요`,'hostWaitSkip');
+      continue;
+    }
+    // 승격 완료: 히스토리 + 알림
+    await uRef.collection('history').add({type:'apply',meetingTitle:title,meetingId,reason:'대기 후 자동 참여 확정',time:firebase.firestore.FieldValue.serverTimestamp()});
+    addNotification(email,`🎉 "${title}" 모임 여석이 생겨 자동으로 신청되었어요! (신청 횟수 -1)`,'waitPromoted');
+    if(mData.hostEmail)addNotification(mData.hostEmail,`🔄 "${title}" 모임에서 대기자 ${fd.realName||fd.name}님이 자동으로 참여 확정되었어요`,'hostApply');
+    // 토큰 0 되면 다른 대기 자동 취소
+    if(newToken<=0) await cancelWaitsNoToken(email);
   }
-  // 토큰 0 되면 다른 대기 자동 취소
-  if(newToken<=0) await cancelWaitsNoToken(email);
 }
 // 신청 횟수가 0이 되면 걸어둔 대기를 모두 자동 취소 (알림 + 히스토리 기록)
 async function cancelWaitsNoToken(email){
@@ -2097,11 +2128,11 @@ async function cancelWaitsNoToken(email){
     }
     const title=meetings.find(x=>x.id===wid)?.title||(await mRef.get()).data()?.title;
     if(!title)continue; // 삭제된 모임
-    addNotification(email,`❌ 신청 횟수 소진으로 "${title}" 모임 대기가 자동 취소되었어요`);
+    addNotification(email,`❌ 신청 횟수 소진으로 "${title}" 모임 대기가 자동 취소되었어요`,'waitCanceled');
     await uRef.collection('history').add({type:'wait-cancel',meetingTitle:title,meetingId:wid,reason:'신청 횟수 소진으로 자동 취소',time:firebase.firestore.FieldValue.serverTimestamp()});
   }
   await uRef.update({waitlisted:firebase.firestore.FieldValue.arrayRemove(...waitIds)});
-  if(email===user?.email) waitIds.forEach(id=>waitlisted.delete(id));
+  if(typeof waitlisted!=='undefined'&&email===user?.email) waitIds.forEach(id=>waitlisted.delete(id));
 }
 async function confirmPromoteWaitlist(col, meetingId, encodedEmail, encodedName){
   const email=decodeURIComponent(encodedEmail);
@@ -2141,7 +2172,7 @@ async function confirmPromoteWaitlist(col, meetingId, encodedEmail, encodedName)
     time:firebase.firestore.FieldValue.serverTimestamp()
   });
   // 알림
-  addNotification(email,`✅ "${mData.title||mData.name}" 모임에 참여가 확정되었어요!`);
+  addNotification(email,`✅ "${mData.title||mData.name}" 모임에 참여가 확정되었어요!`,'promoteConfirmed');
   showToast(`${name}님이 참여 확정되었어요 ✅`);
   // 모임관리 새로고침
   const h=document.querySelector(`.manage-meeting-header[data-col="${col}"][data-id="${meetingId}"]`);

@@ -1216,7 +1216,7 @@ async function closeMeeting(id, encodedTitle){
 
     // 1. 인앱 알림 발송
     promises.push(addAdminNotification(email,
-      `📢 "${title}" 모임이 최소인원 미달로 폐강되었어요. 신청이 자동 취소되고 신청 토큰이 복구됩니다.`
+      `📢 "${title}" 모임이 최소인원 미달로 폐강되었어요. 신청이 자동 취소되고 신청 토큰이 복구됩니다.`, 'meetingClosed'
     ));
 
     // 2. users.applied 배열에서 제거
@@ -1257,7 +1257,7 @@ async function closeMeeting(id, encodedTitle){
   // 모임장 알림
   if(m?.hostEmail){
     promises.push(addAdminNotification(m.hostEmail,
-      `📢 담당하신 "${title}" 모임이 최소인원 미달로 폐강 처리되었어요.`
+      `📢 담당하신 "${title}" 모임이 최소인원 미달로 폐강 처리되었어요.`, 'hostClosed'
     ));
   }
 
@@ -1270,8 +1270,11 @@ async function closeMeeting(id, encodedTitle){
 }
 
 // ── 알림 기록 헬퍼 ────────────────────────────────────────────────────────────
-async function addAdminNotification(toEmail, message){
+// key: 알림 종류 — 받는 사람이 전체 알림 또는 해당 알림을 꺼두었으면 보내지 않음
+async function addAdminNotification(toEmail, message, key){
   try {
+    const ns=(await db.collection('users').doc(toEmail).get()).data()?.notifSettings||{};
+    if(ns.all===false||(key&&ns[key]===false))return;
     await db.collection('notifications').doc(toEmail).collection('items').add({
       message,
       read: false,
@@ -1297,8 +1300,93 @@ async function addAdminNotification(toEmail, message){
     time: firebase.firestore.FieldValue.serverTimestamp()
   });
   showToast(memberName+' 님이 제거되었어요');
+  if(col==='meetings') await promoteWaitlist(meetingId); // 자리가 생겼으니 대기자 승격
   renderApplicantTable();
 }
+const addNotification=(to,msg,key)=>addAdminNotification(to,msg,key);
+// ── 대기자 자동 승격 (index.html · admin.html 두 곳에 같은 코드 — 수정 시 둘 다) ──
+// 자리가 있는 동안 대기 1번부터 차례로 참여 확정. 트랜잭션으로 처리해서
+// 여러 기기에서 동시에 실행돼도 한 사람이 두 번 올라가거나 정원을 넘지 않음.
+async function promoteWaitlist(meetingId){
+  const inc=firebase.firestore.FieldValue.increment;
+  const mRef=db.collection('meetings').doc(meetingId);
+  for(let tries=0;tries<20;tries++){
+    const wSnap=await mRef.collection('waitlist').orderBy('time').limit(1).get();
+    if(wSnap.empty)return;
+    const first=wSnap.docs[0],fd=first.data(),email=fd.email||first.id;
+    const aRef=mRef.collection('applicants').doc(email),uRef=db.collection('users').doc(email);
+    let mData=null,newToken=0;
+    let result;
+    try{
+      result=await db.runTransaction(async t=>{
+        const [mDoc,aDoc,wDoc,uDoc]=await Promise.all([t.get(mRef),t.get(aRef),t.get(first.ref),t.get(uRef)]);
+        if(!mDoc.exists)return 'stop';
+        if(!wDoc.exists)return 'next'; // 다른 기기에서 이미 처리됨
+        mData=mDoc.data();
+        if(mData.closed)return 'stop';
+        if(aDoc.exists){ // 이미 신청자 → 대기만 정리
+          t.delete(first.ref);t.update(mRef,{waitCount:inc(-1)});
+          if(uDoc.exists)t.update(uRef,{waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
+          return 'next';
+        }
+        if((mData.applied||0)>=mData.max)return 'stop';
+        if(!uDoc.exists)return 'stop';
+        const ud=uDoc.data();
+        const curToken=ud.applyToken!==undefined?ud.applyToken:DEFAULT_APPLY_TOKEN;
+        if(curToken<=0)return 'noToken';
+        newToken=curToken-1;
+        t.set(aRef,{name:fd.name,realName:fd.realName||fd.name,email,photo:fd.photo||'',time:new Date().toLocaleString('ko-KR')});
+        t.update(mRef,{applied:inc(1),waitCount:inc(-1)});
+        t.delete(first.ref);
+        t.update(uRef,{applyToken:newToken,applied:firebase.firestore.FieldValue.arrayUnion(meetingId),waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)});
+        return 'ok';
+      });
+    }catch(e){console.error('대기자 승격 실패',e);return;}
+    if(result==='stop')return;
+    if(result==='next')continue;
+    const title=mData.title||meetingId;
+    if(result==='noToken'){
+      // 신청 횟수가 없으면 이 대기는 취소하고 다음 대기자로
+      if((await first.ref.get()).exists){
+        await first.ref.delete();
+        await mRef.update({waitCount:inc(-1)});
+      }
+      await uRef.update({waitlisted:firebase.firestore.FieldValue.arrayRemove(meetingId)}).catch(()=>{});
+      await uRef.collection('history').add({type:'wait-cancel',meetingTitle:title,meetingId,reason:'여석 발생 시 신청 횟수 없음',time:firebase.firestore.FieldValue.serverTimestamp()});
+      addNotification(email,`❌ "${title}" 모임 여석이 생겼지만 신청 횟수가 없어 대기가 취소되었어요`,'waitCanceled');
+      if(mData.hostEmail)addNotification(mData.hostEmail,`⚠️ "${title}" 모임 여석이 생겼지만 대기자 ${fd.realName||fd.name}님의 신청 횟수가 없어 다음 대기자로 넘어갔어요`,'hostWaitSkip');
+      continue;
+    }
+    // 승격 완료: 히스토리 + 알림
+    await uRef.collection('history').add({type:'apply',meetingTitle:title,meetingId,reason:'대기 후 자동 참여 확정',time:firebase.firestore.FieldValue.serverTimestamp()});
+    addNotification(email,`🎉 "${title}" 모임 여석이 생겨 자동으로 신청되었어요! (신청 횟수 -1)`,'waitPromoted');
+    if(mData.hostEmail)addNotification(mData.hostEmail,`🔄 "${title}" 모임에서 대기자 ${fd.realName||fd.name}님이 자동으로 참여 확정되었어요`,'hostApply');
+    // 토큰 0 되면 다른 대기 자동 취소
+    if(newToken<=0) await cancelWaitsNoToken(email);
+  }
+}
+// 신청 횟수가 0이 되면 걸어둔 대기를 모두 자동 취소 (알림 + 히스토리 기록)
+async function cancelWaitsNoToken(email){
+  const uRef=db.collection('users').doc(email);
+  const uDoc=await uRef.get();
+  const waitIds=uDoc.data()?.waitlisted||[];
+  if(!waitIds.length)return;
+  for(const wid of waitIds){
+    const mRef=db.collection('meetings').doc(wid);
+    const wRef=mRef.collection('waitlist').doc(email);
+    if((await wRef.get()).exists){
+      await wRef.delete();
+      await mRef.update({waitCount:firebase.firestore.FieldValue.increment(-1)}).catch(()=>{});
+    }
+    const title=meetings.find(x=>x.id===wid)?.title||(await mRef.get()).data()?.title;
+    if(!title)continue; // 삭제된 모임
+    addNotification(email,`❌ 신청 횟수 소진으로 "${title}" 모임 대기가 자동 취소되었어요`,'waitCanceled');
+    await uRef.collection('history').add({type:'wait-cancel',meetingTitle:title,meetingId:wid,reason:'신청 횟수 소진으로 자동 취소',time:firebase.firestore.FieldValue.serverTimestamp()});
+  }
+  await uRef.update({waitlisted:firebase.firestore.FieldValue.arrayRemove(...waitIds)});
+  if(typeof waitlisted!=='undefined'&&email===user?.email) waitIds.forEach(id=>waitlisted.delete(id));
+}
+
 async function clearAllHistory(){
   if(!confirm('모든 멤버의 히스토리를 삭제할까요?\n이 작업은 되돌릴 수 없어요.')) return;
   showToast('삭제 중...');

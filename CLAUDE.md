@@ -23,6 +23,7 @@ GitHub Pages(`/the-mori-apply/` 경로)에서 `main` 브랜치가 그대로 배�
    버전을 올려야 열려 있던 앱도 새로고침되고 아이콘·매니페스트도 갱신된다. 프로필 화면에 이 버전이 표시되고,
    옆의 "🔄 최신 버전으로 업데이트" 버튼(`forceAppUpdate()`)은 저장된 캐시·서비스워커를 지우고 다시 불러온다.
 2. **관리자 이메일 목록 `ADMIN_EMAILS`는 `index.html`과 `admin.html` 두 곳에 있다.** 바꿀 때 둘 다 수정.
+   대기자 자동 승격 코드(`promoteWaitlist`, `cancelWaitsNoToken`)도 두 파일에 같은 코드가 있으니 함께 수정한다.
 3. Firebase SDK는 CDN의 **compat 버전 10.12.2**(`firebase.firestore()` 형태)를 쓴다. 모듈식(v9 modular) 문법 섞지 말 것.
    `sw.js`의 SDK 버전도 동일하게 맞춘다.
 4. 파일 분리·프레임워크 도입·빌드 도구 추가는 사용자가 요청할 때만. 기존의 한 파일 구조와 코딩 스타일(짧은 함수, 인라인 `onclick`, 템플릿 문자열로 HTML 생성)을 유지.
@@ -52,6 +53,8 @@ GitHub Pages(`/the-mori-apply/` 경로)에서 `main` 브랜치가 그대로 배�
 - 탭: 독서모임(`all`) · 소모임(`small`) · 신청한 모임(`applied`) · 캘린더(`calendar`) · 모임관리(`manage`, 권한자만) · 프로필(`profile`) — `switchTab()`
 - 모임 신청/취소: `applyMeeting()`, `doCancelMeeting()` — 신청권·취소권 토큰 차감, 취소 잠금 시간 체크(`isCancelLocked`)
 - 대기열: `applyWaitlist()`, `promoteWaitlist()`, `cancelWaitlist()`
+  - 승격은 트랜잭션으로 처리(중복·정원 초과 방지). 취소·제거·정원 증가·인원 보정 시 바로 호출하고,
+    안전장치 `autoPromoteCheck()`가 대기자 본인·관리자·스탭 앱에서 자리 있는 모임의 대기자를 올린다.
 - 푸시: `registerFCMToken()` (VAPID 키 사용), 앱 내 알림 `addNotification()`
 
 ## 디자인
