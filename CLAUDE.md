@@ -18,9 +18,10 @@ GitHub Pages(`/the-mori-apply/` 경로)에서 `main` 브랜치가 그대로 배�
 | `icon-192.png`, `icon-512.png` | 앱 아이콘 |
 
 ## ⚠️ 수정할 때 반드시 지킬 것
-1. **배포 반영을 위해 `sw.js`의 캐시 버전을 올린다.** `const CACHE = 'mori-apply-vNNN';` 숫자를 +1.
-   서비스워커가 파일을 캐시하므로 이걸 안 올리면 사용자 폰에 변경사항이 안 보인다.
-   `index.html`/`admin.html`을 고칠 때마다 함께 올린다. (앱 프로필 화면에 이 버전이 표시됨)
+1. **수정할 때마다 `sw.js`의 캐시 버전을 올린다.** `const CACHE = 'mori-apply-vNNN';` 숫자를 +1.
+   화면(HTML)은 서비스워커가 네트워크 우선으로 받아와서 창만 열면 자동 반영되지만(3초 넘게 걸리거나 오프라인이면 저장본),
+   버전을 올려야 열려 있던 앱도 새로고침되고 아이콘·매니페스트도 갱신된다. 프로필 화면에 이 버전이 표시되고,
+   옆의 "🔄 최신 버전으로 업데이트" 버튼(`forceAppUpdate()`)은 저장된 캐시·서비스워커를 지우고 다시 불러온다.
 2. **관리자 이메일 목록 `ADMIN_EMAILS`는 `index.html`과 `admin.html` 두 곳에 있다.** 바꿀 때 둘 다 수정.
 3. Firebase SDK는 CDN의 **compat 버전 10.12.2**(`firebase.firestore()` 형태)를 쓴다. 모듈식(v9 modular) 문법 섞지 말 것.
    `sw.js`의 SDK 버전도 동일하게 맞춘다.

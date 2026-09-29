@@ -1142,11 +1142,9 @@ async function loadSiteConfig(){
     const cancelLockEl=document.getElementById('cancelLockToggle');
     const cancelHoursEl=document.getElementById('cancelLockHoursInput');
     const minMemberEl=document.getElementById('minMemberToggle');
-    const wishNotifEl=document.getElementById('wishNotifToggle');
     if(cancelLockEl) cancelLockEl.checked=d.cancelLockEnabled||false;
     if(cancelHoursEl) cancelHoursEl.value=d.cancelLockHours||72;
     if(minMemberEl) minMemberEl.checked=d.minMemberAutoCloseEnabled||false;
-    if(wishNotifEl) wishNotifEl.checked=d.wishNotifEnabled!==false;
     const globalApplyEl=document.getElementById('globalApplyToggle');
 if(globalApplyEl) globalApplyEl.checked=d.globalApplyOpen!==false;
     const formOpenEl=document.getElementById('formOpenToggle');
@@ -1173,13 +1171,6 @@ async function saveMinMemberSetting(){
   const enabled=document.getElementById('minMemberToggle').checked;
   await db.collection('settings').doc('config').set({minMemberAutoCloseEnabled:enabled},{merge:true});
   showToast(enabled?'최소인원 폐강 기능 활성화 ✅':'최소인원 폐강 기능 비활성화');
-}
-
-// ── 찜 여석 알림 on/off 저장 ──────────────────────────────────────────────────
-async function saveWishNotifSetting(){
-  const enabled=document.getElementById('wishNotifToggle').checked;
-  await db.collection('settings').doc('config').set({wishNotifEnabled:enabled},{merge:true});
-  showToast(enabled?'찜 여석 알림 활성화 ✅':'찜 여석 알림 비활성화');
 }
 
 // ── 폐강 대상 모임 목록 렌더 ──────────────────────────────────────────────────
