@@ -599,7 +599,7 @@ let unsubMeetings=null, unsubSmall=null, unsubNotif=null;
 let addMemberTarget=null, selectedEmails=new Set();
 let eligibleMembers=[];
 // 개인 알림 설정
-let notifSettings = {all:true, hostApply:true, hostCancel:true, hostWaitSkip:true, hostClosed:true, smallApply:true, smallCancel:true, waitPromoted:true, promoteConfirmed:true, waitCanceled:true, meetingClosed:true};
+let notifSettings = {all:true, hostApply:true, hostCancel:true, hostWaitSkip:true, hostClosed:true, smallOpen:true, smallApply:true, smallCancel:true, waitPromoted:true, promoteConfirmed:true, waitCanceled:true, meetingClosed:true};
 let notifications = [];
 let waitlisted = new Set(); // 대기 중인 모임 ID
 
@@ -801,9 +801,10 @@ function updateProfileTab(){
         {key:'waitCanceled',label:'대기 취소 알림',sub:'신청 횟수가 없어 대기가 자동 취소되면 알려드려요'},
         {key:'meetingClosed',label:'폐강 알림',sub:'신청한 모임이 최소인원 미달로 폐강되면 알려드려요'},
       ])
-      +group('small','👥 소모임 (내가 담당한 소모임)',[
-        {key:'smallApply',label:'신청 알림',sub:'누군가 소모임에 신청하면 알려드려요'},
-        {key:'smallCancel',label:'취소 알림',sub:'누군가 소모임 신청을 취소하면 알려드려요'},
+      +group('small','🎯 소모임',[
+        {key:'smallOpen',label:'소모임 개설 알림',sub:'소모임이 개설될 때 알려드려요'},
+        {key:'smallApply',label:'신청 알림 (내가 소모임장일 경우)',sub:'누군가 내 소모임에 신청하면 알려드려요'},
+        {key:'smallCancel',label:'취소 알림 (내가 소모임장일 경우)',sub:'누군가 내 소모임 신청을 취소하면 알려드려요'},
       ])
       +group('host','📋 내가 담당한 모임 (독서모임)',[
         {key:'hostApply',label:'신청 알림',sub:'누군가 신청하거나 대기자가 참여 확정되면 알려드려요'},

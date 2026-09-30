@@ -33,6 +33,12 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);padding:6px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;transition:all .2s}
 .chip.active{background:#fff;color:#0d1f3c;border-color:#fff;font-weight:600}
 .member-list{display:flex;flex-direction:column;gap:.6rem}
+.promo-item{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.7rem .9rem;margin-bottom:.5rem;background:rgba(255,255,255,.03)}
+.promo-item summary{cursor:pointer;list-style:none;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:.88rem}
+.promo-item summary::-webkit-details-marker{display:none}
+.promo-item summary::after{content:'▾';margin-left:auto;color:rgba(255,255,255,.35);padding-left:8px}
+.promo-item[open] summary::after{content:'▴'}
+.promo-sent{flex-basis:100%;order:3;font-size:.7rem;color:rgba(255,255,255,.35);margin-top:3px}
 .member-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1rem;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
 .member-row:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.07)}
 .member-av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:600;overflow:hidden;flex-shrink:0}
@@ -223,6 +229,17 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
     <!-- 설정 -->
 
 <div id="tabSettings" style="display:none">
+
+<!-- 소모임 홍보 알림 -->
+<div class="section-card">
+  <div class="section-head">
+    <div>
+      <h2>🎯 소모임 개설·홍보 알림</h2>
+      <p>소모임마다 홍보 문구를 써서 회원들에게 알림을 보낼 수 있어요 (알림 설정에서 '소모임 개설 알림'을 끈 회원은 제외)</p>
+    </div>
+  </div>
+  <div id="smallPromoList"><div class="empty">불러오는 중...</div></div>
+</div>
 
 <!-- 수강신청 전체 ON/OFF -->
 <div class="section-card">
@@ -972,7 +989,7 @@ function switchAdminTab(t,el){
   const target=document.getElementById(tabMap[t]);
   if(target)target.style.display='block';
   if(t==='history')loadHistory();
-  if(t==='settings'){renderCloseableMeetings();renderMeetingApplyControlList();}
+  if(t==='settings'){renderCloseableMeetings();renderMeetingApplyControlList();renderSmallPromoList();}
   if(t==='form'){initEditors();renderBasicFieldsEditor();}
   if(t==='members')renderMemberList();
 }
@@ -1172,6 +1189,49 @@ async function saveMinMemberSetting(){
   const enabled=document.getElementById('minMemberToggle').checked;
   await db.collection('settings').doc('config').set({minMemberAutoCloseEnabled:enabled},{merge:true});
   showToast(enabled?'최소인원 폐강 기능 활성화 ✅':'최소인원 폐강 기능 비활성화');
+}
+
+// ── 소모임 개설·홍보 알림 ─────────────────────────────────────────────
+let smallPromoGroups=[];
+function defaultPromoText(g){
+  const d=g.date?new Date(g.date).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}):'';
+  return `🎯 새 소모임 "${g.name}"이(가) 열렸어요! ${d} ${g.time||''} · ${g.place||''} (모임장 ${g.host||''}) 지금 신청해보세요`;
+}
+async function renderSmallPromoList(){
+  const el=document.getElementById('smallPromoList');if(!el)return;
+  const snap=await db.collection('smallGroups').orderBy('date','asc').get();
+  const today=new Date();today.setHours(0,0,0,0);
+  smallPromoGroups=snap.docs.map(d=>({id:d.id,...d.data()})).filter(g=>!g.date||new Date(g.date)>=today);
+  if(!smallPromoGroups.length){el.innerHTML='<div class="empty">개설된 소모임이 없어요</div>';return;}
+  el.innerHTML=smallPromoGroups.map(g=>{
+    const sent=g.promoSentAt?.toDate?`<span style="color:rgba(140,230,160,.8)">마지막 발송 ${g.promoSentAt.toDate().toLocaleString('ko-KR')} · ${g.promoSentCount||0}명</span>`:'<span>아직 보내지 않았어요</span>';
+    return `<details class="promo-item">
+      <summary><span style="font-weight:600">${g.name}</span><span style="font-size:.74rem;color:rgba(255,255,255,.4);margin-left:6px">${g.date||''} · ${g.applied||0}/${g.max||'-'}명</span><span class="promo-sent">${sent}</span></summary>
+      <textarea id="promo-${g.id}" rows="3" style="width:100%;margin-top:.6rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:.6rem .7rem;color:#fff;font-size:.83rem;line-height:1.5;resize:vertical;font-family:inherit">${(g.promoText||defaultPromoText(g)).replace(/</g,'&lt;')}</textarea>
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:.5rem">
+        <button onclick="resetPromoText('${g.id}')" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);padding:6px 12px;border-radius:6px;font-size:.78rem;cursor:pointer">기본 문구</button>
+        <button onclick="sendSmallPromo('${g.id}')" style="background:rgba(140,100,255,.2);border:1px solid rgba(140,100,255,.45);color:rgba(200,180,255,.95);padding:6px 14px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer">📢 알림 보내기</button>
+      </div>
+    </details>`;
+  }).join('');
+}
+function resetPromoText(id){
+  const g=smallPromoGroups.find(x=>x.id===id);if(!g)return;
+  document.getElementById('promo-'+id).value=defaultPromoText(g);
+}
+async function sendSmallPromo(id){
+  const g=smallPromoGroups.find(x=>x.id===id);if(!g)return;
+  const msg=document.getElementById('promo-'+id).value.trim();
+  if(!msg){showToast('홍보 문구를 입력해주세요');return;}
+  // 받는 사람: 참여자·스탭·소모임장·관리자 (모임장 본인 제외)
+  const snap=await db.collection('users').get();
+  const targets=snap.docs.map(d=>d.data()).filter(u=>u.email&&u.email!==g.hostEmail&&(['member','staff','smallstaff'].includes(u.role)||ADMIN_EMAILS.includes(u.email)));
+  if(!confirm(`"${g.name}" 홍보 알림을 ${targets.length}명에게 보낼까요?\n(소모임 개설 알림을 끈 회원은 제외돼요)\n\n${msg}`))return;
+  showToast('보내는 중... 📢');
+  await Promise.all(targets.map(u=>addAdminNotification(u.email,msg,'smallOpen')));
+  await db.collection('smallGroups').doc(id).update({promoText:msg,promoSentAt:firebase.firestore.FieldValue.serverTimestamp(),promoSentCount:targets.length});
+  showToast(`${targets.length}명에게 홍보 알림을 보냈어요 ✅`);
+  renderSmallPromoList();
 }
 
 // ── 폐강 대상 모임 목록 렌더 ──────────────────────────────────────────────────
