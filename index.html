@@ -849,7 +849,6 @@ async function registerFCMToken(fromClick){
       serviceWorkerRegistration: swReg
     });
 
-    listenForegroundPush(messaging, swReg);
     if(token && user){
       currentFcmToken = token;
       // 이미 등록된 기기면 저장 생략 (불필요한 Firestore 쓰기 방지)
@@ -867,22 +866,6 @@ async function registerFCMToken(fromClick){
     if(fromClick) showToast('푸시 알림 등록에 실패했어요 😢');
   }
   updatePushStatus();
-}
-// 앱이 화면에 떠 있을 때 온 푸시도 휴대폰 알림으로 표시 (기본은 앱 안 🔔에만 표시됨)
-let foregroundPushOn=false;
-function listenForegroundPush(messaging, swReg){
-  if(foregroundPushOn)return;
-  foregroundPushOn=true;
-  messaging.onMessage(payload=>{
-    const n=payload.notification||{};
-    swReg.showNotification(n.title||'THE MORI',{
-      body:n.body||'',
-      icon:'/the-mori-apply/icon-192.png',
-      badge:'/the-mori-apply/badge-96.png',
-      tag:n.tag||String(Date.now()),
-      data:{link:'/the-mori-apply/'}
-    });
-  });
 }
 // 푸시가 꺼진 회원에게 메인 화면 상단 안내 배너 (닫으면 이 기기에서는 다시 안 뜸)
 function isIOS(){return /iPhone|iPad|iPod/.test(navigator.userAgent);}
