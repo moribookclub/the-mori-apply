@@ -37,14 +37,16 @@ exports.sendPushOnNotification = functions
     const res = await getMessaging().sendEachForMulticast({
       tokens,
       webpush: {
-        notification: {
+        // 긴급: 폰이 절전(잠자기) 상태여도 바로 전달 / 폰이 꺼져 있으면 하루 동안 보관 후 전달
+        headers: { Urgency: 'high', TTL: '86400' },
+        // 알림 표시는 앱의 서비스워커(sw.js)가 직접 함 → 앱이 켜져 있든 꺼져 있든 항상 표시
+        // (FCM 자동 표시는 앱이 백그라운드에 살아 있으면 건너뛰어서, 아이폰은 이게 반복되면 푸시 등록이 끊김)
+        data: {
           title: 'THE MORI',
           body: message,
-          icon: APP_URL + 'icon-192.png',
-          badge: APP_URL + 'badge-96.png', // 안드로이드 상단바 작은 아이콘: 흰색 실루엣 + 투명 배경이어야 함
           tag: context.params.itemId,
+          link: APP_URL,
         },
-        fcmOptions: { link: APP_URL },
       },
     });
 

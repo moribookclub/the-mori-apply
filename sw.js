@@ -1,5 +1,19 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+// 푸시 받으면 항상 직접 알림 표시 (서버가 data로 보낸 제목·내용 사용)
+self.addEventListener('push', e => {
+  let payload = {};
+  try { payload = e.data ? e.data.json() : {}; } catch (_) {}
+  const d = payload.data || {};
+  if (!d.body) return; // 우리 서버가 보낸 형식이 아니면 무시
+  e.waitUntil(self.registration.showNotification(d.title || 'THE MORI', {
+    body: d.body,
+    icon: '/the-mori-apply/icon-192.png',
+    badge: '/the-mori-apply/badge-96.png', // 안드로이드 상단바: 흰색 실루엣 아이콘
+    tag: d.tag || undefined,
+    data: {link: d.link || '/the-mori-apply/'}
+  }));
+});
 firebase.initializeApp({
   apiKey: "AIzaSyAB9FDVMi7AqnKZeTwbq7QYnHY8JZ2mtOk",
   authDomain: "the-mori-apply.firebaseapp.com",
@@ -9,7 +23,7 @@ firebase.initializeApp({
   appId: "1:306904700616:web:2217470905df10786837fd"
 });
 const messaging = firebase.messaging();
-const CACHE = 'mori-apply-v125';
+const CACHE = 'mori-apply-v126';
 const ASSETS = [
   '/the-mori-apply/',
   '/the-mori-apply/index.html',
@@ -96,7 +110,7 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// 앱에서 직접 띄운 알림을 누르면 앱 창으로 이동 (FCM이 띄운 알림은 FCM이 처리)
+// 알림을 누르면 열려 있는 앱 창으로 이동 (없으면 새로 열기)
 self.addEventListener('notificationclick', e => {
   const link = e.notification.data && e.notification.data.link;
   if (!link) return;

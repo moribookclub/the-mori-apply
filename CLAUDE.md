@@ -61,6 +61,8 @@ GitHub Pages(`/the-mori-apply/` 경로)에서 `main` 브랜치가 그대로 배�
     안전장치 `autoPromoteCheck()`가 대기자 본인·관리자·스탭 앱에서 자리 있는 모임의 대기자를 올린다.
 - 푸시: `registerFCMToken()` (VAPID 키 사용)이 기기 토큰을 `users.fcmTokens` 배열에 추가, 로그아웃 시 제거.
   앱 내 알림 `addNotification()`이 받는 사람 설정을 확인해 저장하면 서버 기능이 푸시로 보낸다.
+  서버는 긴급도 high의 data 메시지(title/body/tag/link)로 보내고, 알림 표시는 `sw.js`의 `push` 리스너가 항상 직접 한다
+  (FCM 자동 표시에 맡기면 앱이 백그라운드에 있을 때 건너뛰고, 아이폰은 이게 반복되면 푸시 등록을 끊음).
   `functions/` 수정 시 `functions/package-lock.json`도 함께 갱신(`npm install`).
 
 ## 디자인
