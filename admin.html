@@ -33,6 +33,10 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 .chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);padding:6px 14px;border-radius:20px;font-size:.8rem;cursor:pointer;transition:all .2s}
 .chip.active{background:#fff;color:#0d1f3c;border-color:#fff;font-weight:600}
 .member-list{display:flex;flex-direction:column;gap:.6rem}
+.promo-section>summary{cursor:pointer;list-style:none;margin-bottom:0;flex-wrap:nowrap}
+.promo-section>summary::-webkit-details-marker{display:none}
+.promo-section>summary::after{content:'▼';color:rgba(255,255,255,.35);font-size:.8rem;flex-shrink:0;margin-left:8px}
+.promo-section[open]>summary::after{content:'▲'}
 .promo-item{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.7rem .9rem;margin-bottom:.5rem;background:rgba(255,255,255,.03)}
 .promo-item summary{cursor:pointer;list-style:none;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:.88rem}
 .promo-item summary::-webkit-details-marker{display:none}
@@ -230,17 +234,6 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 
 <div id="tabSettings" style="display:none">
 
-<!-- 소모임 홍보 알림 -->
-<div class="section-card">
-  <div class="section-head">
-    <div>
-      <h2>🎯 소모임 개설·홍보 알림</h2>
-      <p>소모임마다 홍보 문구를 써서 회원들에게 알림을 보낼 수 있어요 (알림 설정에서 '소모임 개설 알림'을 끈 회원은 제외)</p>
-    </div>
-  </div>
-  <div id="smallPromoList"><div class="empty">불러오는 중...</div></div>
-</div>
-
 <!-- 수강신청 전체 ON/OFF -->
 <div class="section-card">
   <div class="section-head">
@@ -274,6 +267,17 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1.
 </div>
 
   
+  <!-- 소모임 개설·홍보 알림 (제목을 누르면 소모임 목록이 펼쳐짐) -->
+  <details class="section-card promo-section">
+    <summary class="section-head">
+      <div>
+        <h2>🎯 소모임 개설·홍보 알림</h2>
+        <p>소모임마다 홍보 문구를 써서 회원들에게 알림을 보낼 수 있어요 (알림 설정에서 '소모임 개설 알림'을 끈 회원은 제외)</p>
+      </div>
+    </summary>
+    <div id="smallPromoList" style="margin-top:1rem"><div class="empty">불러오는 중...</div></div>
+  </details>
+
   <!-- 1. 독서모임 취소 시간 제한 -->
   <div class="section-card">
     <div class="section-head">
