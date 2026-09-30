@@ -211,7 +211,13 @@ nav{background:#0d1f3c;border-bottom:1px solid rgba(255,255,255,.1);padding:0 1r
 .token-val.empty{color:rgba(255,130,130,.9)}
 .notif-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .notif-toggle-row:last-child{border-bottom:none}
-.notif-group-title{font-size:.74rem;font-weight:600;color:rgba(255,255,255,.45);margin:1rem 0 .1rem;letter-spacing:.03em}
+.notif-group{border-bottom:1px solid rgba(255,255,255,.06)}
+.notif-group:last-child{border-bottom:none}
+.notif-group-title{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.65);padding:.8rem 0;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px}
+.notif-group-title::-webkit-details-marker{display:none}
+.notif-group-title::after{content:'▾';margin-left:4px;color:rgba(255,255,255,.35);transition:transform .2s}
+.notif-group[open] .notif-group-title::after{transform:rotate(180deg)}
+.notif-group-count{margin-left:auto;font-size:.7rem;font-weight:400;color:rgba(255,255,255,.35)}
 .notif-sub{padding-left:.8rem;border-left:2px solid rgba(255,255,255,.08);margin-top:.2rem}
 .notif-sub.off{opacity:.35;pointer-events:none}
 .notif-toggle-label{font-size:.86rem;color:rgba(255,255,255,.7)}
@@ -593,7 +599,7 @@ let unsubMeetings=null, unsubSmall=null, unsubNotif=null;
 let addMemberTarget=null, selectedEmails=new Set();
 let eligibleMembers=[];
 // 개인 알림 설정
-let notifSettings = {all:true, hostApply:true, hostCancel:true, hostWaitSkip:true, hostClosed:true, waitPromoted:true, promoteConfirmed:true, waitCanceled:true, meetingClosed:true};
+let notifSettings = {all:true, hostApply:true, hostCancel:true, hostWaitSkip:true, hostClosed:true, smallOpen:true, smallApply:true, smallCancel:true, waitPromoted:true, promoteConfirmed:true, waitCanceled:true, meetingClosed:true};
 let notifications = [];
 let waitlisted = new Set(); // 대기 중인 모임 ID
 
@@ -785,31 +791,39 @@ function updateProfileTab(){
   if(nEl){
     const on=k=>notifSettings[k]!==false;
     const row=n=>`<div class="notif-toggle-row"><div><div class="notif-toggle-label">${n.label}</div><div class="notif-toggle-sub">${n.sub}</div></div><label class="toggle-switch"><input type="checkbox" ${on(n.key)?'checked':''} onchange="saveNotifSetting('${n.key}',this.checked)"><span class="toggle-slider"></span></label></div>`;
-    const group=(title,items)=>`<div class="notif-group-title">${title}</div>`+items.map(row).join('');
+    // 범주별 접기/펼치기 (펼친 상태는 다시 그려도 유지)
+    const group=(id,title,items)=>`<details class="notif-group" ${notifOpenGroups.has(id)?'open':''} ontoggle="toggleNotifGroup('${id}',this.open)"><summary class="notif-group-title">${title}<span class="notif-group-count">${items.filter(n=>on(n.key)).length}/${items.length} 켜짐</span></summary>${items.map(row).join('')}</details>`;
     nEl.innerHTML=row({key:'all',label:'전체 알림',sub:'끄면 아래 모든 알림을 받지 않아요'})
       +`<div class="notif-sub${on('all')?'':' off'}">`
-      +group('📋 내가 담당한 모임',[
-        {key:'hostApply',label:'신청 알림',sub:'누군가 신청하거나 대기자가 참여 확정되면 알려드려요'},
-        {key:'hostCancel',label:'취소 알림',sub:'누군가 신청을 취소하면 알려드려요'},
-        {key:'hostWaitSkip',label:'대기자 건너뜀 알림',sub:'대기자의 신청 횟수가 없어 다음 대기자로 넘어가면 알려드려요'},
-        {key:'hostClosed',label:'폐강 알림',sub:'담당 모임이 최소인원 미달로 폐강되면 알려드려요'},
-      ])
-      +group('🙋 내 신청',[
+      +group('my','🙋 내 신청',[
         {key:'waitPromoted',label:'대기 자동 참여 알림',sub:'대기하던 모임에 자리가 나서 자동 신청되면 알려드려요'},
         {key:'promoteConfirmed',label:'참여 확정 알림',sub:'관리자·스탭이 대기에서 참여를 확정하면 알려드려요'},
         {key:'waitCanceled',label:'대기 취소 알림',sub:'신청 횟수가 없어 대기가 자동 취소되면 알려드려요'},
         {key:'meetingClosed',label:'폐강 알림',sub:'신청한 모임이 최소인원 미달로 폐강되면 알려드려요'},
+      ])
+      +group('small','🎯 소모임',[
+        {key:'smallOpen',label:'소모임 개설 알림',sub:'소모임이 개설될 때 알려드려요'},
+        {key:'smallApply',label:'신청 알림 (내가 소모임장일 경우)',sub:'누군가 내 소모임에 신청하면 알려드려요'},
+        {key:'smallCancel',label:'취소 알림 (내가 소모임장일 경우)',sub:'누군가 내 소모임 신청을 취소하면 알려드려요'},
+      ])
+      +group('host','📋 내가 담당한 모임 (독서모임)',[
+        {key:'hostApply',label:'신청 알림',sub:'누군가 신청하거나 대기자가 참여 확정되면 알려드려요'},
+        {key:'hostCancel',label:'취소 알림',sub:'누군가 신청을 취소하면 알려드려요'},
+        {key:'hostWaitSkip',label:'대기자 건너뜀 알림',sub:'대기자의 신청 횟수가 없어 다음 대기자로 넘어가면 알려드려요'},
+        {key:'hostClosed',label:'폐강 알림',sub:'담당 모임이 최소인원 미달로 폐강되면 알려드려요'},
       ])
       +`</div>`;
   }
   updatePushStatus();
 }
 
+const notifOpenGroups=new Set();
+function toggleNotifGroup(id,open){if(open)notifOpenGroups.add(id);else notifOpenGroups.delete(id);}
 async function saveNotifSetting(key,val){
   notifSettings[key]=val;
   await db.collection('users').doc(user.email).set({notifSettings},{merge:true});
   showToast(val?'알림을 켰어요 🔔':'알림을 껐어요');
-  if(key==='all') updateProfileTab();
+  updateProfileTab(); // 전체 스위치·'N/M 켜짐' 표시 갱신
 }
 
 function initMain(){
@@ -1397,7 +1411,7 @@ async function applySmall(id){
     await uRef.update({appliedSmall:firebase.firestore.FieldValue.arrayRemove(id)});
     uRef.collection('history').add({type:'cancel',kind:'small',meetingTitle:m.name,meetingId:id,time:firebase.firestore.FieldValue.serverTimestamp()});
     // 모임장 알림
-    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostCancel!==false)addNotification(m.hostEmail,`❌ "${m.name}" 소모임에서 ${user.realName||user.name}님이 취소했어요`,'hostCancel');});}
+    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.smallCancel!==false)addNotification(m.hostEmail,`❌ "${m.name}" 소모임에서 ${user.realName||user.name}님이 취소했어요`,'smallCancel');});}
     showToast('소모임 신청이 취소되었어요');
   } else {
     if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
@@ -1408,7 +1422,7 @@ await aRef.set({name:user.name,realName:realName,email:user.email,time:new Date(
     await mRef.update({applied:firebase.firestore.FieldValue.increment(1)});
     await uRef.update({appliedSmall:firebase.firestore.FieldValue.arrayUnion(id)});
     uRef.collection('history').add({type:'apply',kind:'small',meetingTitle:m.name,meetingId:id,time:firebase.firestore.FieldValue.serverTimestamp()});
-    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.hostApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.realName||user.name}님이 신청했어요`,'hostApply');});}
+    if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.smallApply!==false)addNotification(m.hostEmail,`🎯 "${m.name}" 소모임에 ${user.realName||user.name}님이 신청했어요`,'smallApply');});}
     showToast('소모임 신청 완료! 🎯');
   }
   renderAll();
