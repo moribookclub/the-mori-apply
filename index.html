@@ -793,9 +793,11 @@ function updateProfileTab(){
     const row=n=>`<div class="notif-toggle-row"><div><div class="notif-toggle-label">${n.label}</div><div class="notif-toggle-sub">${n.sub}</div></div><label class="toggle-switch"><input type="checkbox" ${on(n.key)?'checked':''} onchange="saveNotifSetting('${n.key}',this.checked)"><span class="toggle-slider"></span></label></div>`;
     // 범주별 접기/펼치기 (펼친 상태는 다시 그려도 유지)
     const group=(id,title,items)=>`<details class="notif-group" ${notifOpenGroups.has(id)?'open':''} ontoggle="toggleNotifGroup('${id}',this.open)"><summary class="notif-group-title">${title}<span class="notif-group-count">${items.filter(n=>on(n.key)).length}/${items.length} 켜짐</span></summary>${items.map(row).join('')}</details>`;
+    // 독서모임장 알림은 스탭·관리자, 또는 독서모임장으로 지정된 사람에게만 보임
+    const showHostGroup=isAdmin()||isStaff()||meetings.some(m=>m.hostEmail===user?.email);
     nEl.innerHTML=row({key:'all',label:'전체 알림',sub:'끄면 아래 모든 알림을 받지 않아요'})
       +`<div class="notif-sub${on('all')?'':' off'}">`
-      +group('my','🙋 내 신청',[
+      +group('my','🙋 독서모임',[
         {key:'waitPromoted',label:'대기 자동 참여 알림',sub:'대기하던 모임에 자리가 나서 자동 신청되면 알려드려요'},
         {key:'promoteConfirmed',label:'참여 확정 알림',sub:'관리자·스탭이 대기에서 참여를 확정하면 알려드려요'},
         {key:'waitCanceled',label:'대기 취소 알림',sub:'신청 횟수가 없어 대기가 자동 취소되면 알려드려요'},
@@ -806,12 +808,12 @@ function updateProfileTab(){
         {key:'smallApply',label:'신청 알림 (내가 소모임장일 경우)',sub:'누군가 내 소모임에 신청하면 알려드려요'},
         {key:'smallCancel',label:'취소 알림 (내가 소모임장일 경우)',sub:'누군가 내 소모임 신청을 취소하면 알려드려요'},
       ])
-      +group('host','📋 내가 담당한 모임 (독서모임)',[
+      +(showHostGroup?group('host','📋 독서모임장 (스탭 전용)',[
         {key:'hostApply',label:'신청 알림',sub:'누군가 신청하거나 대기자가 참여 확정되면 알려드려요'},
         {key:'hostCancel',label:'취소 알림',sub:'누군가 신청을 취소하면 알려드려요'},
         {key:'hostWaitSkip',label:'대기자 건너뜀 알림',sub:'대기자의 신청 횟수가 없어 다음 대기자로 넘어가면 알려드려요'},
         {key:'hostClosed',label:'폐강 알림',sub:'담당 모임이 최소인원 미달로 폐강되면 알려드려요'},
-      ])
+      ]):'')
       +`</div>`;
   }
   updatePushStatus();
