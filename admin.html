@@ -1227,9 +1227,9 @@ async function sendSmallPromo(id){
   const g=smallPromoGroups.find(x=>x.id===id);if(!g)return;
   const msg=document.getElementById('promo-'+id).value.trim();
   if(!msg){showToast('홍보 문구를 입력해주세요');return;}
-  // 받는 사람: 참여자·스탭·소모임장·관리자 (모임장 본인 제외)
+  // 받는 사람: 참여자·스탭·소모임장·관리자 + 해당 소모임장 본인
   const snap=await db.collection('users').get();
-  const targets=snap.docs.map(d=>d.data()).filter(u=>u.email&&u.email!==g.hostEmail&&(['member','staff','smallstaff'].includes(u.role)||ADMIN_EMAILS.includes(u.email)));
+  const targets=snap.docs.map(d=>d.data()).filter(u=>u.email&&(u.email===g.hostEmail||['member','staff','smallstaff'].includes(u.role)||ADMIN_EMAILS.includes(u.email)));
   if(!confirm(`"${g.name}" 홍보 알림을 ${targets.length}명에게 보낼까요?\n(소모임 개설 알림을 끈 회원은 제외돼요)\n\n${msg}`))return;
   showToast('보내는 중... 📢');
   await Promise.all(targets.map(u=>addAdminNotification(u.email,msg,'smallOpen')));
