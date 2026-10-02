@@ -1223,6 +1223,9 @@ async function applyMeeting(id){
   if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
   if(!isAdmin()&&applyToken<=0){showToast('신청 가능 횟수가 모두 소진되었어요');return;}
   // Firestore에서 실제 신청 여부 재확인 (중복 방지)
+  const freshMeeting=(await db.collection('meetings').doc(id).get()).data()||m;
+  if(!isAdmin()&&freshMeeting.applyOpen===false){showToast('신청이 마감된 모임이에요 🔒');renderAll();return;}
+  if(freshMeeting.applied>=freshMeeting.max){showToast('정원이 마감되었어요');renderAll();return;}
   const existingSnap=await db.collection('meetings').doc(id).collection('applicants').doc(user.email).get();
   if(existingSnap.exists){showToast('이미 신청한 모임이에요');applied.add(id);renderAll();return;}
   const mRef=db.collection('meetings').doc(id),aRef=mRef.collection('applicants').doc(user.email);
@@ -1416,7 +1419,9 @@ async function applySmall(id){
     if(m.hostEmail&&m.hostEmail!==user.email){db.collection('users').doc(m.hostEmail).get().then(doc=>{if(doc.exists&&doc.data().notifSettings?.smallCancel!==false)addNotification(m.hostEmail,`❌ "${m.name}" 소모임에서 ${user.realName||user.name}님이 취소했어요`,'smallCancel');});}
     showToast('소모임 신청이 취소되었어요');
   } else {
-    if(m.applied>=m.max){showToast('정원이 마감되었어요');return;}
+    const fresh=(await mRef.get()).data()||m;
+    if(!isAdmin()&&fresh.applyOpen===false){showToast('신청이 마감된 소모임이에요 🔒');return;}
+    if(fresh.applied>=fresh.max){showToast('정원이 마감되었어요');return;}
     appliedSmall.add(id);
     const uDoc=await db.collection('users').doc(user.email).get();
 const realName=uDoc.exists?(uDoc.data().name||user.name):user.name;
@@ -1851,6 +1856,7 @@ function smallCardHTML(m){
   if(iAmHost){badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='is-host';btnTxt='내 모임';}
   else if(isApplied){badge=`<span class="card-badge badge-mine">신청완료</span>`;btnCls='applied';btnTxt='신청취소';clickable=true;}
   else if(isFull){badge=`<span class="card-badge badge-closed">마감</span>`;btnCls='full';btnTxt='마감';}
+  else if(!isAdmin()&&m.applyOpen===false){badge=`<span class="card-badge badge-closed">신청마감</span>`;btnCls='full';btnTxt='신청마감';}
   else{badge=`<span class="card-badge badge-open">신청가능</span>`;btnCls='open';btnTxt='신청하기';clickable=true;}
   const adminBtns=isAdmin()?`<div class="admin-btns"><button class="btn-edit" onclick="openEditSmallModal('${m.id}')">수정</button><button class="btn-del" onclick="confirmDelete('${m.id}','${m.name}','small')">삭제</button></div>`:''; 
   const applicantBtn=canViewApplicants()?`<button onclick="openApplicantModal('smallGroups','${m.id}','${encodeURIComponent(m.name).replace(/'/g,'%27')}')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;font-size:.72rem;cursor:pointer;color:rgba(255,255,255,.6)">👥 ${m.applied}</button>`:'';
